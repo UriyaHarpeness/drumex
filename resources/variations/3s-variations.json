@@ -1,0 +1,59 @@
+{
+  "Name": "3's Variations.",
+  "Charts": [
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "o--"
+      }
+    },
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "-o-"
+      }
+    },
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "--o"
+      }
+    },
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "oo-"
+      }
+    },
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "-oo"
+      }
+    },
+    {
+      "Time Signature": [
+        3,
+        3
+      ],
+      "Parts": {
+        "Unbound": "o-o"
+      }
+    }
+  ]
+}

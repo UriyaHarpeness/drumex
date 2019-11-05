@@ -1,0 +1,41 @@
+{
+  "Name": "Paradidles.",
+  "Charts": [
+    {
+      "Time Signature": [
+        8,
+        4
+      ],
+      "Parts": {
+        "Unbound": "O...O..."
+      },
+      "Sticking": {
+        "Unbound": "rlrrlrll"
+      }
+    },
+    {
+      "Time Signature": [
+        12,
+        4
+      ],
+      "Parts": {
+        "Unbound": "O.....O....."
+      },
+      "Sticking": {
+        "Unbound": "rlrlrrlrlrll"
+      }
+    },
+    {
+      "Time Signature": [
+        16,
+        4
+      ],
+      "Parts": {
+        "Unbound": "O.......O......."
+      },
+      "Sticking": {
+        "Unbound": "rlrlrlrrlrlrlrll"
+      }
+    }
+  ]
+}

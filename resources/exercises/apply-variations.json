@@ -1,0 +1,20 @@
+{
+  "Name": "Paradidles double ghost notes.",
+  "Sources": [
+    "rudiments/paradidles"
+  ],
+  "Variations": [
+    [
+      "Paradidles.",
+      "All",
+      {
+        "Role": [
+          [
+            "Quick Double Ghosts"
+          ]
+        ],
+        "Instrument": "Snare"
+      }
+    ]
+  ]
+}

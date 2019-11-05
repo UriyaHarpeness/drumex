@@ -1,0 +1,86 @@
+{
+  "Name": "5's Variations.",
+  "Charts": [
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "o----"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "oo---"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "ooo--"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "oooo-"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "o-o--"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "-o-o-"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "oo-o-"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "-oo-o"
+      }
+    },
+    {
+      "Time Signature": [
+        5,
+        5
+      ],
+      "Parts": {
+        "Unbound": "o-o-o"
+      }
+    }
+  ]
+}

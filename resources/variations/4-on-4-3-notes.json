@@ -1,0 +1,41 @@
+{
+  "Name": "4 On 4, 3 Notes.",
+  "Charts": [
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Parts": {
+        "Unbound": "ooo-"
+      }
+    },
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Parts": {
+        "Unbound": "-ooo"
+      }
+    },
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Parts": {
+        "Unbound": "o-oo"
+      }
+    },
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Parts": {
+        "Unbound": "oo-o"
+      }
+    }
+  ]
+}
