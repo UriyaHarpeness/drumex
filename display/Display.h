@@ -18,8 +18,6 @@ public:
 
     static const int staff_start = 100;
 
-    static const map<MusicSymbol, pair<pair<MusicSymbolValues, int>, pair<MusicSymbolValues, int>>> music_symbols_to_values;
-
     Display();
 
     ~Display();
@@ -36,8 +34,6 @@ public:
 
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 
-    void draw_music_symbol(MusicSymbol symbol, int staff, int line, int col);
-
     void draw_time_signature(uint8_t a, uint8_t b);
 
     void draw_clef();
@@ -46,7 +42,9 @@ public:
 
     void draw_ending();
 
-    void draw_base(uint8_t a, uint8_t b);
+    void draw_base_bak(uint8_t a, uint8_t b);
+
+    void draw_base(int x, int y, uint8_t a, uint8_t b);
 
     void draw_image(const string &path, int x, int y, int h, int w);
 

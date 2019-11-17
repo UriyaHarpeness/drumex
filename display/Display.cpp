@@ -1,11 +1,5 @@
 #include "Display.h"
 
-const map<MusicSymbol, pair<pair<MusicSymbolValues, int>, pair<MusicSymbolValues, int>>>
-        Display::music_symbols_to_values = {{WholeNote,   {{SymWholeNote,     -15}, {SymWholeNote,       -4}}},
-                                            {HalfNote,    {{SymUpHalfNote,    -15}, {SymDownHalfNote,    -4}}},
-                                            {QuarterNote, {{SymUpQuarterNote, -15}, {SymDownQuarterNote, -4}}},
-                                            {EightNote,   {{SymUpEightNote,   -15}, {SymDownEightNote,   -4}}}};
-
 Display::Display() {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
@@ -77,28 +71,6 @@ void Display::draw_rect_c(int x, int y, int h, int w, int gray_scale = 0) {
     SDL_RenderFillRect(m_renderer, &sdl_rect);
 }
 
-void Display::draw_music_symbol(MusicSymbol symbol, int staff, int line, int col) {
-    if (line <= 0) {
-        auto symbol_value = music_symbols_to_values.at(symbol).first;
-        if (line <= -8) {
-            draw_text(SymLedger, 20 + (col * 32), staff + 1 - 50);
-            if (line <= -6) {
-                draw_text(SymLedger, 20 + (col * 32), staff + 1 - 40);
-            }
-        }
-        draw_text(symbol_value.first, 23 + (col * 32), staff + symbol_value.second + (line * 5));
-    } else {
-        auto symbol_value = music_symbols_to_values.at(symbol).second;
-        draw_text(symbol_value.first, 23 + (col * 32), staff + symbol_value.second + (line * 5));
-        if (line >= 6) {
-            draw_text(SymLedger, 20 + (col * 32), staff + 1 + 20);
-            if (line >= 8) {
-                draw_text(SymLedger, 20 + (col * 32), staff + 1 + 30);
-            }
-        }
-    }
-}
-
 void Display::draw_time_signature(uint8_t a, uint8_t b) {
     draw_text(to_string(a), 80, Display::staff_start + 17);
     draw_text(to_string(b), 80, Display::staff_start + 57);
@@ -123,11 +95,16 @@ void Display::draw_ending() {
     draw_rect_c(Display::width - 30, Display::staff_start + 40, 80, 2);
 }
 
-void Display::draw_base(uint8_t a, uint8_t b) {
+void Display::draw_base_bak(uint8_t a, uint8_t b) {
     draw_staff();
     draw_clef();
     draw_time_signature(3, 16);
     draw_ending();
+}
+
+void Display::draw_base(int x, int y, uint8_t a, uint8_t b) {
+    draw_text("===================", x, y);
+    draw_text(SymClef, x + 10, y - 9);
 }
 
 void Display::draw_image(const string &path, int x, int y, int h, int w) {

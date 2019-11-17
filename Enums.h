@@ -1,5 +1,15 @@
 #pragma once
 
+#include <cstdint>
+#include <vector>
+
+using namespace std;
+
+enum BasicPlaying {
+    BasePlay,
+    BaseStop,
+};
+
 enum Instrument {
     Unbound,
     SnareInst,
@@ -61,7 +71,7 @@ enum MusicSymbolValues {
 
     SymDoubleWholeStop = 0xE3,
     SymWholeStop = 0xB7,
-    SymHalfStop = 0xB7,
+    SymHalfStop = 0xEE,
     SymQuarterStop = 0xCE,
     SymEightStop = 0xC5,
     SymSixteenthStop = 0xA8,
@@ -71,7 +81,9 @@ enum MusicSymbolValues {
     SymStaff = '=',
     SymClef = 0xD6,
     SymDot = 'k',
+    SymCymbal = 0xC0,
     SymAccent = '>',
+    SymGhost = '}',
     SymLedger = '_',
     SymTempo = 0xF2,
     SymBarLine = 0x5C,
@@ -88,10 +100,14 @@ enum MusicSymbol {
 
     DoubleWholeStop = 0xE3,
     WholeStop = 0xB7,
-    HalfStop = 0xB7,
+    HalfStop = 0xEE,
     QuarterStop = 0xCE,
     EightStop = 0xC5,
     SixteenthStop = 0xA8,
     ThirtySecondStop = 0xF4,
     SixtyFourthStop = 0xE5,
 };
+
+typedef tuple<Playing, Sticking> Action;
+typedef vector<Action> Actions;
+typedef pair<uint8_t, uint8_t> TimeSignature;

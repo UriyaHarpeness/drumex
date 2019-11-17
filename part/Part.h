@@ -9,10 +9,6 @@
 
 using namespace std;
 
-typedef tuple<Playing, Sticking> Action;
-typedef vector<Action> Actions;
-typedef pair<uint8_t, uint8_t> TimeSignature;
-
 class Part {
 public:
     Part(Actions actions, TimeSignature time_signature);

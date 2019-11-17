@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
+
 #include "display/Display.h"
+#include "notation/Notation.h"
 
 int main2(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
@@ -43,12 +45,13 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(Display &d) {
+void disp(shared_ptr<Display> &d) {
     char s[2];
     s[1] = 0;
-    d.clear_screen();
+    d->clear_screen();
+    d->draw_text((MusicSymbolValues) 0xc0, 40 + (60), 100 + (60));
     //d.draw_base(3, 16);
-    /*for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             s[0] = (char) (i * 16 + j);
             if (s[0] == 0)continue;
@@ -57,32 +60,11 @@ void disp(Display &d) {
             //d.draw_rect(a, a, 80, 10);
 
             string k(s);
-            d.draw_text(k, 40 + (j * 60), 100 + (i * 60));
+            d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
             //d.draw_text(to_string(i * 16 + j), 100, 100);
         }
-    }*/
-    string o("EHJQWXehjqwx>k");
-    o += char(0xD6);
-    o += char(0xCE);
-    o += char(0xF2);
-    o += char(0xA8);
-    o += char(0xC5);
-    o += char(0xF4);
-    o += char(0xE5);
-    o += char(0x5C);
-    o += char(0xBC);//0
-    o += char(0xC1);//1
-    o += char(0xAA);//2
-    o += char(0xA3);//3
-    o += char(0xA2);//4
-    o += char(0xB0);//5
-    o += char(0xA4);//6
-    o += char(0xA6);//7
-    o += char(0xA5);//8
-    o += char(0xBB);//9
-    o += char(0xB7);
-    o += char(0xE3);
-    cout << o << endl;
+    }
+
     //d.draw_text(o, 40, 100);
     /*d.draw_text("===================", 20, 100);
     for (int p = 0; p < 19; p++) {
@@ -167,42 +149,62 @@ void disp(Display &d) {
             }
         }
     }*/
-    d.draw_text("===================", 20, 100);
-    d.draw_text("===================", 20, 200);
-    d.draw_text("===================", 20, 300);
-    d.draw_text("===================", 20, 400);
+
+    int p;
+    for (p = 1; p <= 4; p++) {
+        d->draw_base(20, p * 100, 3, 4);
+    }
+    Notation::m_display = d;
+    Notation w(WholeNote);
+    Notation h(HalfNote);
+    Notation q(QuarterNote);
+    Notation e(EightNote);
     for (int p = -9; p < 10; p++) {
-        d.draw_music_symbol(WholeNote, 100, p, 9 + p);
-        d.draw_music_symbol(HalfNote, 200, p, 9 + p);
-        d.draw_music_symbol(QuarterNote, 300, p, 9 + p);
-        d.draw_music_symbol(EightNote, 400, p, 9 + p);
+        w.display(20 + 40, 100, p, 9 + p);
+        h.display(20 + 40, 200, p, 9 + p);
+        q.display(20 + 40, 300, p, 9 + p);
+        e.display(20 + 40, 400, p, 9 + p);
     }
 
-    d.present();
-    this_thread::sleep_for(chrono::milliseconds(200));
+    d->present();
+    this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
 void gamelogic() {
     SDL_Event e;
     bool done = false;
-    Display d;
+    shared_ptr<Display> d(new Display());
 
     int a = 0;
     while (!done) {
         disp(d);
         a++;
-        a = a % 10;
+        cout << a << endl;
 
         if (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 done = true;
             }
         }
+        if (a == 20) break;
         this_thread::sleep_for(chrono::milliseconds(200));
     }
 }
 
 int main() {
+    Action a(Regular, UnboundStick);
+    // todo: dont use make_pair, use the Action constructor everywhere
+    shared_ptr<Display> d(new Display());
+    Notation::m_display = d;
+    //Notation::generate_notation(a, {6, 16}, {2, 16}, {3, 8}, BasePlay);
+    //what if 0 is given as the numerator? like 0/4
+    Notation::generate_notation(a, {1, 2}, {4, 8}, {4, 4}, BasePlay);
+    Notation::generate_notation(a, {1, 8}, {4, 8}, {4, 4}, BasePlay);
+    Notation::generate_notation(a, {1, 8}, {1, 8}, {4, 4}, BasePlay);
+    Notation::generate_notation(a, {1, 8}, {1, 16}, {4, 4}, BasePlay);
+    Notation::generate_notation(a, {15, 8}, {5, 16}, {4, 4}, BasePlay);
+    return 0;
+
     gamelogic();
 
     return 0;

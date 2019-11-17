@@ -19,7 +19,7 @@ add_executable(drumex main.cpp
         exercise/Exercise.h
         ext.h
         variations/Variations.h
-        variations/Variations.cpp display/Display.cpp display/Display.h)
+        variations/Variations.cpp display/Display.cpp display/Display.h notation/Notation.cpp notation/Notation.h notation/Fraction.cpp notation/Fraction.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)
