@@ -30,7 +30,7 @@ public:
 
     void draw_text_c(const string &text, int x, int y);
 
-    void draw_rect(int x, int y, int h, int w, int gray_scale);
+    void draw_rect(int x, int y, int h, int w, int gray_scale = 0);
 
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 

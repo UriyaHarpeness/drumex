@@ -1,3 +1,4 @@
+#include <tgmath.h>
 #include "Fraction.h"
 
 
@@ -88,6 +89,14 @@ bool Fraction::operator<=(const Fraction &other) const {
 
 Fraction::operator bool() const {
     return m_value.first;
+}
+
+Fraction::operator int() const {
+    return (int) log2((double) m_value.first / m_value.second);
+}
+
+Fraction::operator double() const {
+    return (double) m_value.first / m_value.second;
 }
 
 ostream &operator<<(ostream &os, const Fraction &fraction) {

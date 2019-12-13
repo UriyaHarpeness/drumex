@@ -34,6 +34,10 @@ public:
 
     operator bool() const;
 
+    operator int() const;
+
+    operator double() const;
+
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 
 private:

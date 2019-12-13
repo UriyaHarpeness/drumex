@@ -12,9 +12,11 @@ enum BasicPlaying {
 
 enum Instrument {
     Unbound,
+    ChinaInst,
+    HiHatInst,
+    HighTomInst,
     SnareInst,
     BassInst,
-    HiHatInst,
 };
 
 enum Playing {
@@ -57,16 +59,16 @@ enum MusicSymbolValues {
     SymDoubleWholeNote = 'W',
     SymWholeNote = 'w',
 
-    SymDownHalfNote = 'H',
-    SymDownQuarterNote = 'Q',
-    SymDownEightNote = 'E',
-    SymDownSixteenthNote = 'X',
+    SymDownHalfNote = 0xFA,//'H',
+    SymDownQuarterNote = 0xCF,//'Q',
+    SymDownEightNote = 0xCF,//'E',
+    SymDownSixteenthNote = 0xCF,//'X',
     SymDownFlag = 'J',
 
-    SymUpHalfNote = 'h',
-    SymUpEightNote = 'e',
-    SymUpQuarterNote = 'q',
-    SymUpSixteenthNote = 'x',
+    SymUpHalfNote = 0xFA,//'h',
+    SymUpEightNote = 0xCF,//'e',
+    SymUpQuarterNote = 0xCF,//'q',
+    SymUpSixteenthNote = 0xCF,//'x',
     SymUpFlag = 'j',
 
     SymDoubleWholeStop = 0xE3,
@@ -106,6 +108,15 @@ enum MusicSymbol {
     SixteenthStop = 0xA8,
     ThirtySecondStop = 0xF4,
     SixtyFourthStop = 0xE5,
+};
+
+enum Modifier {
+    ModCrossStick,
+    ModGhost,
+    ModAccent,
+    ModRimshot,
+    ModFlam,
+    ModDrag,
 };
 
 typedef tuple<Playing, Sticking> Action;

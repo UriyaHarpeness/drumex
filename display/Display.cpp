@@ -59,7 +59,7 @@ void Display::draw_text_c(const string &text, int x, int y) {
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 }
 
-void Display::draw_rect(int x, int y, int h, int w, int gray_scale = 255) {
+void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
     SDL_Rect sdl_rect{x, y, w, h};
     SDL_SetRenderDrawColor(m_renderer, gray_scale, gray_scale, gray_scale, 255);
     SDL_RenderFillRect(m_renderer, &sdl_rect);

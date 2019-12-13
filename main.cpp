@@ -51,7 +51,7 @@ void disp(shared_ptr<Display> &d) {
     d->clear_screen();
     d->draw_text((MusicSymbolValues) 0xc0, 40 + (60), 100 + (60));
     //d.draw_base(3, 16);
-    for (int i = 0; i < 16; i++) {
+    /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             s[0] = (char) (i * 16 + j);
             if (s[0] == 0)continue;
@@ -63,91 +63,6 @@ void disp(shared_ptr<Display> &d) {
             d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
             //d.draw_text(to_string(i * 16 + j), 100, 100);
         }
-    }
-
-    //d.draw_text(o, 40, 100);
-    /*d.draw_text("===================", 20, 100);
-    for (int p = 0; p < 19; p++) {
-        if (p <= 9) {
-            if (p <= 1) {
-                d.draw_text("_", 20 + (p * 32), 101 - 50);
-            }
-            if (p <= 3) {
-                d.draw_text("_", 20 + (p * 32), 101 - 40);
-            }
-            d.draw_text("w", 20 + (p * 32), 100 - 60 + 5 + (p * 5));
-        } else {
-            d.draw_text("w", 20 + (p * 32), 100 - 60 + 5 + (p * 5));
-            if (p >= 15) {
-                d.draw_text("_", 20 + (p * 32), 101 + 20);
-            }
-            if (p >= 17) {
-                d.draw_text("_", 20 + (p * 32), 101 + 30);
-            }
-        }
-    }
-
-    d.draw_text("===================", 20, 200);
-    for (int p = 0; p < 19; p++) {
-        if (p <= 9) {
-            if (p <= 1) {
-                d.draw_text("_", 20 + (p * 32), 201 - 50);
-            }
-            if (p <= 3) {
-                d.draw_text("_", 20 + (p * 32), 201 - 40);
-            }
-            d.draw_text("h", 23 + (p * 32), 200 - 60 + (p * 5));
-        } else {
-            d.draw_text("H", 23 + (p * 32), 200 - 49 + (p * 5));
-            if (p >= 15) {
-                d.draw_text("_", 20 + (p * 32), 201 + 20);
-            }
-            if (p >= 17) {
-                d.draw_text("_", 20 + (p * 32), 201 + 30);
-            }
-        }
-    }
-
-    d.draw_text("===================", 20, 300);
-    for (int p = 0; p < 19; p++) {
-        if (p <= 9) {
-            if (p <= 1) {
-                d.draw_text("_", 20 + (p * 32), 301 - 50);
-            }
-            if (p <= 3) {
-                d.draw_text("_", 20 + (p * 32), 301 - 40);
-            }
-            d.draw_text("q", 23 + (p * 32), 300 - 60 + (p * 5));
-        } else {
-            d.draw_text("Q", 23 + (p * 32), 300 - 49 + (p * 5));
-            if (p >= 15) {
-                d.draw_text("_", 20 + (p * 32), 301 + 20);
-            }
-            if (p >= 17) {
-                d.draw_text("_", 20 + (p * 32), 301 + 30);
-            }
-        }
-    }
-
-    d.draw_text("===================", 20, 400);
-    for (int p = 0; p < 19; p++) {
-        if (p <= 9) {
-            if (p <= 1) {
-                d.draw_text("_", 20 + (p * 32), 401 - 50);
-            }
-            if (p <= 3) {
-                d.draw_text("_", 20 + (p * 32), 401 - 40);
-            }
-            d.draw_text("e", 23 + (p * 32), 400 - 60 + (p * 5));
-        } else {
-            d.draw_text("E", 23 + (p * 32), 400 - 49 + (p * 5));
-            if (p >= 15) {
-                d.draw_text("_", 20 + (p * 32), 401 + 20);
-            }
-            if (p >= 17) {
-                d.draw_text("_", 20 + (p * 32), 401 + 30);
-            }
-        }
     }*/
 
     int p;
@@ -155,7 +70,7 @@ void disp(shared_ptr<Display> &d) {
         d->draw_base(20, p * 100, 3, 4);
     }
     Notation::m_display = d;
-    Notation w(WholeNote);
+    /*Notation w(WholeNote);
     Notation h(HalfNote);
     Notation q(QuarterNote);
     Notation e(EightNote);
@@ -164,7 +79,16 @@ void disp(shared_ptr<Display> &d) {
         h.display(20 + 40, 200, p, 9 + p);
         q.display(20 + 40, 300, p, 9 + p);
         e.display(20 + 40, 400, p, 9 + p);
-    }
+    }*/
+
+    //Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
+    //t.display(100, 100, 10);
+
+    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 8}, {ModAccent}}},
+                                          {{BasePlay, SnareInst, {1, 8}, {ModAccent}}, {BasePlay, HighTomInst, {1, 8}, {ModAccent}}},
+                                          {{BasePlay, SnareInst, {1, 8}, {ModAccent}}, {BasePlay, ChinaInst,   {1, 8}, {ModAccent}}},
+                                          {{BasePlay, HiHatInst, {1, 8}, {ModAccent}}}};
+    Notation::draw_connected_notes(100, 100, 10, notations);
 
     d->present();
     this_thread::sleep_for(chrono::milliseconds(1000));
@@ -203,7 +127,10 @@ int main() {
     Notation::generate_notation(a, {1, 8}, {1, 8}, {4, 4}, BasePlay);
     Notation::generate_notation(a, {1, 8}, {1, 16}, {4, 4}, BasePlay);
     Notation::generate_notation(a, {15, 8}, {5, 16}, {4, 4}, BasePlay);
-    return 0;
+
+    //return 0;
+
+    // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
     gamelogic();
 

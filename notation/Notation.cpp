@@ -1,57 +1,148 @@
 #include "Notation.h"
 
+// todo: this is kind of useless now...
 const map<MusicSymbol, pair<pair<MusicSymbolValues, pair<int, int>>, pair<MusicSymbolValues, pair<int, int>>>>
         Notation::music_symbols_to_values = \
         {{WholeNote,   {{SymWholeNote,     {0, -10}}, {SymWholeNote,       {0, -10}}}},
-         {HalfNote,    {{SymUpHalfNote,    {3, -15}}, {SymDownHalfNote,    {3, -4}}}},
-         {QuarterNote, {{SymUpQuarterNote, {3, -15}}, {SymDownQuarterNote, {3, -4}}}},
-         {EightNote,   {{SymUpEightNote,   {3, -15}}, {SymDownEightNote,   {3, -4}}}}};
+         {HalfNote,    {{SymUpHalfNote,    {3, -10}}, {SymDownHalfNote,    {3, -10}}}},
+         {QuarterNote, {{SymUpQuarterNote, {3, -4}},  {SymDownQuarterNote, {3, -4}}}},
+         {EightNote,   {{SymUpEightNote,   {3, -4}},  {SymDownEightNote,   {3, -4}}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
 const map<BasicPlaying, map<int, MusicSymbol>> Notation::playing_to_music_symbols = \
-{{BasePlay, {{1, WholeNote}, {2, HalfNote}, {4, QuarterNote}, {8, EightNote}}},
- {BaseStop, {{1, WholeStop}, {2, HalfStop}, {4, QuarterStop}, {8, EightStop}}}};
+{{BasePlay, {{0, WholeNote}, {-1, HalfNote}, {-2, QuarterNote}, {-3, EightNote}}},
+ {BaseStop, {{0, WholeStop}, {-1, HalfStop}, {-2, QuarterStop}, {-3, EightStop}}}};
+
+const map<Instrument, int> Notation::instrument_to_line = {
+        {ChinaInst,   -8},
+        {HiHatInst,   -5},
+        {HighTomInst, -3},
+        {SnareInst,   -1},
+        {BassInst,    3}
+};
 
 shared_ptr<Display> Notation::m_display = nullptr;
 
-Notation::Notation(MusicSymbol symbol) : m_symbol(symbol) {
+/*Notation::Notation(MusicSymbol symbol) : m_symbol(symbol) {
 
-}
+}*/
 
-Notation::Notation(BasicPlaying playing, int length) {
+Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
+        m_length(length), m_instrument(instrument), m_playing(playing), m_modifiers(modifiers) {
     // todo: support 2 whole, etc.
-    m_symbol = playing_to_music_symbols.at(playing).at(length);
+    //m_symbol = playing_to_music_symbols.at(playing).at(length);
 }
 
 Notation::~Notation() {
     // todo: is this the right destructor? a destructor is anyway neede because if it is destroyed and m_display is not
     // set, a error is raised when trying to delete...
-    if (m_display) {
-        m_display.reset();
+    //if (m_display) {
+    //    m_display.reset();
+    //}
+}
+
+void Notation::draw_tail(int staff_x, int staff_y, int col, int tail_length) const {
+    int line = instrument_to_line.at(m_instrument);
+    if (line <= direction_line) {
+        m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
+                             staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
+                             (tail_length + 2) * line_height, 1);
+    } else {
+        m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
+                             staff_y + ((line + tail_length) * line_height) - staff_to_0,
+                             tail_length * line_height, 1);
     }
 }
 
-void Notation::display(int staff_x, int staff_y, int line, int col) {
+void Notation::draw_connectors(int staff_x, int staff_y, int line, int col, int length, int number, int tail_length) {
+    while (number--) {
+        if (line <= direction_line) {
+            m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
+                                 staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
+                                 connector_height, length * minimal_distance);
+        } else {
+            //todo: check for all the below line
+            m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
+                                 staff_y + ((line + tail_length) * line_height) - staff_to_0,
+                                 tail_length * line_height, 1);
+        }
+        line += 2;
+    }
+}
+
+void Notation::draw_ledgers(int staff_x, int staff_y, int col) const {
+    int line = instrument_to_line.at(m_instrument);
     if (line <= 0) {
-        auto symbol_value = music_symbols_to_values.at(m_symbol).first;
         if (line <= -6) {
-            m_display->draw_text(SymLedger, staff_x + (col * 32), staff_y + 1 - 40);
+            m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                                 staff_y + 1 + (-6 * line_height) - staff_to_0);
             if (line <= -8) {
-                m_display->draw_text(SymLedger, staff_x + (col * 32), staff_y + 1 - 50);
+                m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                                     staff_y + 1 + (-8 * line_height) - staff_to_0);
             }
         }
-        m_display->draw_text(symbol_value.first, staff_x + symbol_value.second.first + (col * 32),
-                             staff_y + symbol_value.second.second + (line * 5));
     } else {
-        auto symbol_value = music_symbols_to_values.at(m_symbol).second;
-        m_display->draw_text(symbol_value.first, staff_x + symbol_value.second.first + (col * 32),
-                             staff_y + symbol_value.second.second + (line * 5));
         if (line >= 6) {
-            m_display->draw_text(SymLedger, staff_x + (col * 32), staff_y + 1 + 20);
+            m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                                 staff_y + 1 + (6 * line_height) - staff_to_0);
             if (line >= 8) {
-                m_display->draw_text(SymLedger, staff_x + (col * 32), staff_y + 1 + 30);
+                m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                                     staff_y + 1 + (8 * line_height) - staff_to_0);
             }
         }
+    }
+}
+
+void Notation::draw_head(int staff_x, int staff_y, int col) const {
+    int line = instrument_to_line.at(m_instrument);
+    auto symbol = playing_to_music_symbols.at(m_playing).at(m_length);
+    auto symbol_value = music_symbols_to_values.at(symbol).first;
+    m_display->draw_text(symbol_value.first, staff_x + symbol_value.second.first + (col * minimal_distance),
+                         staff_y + (line * line_height) - staff_to_0);
+}
+
+void Notation::display(int staff_x, int staff_y, int col, int tail_length) const {
+    draw_ledgers(staff_x, staff_y, col);
+    if (m_length < Fraction(1, 1)) {
+        draw_tail(staff_x, staff_y, col, tail_length);
+    }
+    draw_head(staff_x, staff_y, col);
+}
+
+void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, vector<vector<Notation>> notations) {
+    // todo: assumes all note are in the same direction.
+    int max_height = instrument_to_line.at(notations[0][0].get_instrument());
+    int min_height = instrument_to_line.at(notations[0][0].get_instrument());
+
+    for (const auto &group : notations) {
+        for (const auto &note : group) {
+            if (abs(max_height - direction_line) < abs(instrument_to_line.at(note.get_instrument()) - direction_line)) {
+                max_height = instrument_to_line.at(note.get_instrument());
+            }
+            if (abs(min_height - direction_line) > abs(instrument_to_line.at(note.get_instrument()) - direction_line)) {
+                min_height = instrument_to_line.at(note.get_instrument());
+            }
+        }
+    }
+
+    //cout << min_height << " " << max_height << endl;
+    int line_relation = max(abs(max_height - direction_line) - abs(min_height - direction_line), 4) + 3;
+    //cout << line_relation << endl;
+    //todo: line relation needs to be aware of space for connectors.
+    //minimum 1.5 real line difference (1 line from the head end)
+
+    int line, tail_length;
+    for (const auto &group : notations) {
+        for (const auto &note : group) {
+            line = instrument_to_line.at(note.get_instrument());
+            tail_length = line_relation + (line - min_height);
+            note.display(staff_x, staff_y, initial_col, tail_length);
+            if ((&note == &(group[0])) && (&group != &(notations[notations.size() - 1]))) {
+                draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
+                                (int) ((double) (note.get_length() / Fraction(1, 16))), 2, tail_length);
+            }
+        }
+        initial_col += (int) ((double) (group[0].get_length() / Fraction(1, 16)));
     }
 }
 
