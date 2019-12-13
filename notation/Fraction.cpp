@@ -23,6 +23,16 @@ Fraction Fraction::operator+(const Fraction &other) const {
     return result;
 }
 
+bool Fraction::operator==(const Fraction &other) const {
+    Fraction result(*this);
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return result;
+    }
+    equalize_denominators(result, second);
+    return result.m_value.first == second.m_value.first;
+}
+
 Fraction Fraction::operator-(const Fraction &other) const {
     Fraction result(*this);
     Fraction second(other);

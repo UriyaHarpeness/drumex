@@ -58,6 +58,8 @@ enum MusicSymbolValues {
 
     SymDoubleWholeNote = 'W',
     SymWholeNote = 'w',
+    SymHalfNote = 0xFA,
+    SymQuarterNote = 0xCF,
 
     SymDownHalfNote = 0xFA,//'H',
     SymDownQuarterNote = 0xCF,//'Q',

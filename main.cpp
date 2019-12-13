@@ -84,10 +84,10 @@ void disp(shared_ptr<Display> &d) {
     //Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
     //t.display(100, 100, 10);
 
-    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 8}, {ModAccent}}},
-                                          {{BasePlay, SnareInst, {1, 8}, {ModAccent}}, {BasePlay, HighTomInst, {1, 8}, {ModAccent}}},
-                                          {{BasePlay, SnareInst, {1, 8}, {ModAccent}}, {BasePlay, ChinaInst,   {1, 8}, {ModAccent}}},
-                                          {{BasePlay, HiHatInst, {1, 8}, {ModAccent}}}};
+    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
+                                          {{BasePlay, SnareInst, {1, 8},  {ModAccent}}, {BasePlay, HighTomInst, {1, 8},  {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModAccent}}, {BasePlay, ChinaInst,   {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 8},  {ModAccent}}}};
     Notation::draw_connected_notes(100, 100, 10, notations);
 
     d->present();

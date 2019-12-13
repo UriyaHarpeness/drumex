@@ -15,6 +15,8 @@ public:
 
     Fraction(const Fraction &other);
 
+    bool operator==(const Fraction &other) const;
+
     Fraction operator+(const Fraction &other) const;
 
     Fraction operator-(const Fraction &other) const;
