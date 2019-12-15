@@ -11,9 +11,9 @@ using namespace std;
 
 class Notation {
 public:
-    static const map<MusicSymbol, pair<pair<MusicSymbolValues, pair<int, int>>, pair<MusicSymbolValues, pair<int, int>>>> music_symbols_to_values;
+    static const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>> music_symbols_to_values;
 
-    static const map<BasicPlaying, map<int, MusicSymbol>> playing_to_music_symbols;
+    static const map<int, MusicSymbol> stopping_to_music_symbols;
 
     static const map<Instrument, int> instrument_to_line;
 
@@ -28,8 +28,6 @@ public:
     static const int direction_line = 2;
 
     static shared_ptr<Display> m_display;
-
-    //explicit Notation(MusicSymbol symbol);
 
     Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers);
 
@@ -53,6 +51,8 @@ public:
     static vector<Notation>
     generate_notation(Action action, Fraction play, Fraction offset, TimeSignature signature, BasicPlaying base);
 
+    [[nodiscard]] inline int get_line() const { return m_line; }
+
     [[nodiscard]] inline Instrument get_instrument() const { return m_instrument; }
 
     [[nodiscard]] inline BasicPlaying get_playing() const { return m_playing; }
@@ -65,6 +65,8 @@ private:
     MusicSymbol m_symbol;
 
     pair<MusicSymbolValues, pair<int, int>> m_symbol_value;
+
+    int m_line;
 
     Fraction m_length;
 

@@ -12,6 +12,8 @@ enum BasicPlaying {
 
 enum Instrument {
     Unbound,
+    UnboundUp,
+    UnboundDown,
     ChinaInst,
     HiHatInst,
     HighTomInst,

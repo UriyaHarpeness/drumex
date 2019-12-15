@@ -1,41 +1,44 @@
 #include "Notation.h"
 
 // todo: this is kind of useless now...
-const map<MusicSymbol, pair<pair<MusicSymbolValues, pair<int, int>>, pair<MusicSymbolValues, pair<int, int>>>>
+const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
-        {{WholeNote,   {{SymWholeNote,     {0, -10}}, {SymWholeNote,       {0, -10}}}},
-         {HalfNote,    {{SymUpHalfNote,    {3, -10}}, {SymDownHalfNote,    {3, -10}}}},
-         {QuarterNote, {{SymUpQuarterNote, {3, -4}},  {SymDownQuarterNote, {3, -4}}}},
-         {EightNote,   {{SymUpEightNote,   {3, -4}},  {SymDownEightNote,   {3, -4}}}}};
+        {{WholeStop,     {SymWholeStop,     {0, -10}}},
+         {HalfStop,      {SymHalfStop,      {3, -10}}},
+         {QuarterStop,   {SymQuarterStop,   {3, -4}}},
+         {EightStop,     {SymEightStop,     {3, -4}}},
+         {SixteenthStop, {SymSixteenthStop, {3, -4}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
-const map<BasicPlaying, map<int, MusicSymbol>> Notation::playing_to_music_symbols = \
-{{BasePlay, {{0, WholeNote}, {-1, HalfNote}, {-2, QuarterNote}, {-3, EightNote}, {-4, SixteenthNote}}},
- {BaseStop, {{0, WholeStop}, {-1, HalfStop}, {-2, QuarterStop}, {-3, EightStop}, {-4, SixteenthNote}}}};
+const map<int, MusicSymbol> Notation::stopping_to_music_symbols = \
+{{0,  WholeStop},
+ {-1, HalfStop},
+ {-2, QuarterStop},
+ {-3, EightStop},
+ {-4, SixteenthStop}};
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,   -8},
         {HiHatInst,   -5},
         {HighTomInst, -3},
         {SnareInst,   -1},
-        {BassInst,    3}
+        {BassInst,    3},
+        {UnboundUp,   -4},
+        {UnboundDown, 4}
 };
 
 shared_ptr<Display> Notation::m_display = nullptr;
 
-/*Notation::Notation(MusicSymbol symbol) : m_symbol(symbol) {
-
-}*/
-
 Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
-        m_length(length), m_instrument(instrument), m_playing(playing), m_modifiers(modifiers) {
+        m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
+        m_modifiers(modifiers) {
     // todo: support 2 whole, etc.
     //m_symbol = playing_to_music_symbols.at(playing).at(length);
     if (m_playing == BasePlay) {
         //todo: no more than whole note support for now.
         //todo: are music symbol and music symbols values needed?
 
-        if (instrument_to_line.at(m_instrument) <= -4) {
+        if (m_line <= -4) {
             //for cymbals support, temporary i believe in this way.
             m_symbol_value = make_pair(SymCymbal, make_pair(3, -10));
         } else {
@@ -48,8 +51,8 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length,
             }
         }
     } else {
-        m_symbol = playing_to_music_symbols.at(m_playing).at(m_length);
-        m_symbol_value = music_symbols_to_values.at(m_symbol).first;
+        m_symbol = stopping_to_music_symbols.at(m_length);
+        m_symbol_value = music_symbols_to_values.at(m_symbol);
     }
 }
 
@@ -62,16 +65,15 @@ Notation::~Notation() {
 }
 
 void Notation::draw_tail(int staff_x, int staff_y, int col, int tail_length) const {
-    int line = instrument_to_line.at(m_instrument);
     int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
-    if (line <= direction_line) {
+    if (m_line <= direction_line) {
         m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
-                             staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
+                             staff_y + ((m_line - tail_length + 4) * line_height) - staff_to_0,
                              (tail_length + 2 - distance) * line_height - distance, 1);
     } else {
         //todo: this real
         m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
-                             staff_y + ((line + tail_length) * line_height) - staff_to_0,
+                             staff_y + ((m_line + tail_length) * line_height) - staff_to_0,
                              (tail_length) * line_height, 1);
     }
 }
@@ -94,21 +96,20 @@ Notation::draw_connectors(int staff_x, int staff_y, int line, double col, double
 }
 
 void Notation::draw_ledgers(int staff_x, int staff_y, int col) const {
-    int line = instrument_to_line.at(m_instrument);
-    if (line <= 0) {
-        if (line <= -6) {
+    if (m_line <= 0) {
+        if (m_line <= -6) {
             m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
                                  staff_y + 1 + (-6 * line_height) - staff_to_0);
-            if (line <= -8) {
+            if (m_line <= -8) {
                 m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
                                      staff_y + 1 + (-8 * line_height) - staff_to_0);
             }
         }
     } else {
-        if (line >= 6) {
+        if (m_line >= 6) {
             m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
                                  staff_y + 1 + (6 * line_height) - staff_to_0);
-            if (line >= 8) {
+            if (m_line >= 8) {
                 m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
                                      staff_y + 1 + (8 * line_height) - staff_to_0);
             }
@@ -117,10 +118,8 @@ void Notation::draw_ledgers(int staff_x, int staff_y, int col) const {
 }
 
 void Notation::draw_head(int staff_x, int staff_y, int col) const {
-    int line = instrument_to_line.at(m_instrument);
-
     m_display->draw_text(m_symbol_value.first, staff_x + m_symbol_value.second.first + (col * minimal_distance),
-                         staff_y + (line * line_height) - staff_to_0);
+                         staff_y + (m_line * line_height) - staff_to_0);
 }
 
 void Notation::display(int staff_x, int staff_y, int col, int tail_length) const {
@@ -133,17 +132,17 @@ void Notation::display(int staff_x, int staff_y, int col, int tail_length) const
 
 void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, vector<vector<Notation>> notations) {
     // todo: assumes all note are in the same direction.
-    int max_height = instrument_to_line.at(notations[0][0].get_instrument());
-    int min_height = instrument_to_line.at(notations[0][0].get_instrument());
+    int max_height = notations[0][0].get_line();
+    int min_height = notations[0][0].get_line();
 
     int beams, max_beams = 1;
     for (const auto &group : notations) {
         for (const auto &note : group) {
-            if (abs(max_height - direction_line) < abs(instrument_to_line.at(note.get_instrument()) - direction_line)) {
-                max_height = instrument_to_line.at(note.get_instrument());
+            if (abs(max_height - direction_line) < abs(note.get_line() - direction_line)) {
+                max_height = note.get_line();
             }
-            if (abs(min_height - direction_line) > abs(instrument_to_line.at(note.get_instrument()) - direction_line)) {
-                min_height = instrument_to_line.at(note.get_instrument());
+            if (abs(min_height - direction_line) > abs(note.get_line() - direction_line)) {
+                min_height = note.get_line();
             }
             beams = (-2 - (int) note.get_length());
             if (max_beams < beams) {
@@ -157,24 +156,25 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
     //cout << line_relation << endl;
     //todo: line relation needs to be aware of space for connectors.
     //minimum 1.5 real line difference (1 line from the head end)
+    //todo: support dot, which changes also the length of the note...
 
     int line, tail_length;
     for (const auto &group : notations) {
         for (const auto &note : group) {
-            line = instrument_to_line.at(note.get_instrument());
+            line = note.get_line();
             tail_length = line_relation + (line - min_height);
             note.display(staff_x, staff_y, initial_col, tail_length);
             beams = (-2 - (int) note.get_length());
             if (&note == &(group[0])) {
                 // is this comparison really valid?
                 if (&group < &(notations[notations.size() - 2])) {
-                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
+                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
                                     ((double) (note.get_length() / Fraction(1, 16))), beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
-                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
+                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
                                     ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
-                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()),
+                    draw_connectors(staff_x, staff_y, group[0].get_line(),
                                     initial_col - (((double) (note.get_length() / Fraction(1, 16))) / 2),
                                     ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
                 }
