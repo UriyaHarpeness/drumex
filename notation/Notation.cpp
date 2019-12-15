@@ -31,6 +31,26 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length,
         m_length(length), m_instrument(instrument), m_playing(playing), m_modifiers(modifiers) {
     // todo: support 2 whole, etc.
     //m_symbol = playing_to_music_symbols.at(playing).at(length);
+    if (m_playing == BasePlay) {
+        //todo: no more than whole note support for now.
+        //todo: are music symbol and music symbols values needed?
+
+        if (instrument_to_line.at(m_instrument) <= -4) {
+            //for cymbals support, temporary i believe in this way.
+            m_symbol_value = make_pair(SymCymbal, make_pair(3, -10));
+        } else {
+            if (Fraction(1, 1) == m_length) {
+                m_symbol_value = make_pair(SymWholeNote, make_pair(0, -10));
+            } else if (Fraction(1, 2) == m_length) {
+                m_symbol_value = make_pair(SymHalfNote, make_pair(3, -10));
+            } else {
+                m_symbol_value = make_pair(SymQuarterNote, make_pair(3, -10));
+            }
+        }
+    } else {
+        m_symbol = playing_to_music_symbols.at(m_playing).at(m_length);
+        m_symbol_value = music_symbols_to_values.at(m_symbol).first;
+    }
 }
 
 Notation::~Notation() {
@@ -43,18 +63,21 @@ Notation::~Notation() {
 
 void Notation::draw_tail(int staff_x, int staff_y, int col, int tail_length) const {
     int line = instrument_to_line.at(m_instrument);
+    int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
     if (line <= direction_line) {
         m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
                              staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
-                             (tail_length + 2) * line_height, 1);
+                             (tail_length + 2 - distance) * line_height - distance, 1);
     } else {
+        //todo: this real
         m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
                              staff_y + ((line + tail_length) * line_height) - staff_to_0,
-                             tail_length * line_height, 1);
+                             (tail_length) * line_height, 1);
     }
 }
 
-void Notation::draw_connectors(int staff_x, int staff_y, int line, int col, int length, int number, int tail_length) {
+void
+Notation::draw_connectors(int staff_x, int staff_y, int line, double col, double length, int number, int tail_length) {
     while (number--) {
         if (line <= direction_line) {
             m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
@@ -95,23 +118,8 @@ void Notation::draw_ledgers(int staff_x, int staff_y, int col) const {
 
 void Notation::draw_head(int staff_x, int staff_y, int col) const {
     int line = instrument_to_line.at(m_instrument);
-    MusicSymbol symbol;
-    pair<MusicSymbolValues, pair<int, int>> symbol_value;
-    if (m_playing == BasePlay) {
-        //todo: no more than whole note support for now.
-        //todo: are music symbol and music symbols values needed?
-        if (Fraction(1, 1) == m_length) {
-            symbol_value = make_pair(SymWholeNote, make_pair(0, -10));
-        } else if (Fraction(1, 2) == m_length) {
-            symbol_value = make_pair(SymHalfNote, make_pair(3, -10));
-        } else {
-            symbol_value = make_pair(SymQuarterNote, make_pair(3, -10));
-        }
-    } else {
-        symbol = playing_to_music_symbols.at(m_playing).at(m_length);
-        symbol_value = music_symbols_to_values.at(symbol).first;
-    }
-    m_display->draw_text(symbol_value.first, staff_x + symbol_value.second.first + (col * minimal_distance),
+
+    m_display->draw_text(m_symbol_value.first, staff_x + m_symbol_value.second.first + (col * minimal_distance),
                          staff_y + (line * line_height) - staff_to_0);
 }
 
@@ -145,7 +153,7 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
     }
 
     //cout << min_height << " " << max_height << endl;
-    int line_relation = max(abs(max_height - direction_line) - abs(min_height - direction_line), 4) + 3;
+    int line_relation = max(abs(max_height - direction_line - max_beams) - abs(min_height - direction_line), 4) + 3;
     //cout << line_relation << endl;
     //todo: line relation needs to be aware of space for connectors.
     //minimum 1.5 real line difference (1 line from the head end)
@@ -157,9 +165,19 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
             tail_length = line_relation + (line - min_height);
             note.display(staff_x, staff_y, initial_col, tail_length);
             beams = (-2 - (int) note.get_length());
-            if ((&note == &(group[0])) && (&group != &(notations[notations.size() - 1]))) {
-                draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
-                                (int) ((double) (note.get_length() / Fraction(1, 16))), beams, tail_length);
+            if (&note == &(group[0])) {
+                // is this comparison really valid?
+                if (&group < &(notations[notations.size() - 2])) {
+                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
+                                    ((double) (note.get_length() / Fraction(1, 16))), beams, tail_length);
+                } else if (&group == &(notations[notations.size() - 2])) {
+                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()), initial_col,
+                                    ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
+                } else if (&group == &(notations[notations.size() - 1])) {
+                    draw_connectors(staff_x, staff_y, instrument_to_line.at(group[0].get_instrument()),
+                                    initial_col - (((double) (note.get_length() / Fraction(1, 16))) / 2),
+                                    ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
+                }
             }
         }
         initial_col += (int) ((double) (group[0].get_length() / Fraction(1, 16)));

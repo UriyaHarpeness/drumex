@@ -37,9 +37,8 @@ public:
 
     void draw_tail(int staff_x, int staff_y, int col, int tail_length = 7) const;
 
-    //todo: what about broken in the middle?
     static void
-    draw_connectors(int staff_x, int staff_y, int line, int col, int length, int number, int tail_length = 7);
+    draw_connectors(int staff_x, int staff_y, int line, double col, double length, int number, int tail_length = 7);
 
     void draw_ledgers(int staff_x, int staff_y, int col) const;
 
@@ -64,6 +63,8 @@ public:
 
 private:
     MusicSymbol m_symbol;
+
+    pair<MusicSymbolValues, pair<int, int>> m_symbol_value;
 
     Fraction m_length;
 

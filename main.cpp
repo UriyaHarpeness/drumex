@@ -85,10 +85,10 @@ void disp(shared_ptr<Display> &d) {
     //t.display(100, 100, 10);
 
     vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
-                                          {{BasePlay, SnareInst, {1, 8},  {ModAccent}}, {BasePlay, HighTomInst, {1, 8},  {}}},
+                                          {{BasePlay, ChinaInst, {1, 8},  {ModAccent}}, {BasePlay, HighTomInst, {1, 8},  {}}},
                                           {{BasePlay, SnareInst, {1, 16}, {ModAccent}}, {BasePlay, ChinaInst,   {1, 16}, {}}},
                                           {{BasePlay, HiHatInst, {1, 8},  {ModAccent}}}};
-    Notation::draw_connected_notes(100, 100, 10, notations);
+    Notation::draw_connected_notes(50, 100, 0, notations);
 
     d->present();
     this_thread::sleep_for(chrono::milliseconds(1000));
