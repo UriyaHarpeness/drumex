@@ -28,14 +28,14 @@ void Metronome::beat() {
         new_played = role.play();
         ///////////////////
         //todo: playing sounds is problematic, maybe draw a chart
-        //if (new_played.second != Stop) {
+        //if (new_played.second != Rest) {
         //    m_mixer->play_sound(new_played.first);
         //}
         ///////////////////
         played += '0' + get<0>(new_played.second);
         played += '0' + get<1>(new_played.second);
         played += ' ';
-        //(get<0>(new_played.second) == Stop) ? '-' : 'o';
+        //(get<0>(new_played.second) == Rest) ? '-' : 'o';
     }
     cout << "played: " << played << endl;
 }

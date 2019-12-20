@@ -7,7 +7,7 @@ void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
     const Actions &part_actions = part.get_actions();
     Actions actions(part_actions);
     for (size_t index = 0; index < time_signature.first; index++) {
-        if (get<0>(part_actions[index]) != Stop) {
+        if (get<0>(part_actions[index]) != Rest) {
             actions[(index + 1) % time_signature.first] = part_actions[index];
         }
     }
@@ -26,7 +26,7 @@ void variations::QuickDoubleGhosts::apply(Part &part, Json::Value arguments) {
             actions[index++] = make_tuple(Ghost, get<1>(action));
         } else {
             actions[index++] = action;
-            actions[index++] = make_tuple(Stop, UnboundStick);
+            actions[index++] = make_tuple(Rest, UnboundStick);
         }
     }
     part.set_actions(actions);
@@ -40,7 +40,7 @@ void variations::PlayRight::apply(Part &part, Json::Value arguments) {
     Actions actions(time_signature.first);
     size_t index = 0;
     for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Stop) ? UnboundStick : Right);
+        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Right);
     }
     part.set_actions(actions);
     part.set_time_signature(time_signature);
@@ -51,7 +51,7 @@ void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
     Actions actions(time_signature.first);
     size_t index = 0;
     for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Stop) ? UnboundStick : Left);
+        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Left);
     }
     part.set_actions(actions);
     part.set_time_signature(time_signature);

@@ -33,7 +33,7 @@ Actions Role::generate_actions(const string &part) {
         if (Role::char_to_playing.find(single) != Role::char_to_playing.end()) {
             actions.emplace_back(make_tuple(Role::char_to_playing.at(single), UnboundStick));
         } else {
-            actions.emplace_back(make_tuple(Stop, UnboundStick));
+            actions.emplace_back(make_tuple(Rest, UnboundStick));
         }
     }
     return move(actions);
@@ -46,7 +46,7 @@ Actions Role::generate_actions(const string &part, const string &sticking) {
     for (size_t i = 0; i < part.length(); i++) {
         play = Role::char_to_playing.find(part[i]);
         stick = Role::char_to_sticking.find(sticking[i]);
-        actions.emplace_back(make_tuple((play == Role::char_to_playing.end()) ? Stop : play->second,
+        actions.emplace_back(make_tuple((play == Role::char_to_playing.end()) ? Rest : play->second,
                                         (stick == Role::char_to_sticking.end()) ? UnboundStick : stick->second));
     }
     return move(actions);

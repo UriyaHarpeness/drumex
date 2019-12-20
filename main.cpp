@@ -86,7 +86,7 @@ void disp(shared_ptr<Display> &d) {
 
     vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
                                           {{BasePlay, ChinaInst, {1, 8},  {ModAccent}}, {BasePlay, HighTomInst, {1, 8}, {}}},
-                                          {{BaseStop, UnboundUp,   {1, 16}, {}}},
+                                          {{BaseRest, UnboundUp,   {1, 16}, {}}},
                                           {{BasePlay, HiHatInst, {1, 8},  {ModAccent}}}};
     Notation::draw_connected_notes(50, 100, 0, notations);
 

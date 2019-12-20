@@ -13,7 +13,7 @@ class Notation {
 public:
     static const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>> music_symbols_to_values;
 
-    static const map<int, MusicSymbol> stopping_to_music_symbols;
+    static const map<int, MusicSymbol> rests_to_music_symbols;
 
     static const map<Instrument, int> instrument_to_line;
 

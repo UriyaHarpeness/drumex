@@ -7,7 +7,7 @@ using namespace std;
 
 enum BasicPlaying {
     BasePlay,
-    BaseStop,
+    BaseRest,
 };
 
 enum Instrument {
@@ -22,7 +22,7 @@ enum Instrument {
 };
 
 enum Playing {
-    Stop,
+    Rest,
     Regular,
     Flam,
     Ghost,
@@ -75,14 +75,14 @@ enum MusicSymbolValues {
     SymUpSixteenthNote = 0xCF,//'x',
     SymUpFlag = 'j',
 
-    SymDoubleWholeStop = 0xE3,
-    SymWholeStop = 0xB7,
-    SymHalfStop = 0xEE,
-    SymQuarterStop = 0xCE,
-    SymEightStop = 0xC5,
-    SymSixteenthStop = 0xA8,
-    SymThirtySecondStop = 0xF4,
-    SymSixtyFourthStop = 0xE5,
+    SymDoubleWholeRest = 0xE3,
+    SymWholeRest = 0xB7,
+    SymHalfRest = 0xEE,
+    SymQuarterRest = 0xCE,
+    SymEightRest = 0xC5,
+    SymSixteenthRest = 0xA8,
+    SymThirtySecondRest = 0xF4,
+    SymSixtyFourthRest = 0xE5,
 
     SymStaff = '=',
     SymClef = 0xD6,
@@ -104,14 +104,14 @@ enum MusicSymbol {
     SixteenthNote = 'X',
     Flag = 'J',
 
-    DoubleWholeStop = 0xE3,
-    WholeStop = 0xB7,
-    HalfStop = 0xEE,
-    QuarterStop = 0xCE,
-    EightStop = 0xC5,
-    SixteenthStop = 0xA8,
-    ThirtySecondStop = 0xF4,
-    SixtyFourthStop = 0xE5,
+    DoubleWholeRest = 0xE3,
+    WholeRest = 0xB7,
+    HalfRest = 0xEE,
+    QuarterRest = 0xCE,
+    EightRest = 0xC5,
+    SixteenthRest = 0xA8,
+    ThirtySecondRest = 0xF4,
+    SixtyFourthRest = 0xE5,
 };
 
 enum Modifier {

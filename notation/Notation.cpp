@@ -3,19 +3,19 @@
 // todo: this is kind of useless now...
 const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
-        {{WholeStop,     {SymWholeStop,     {0, -10}}},
-         {HalfStop,      {SymHalfStop,      {3, -10}}},
-         {QuarterStop,   {SymQuarterStop,   {3, -4}}},
-         {EightStop,     {SymEightStop,     {3, -4}}},
-         {SixteenthStop, {SymSixteenthStop, {3, -4}}}};
+        {{WholeRest,     {SymWholeRest,     {0, -10}}},
+         {HalfRest,      {SymHalfRest,      {3, -10}}},
+         {QuarterRest,   {SymQuarterRest,   {3, -4}}},
+         {EightRest,     {SymEightRest,     {3, -4}}},
+         {SixteenthRest, {SymSixteenthRest, {3, -4}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
-const map<int, MusicSymbol> Notation::stopping_to_music_symbols = \
-{{0,  WholeStop},
- {-1, HalfStop},
- {-2, QuarterStop},
- {-3, EightStop},
- {-4, SixteenthStop}};
+const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
+{{0,  WholeRest},
+ {-1, HalfRest},
+ {-2, QuarterRest},
+ {-3, EightRest},
+ {-4, SixteenthRest}};
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,   -8},
@@ -51,7 +51,7 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length,
             }
         }
     } else {
-        m_symbol = stopping_to_music_symbols.at(m_length);
+        m_symbol = rests_to_music_symbols.at(m_length);
         m_symbol_value = music_symbols_to_values.at(m_symbol);
     }
 }
@@ -124,7 +124,7 @@ void Notation::draw_head(int staff_x, int staff_y, int col) const {
 
 void Notation::display(int staff_x, int staff_y, int col, int tail_length) const {
     draw_ledgers(staff_x, staff_y, col);
-    if (m_length < Fraction(1, 1)) {
+    if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
         draw_tail(staff_x, staff_y, col, tail_length);
     }
     draw_head(staff_x, staff_y, col);
@@ -134,6 +134,12 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
     // todo: assumes all note are in the same direction.
     int max_height = notations[0][0].get_line();
     int min_height = notations[0][0].get_line();
+
+    /*
+     * How many connected rests can there really be beamed together?
+     * 1/32 - 6/32 - 1/32
+     * rests leave the number of beams like the previous note
+     */
 
     int beams, max_beams = 1;
     for (const auto &group : notations) {
@@ -164,7 +170,10 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
             note.display(staff_x, staff_y, initial_col, tail_length);
-            beams = (-2 - (int) note.get_length());
+            if (note.get_playing() != BaseRest) {
+                // Rests in beams keep the previous note beams number.
+                beams = (-2 - (int) note.get_length());
+            }
             if (&note == &(group[0])) {
                 // is this comparison really valid?
                 if (&group < &(notations[notations.size() - 2])) {
@@ -196,7 +205,7 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
     Fraction offset_space = offset % beat;
     Fraction play_space = (play < beat) ? play : beat;
     Fraction final_play;
-    Fraction final_stop;
+    Fraction final_rest;
 
     if (!play_space) {
         final_play = beat - offset_space;
@@ -208,13 +217,13 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
         }
     }
 
-    final_stop = play - final_play;
+    final_rest = play - final_play;
 
     cout << play << " " << offset << " " << (int) signature.first << "/" << (int) signature.second << endl;
 
-    cout << final_play << " "; // << final_stop << endl;
+    cout << final_play << " "; // << final_rest << endl;
     // maybe static and pass arguments?
-    auto temp = final_stop.split(beat);
+    auto temp = final_rest.split(beat);
     for (auto const &i : temp) {
         cout << i << " ";
     }
@@ -223,7 +232,7 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
 
 
     if (base == BasePlay) {
-        // first play until note value and than stops.
+        // first play until note value and than rests.
     }
 
     /*

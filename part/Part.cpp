@@ -9,7 +9,7 @@ void Part::convert_time_4_to_6(uint32_t note_value) {
     vector<Action> converted;
     const uint32_t conversion[4] = {0, 2, 3, 5};
     size_t block = 0;
-    converted.resize((m_time_signature.second / 4) * 6, make_tuple(Stop, UnboundStick));
+    converted.resize((m_time_signature.second / 4) * 6, make_tuple(Rest, UnboundStick));
     for (size_t index = 0; index < m_actions.size(); index++) {
         block = index / 4;
         converted[(block * 6) + conversion[index % 4]] = m_actions[index];
@@ -23,7 +23,7 @@ void Part::convert_time_4_to_6(uint32_t note_value) {
 }
 
 void Part::convert_time_stretch(uint32_t note_value) {
-    vector<Action> converted(note_value, make_tuple(Stop, UnboundStick));
+    vector<Action> converted(note_value, make_tuple(Rest, UnboundStick));
     uint8_t ratio = note_value / m_time_signature.second;
 
     for (size_t index = 0; index < m_time_signature.second; index++) {
@@ -40,7 +40,7 @@ void Part::convert_time_stretch(uint32_t note_value) {
 
 void Part::convert_time_multiply(uint32_t note_value) {
     vector<Action> converted;
-    converted.resize(note_value, make_tuple(Stop, UnboundStick));
+    converted.resize(note_value, make_tuple(Rest, UnboundStick));
     for (size_t index = 0; index < m_actions.size(); index++) {
         converted[(index * note_value) / m_time_signature.second] = m_actions[index];
     }
