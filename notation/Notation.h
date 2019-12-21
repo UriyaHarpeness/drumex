@@ -6,6 +6,8 @@
 
 #include <map>
 #include <numeric>
+#include <cassert>
+#include <algorithm>
 
 using namespace std;
 
@@ -33,6 +35,8 @@ public:
 
     ~Notation();
 
+    void draw_modifiers(int staff_x, int staff_y, int col, int tail_length = 7) const;
+
     void draw_tail(int staff_x, int staff_y, int col, int tail_length = 7) const;
 
     static void
@@ -57,7 +61,9 @@ public:
 
     [[nodiscard]] inline BasicPlaying get_playing() const { return m_playing; }
 
-    [[nodiscard]] inline Fraction get_length() const { return m_length; }
+    [[nodiscard]] Fraction get_length() const;
+
+    [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
 
@@ -75,4 +81,6 @@ private:
     BasicPlaying m_playing;
 
     vector<Modifier> m_modifiers;
+
+    int m_minimal_needed_distance;
 };

@@ -23,6 +23,10 @@ public:
 
     Fraction operator/(const Fraction &other) const;
 
+    Fraction operator*(const Fraction &other) const;
+
+    Fraction operator*(int other) const;
+
     Fraction operator%(const Fraction &other) const;
 
     pair<int, Fraction> count(const Fraction &single) const;

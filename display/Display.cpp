@@ -48,6 +48,21 @@ void Display::draw_text(MusicSymbolValues value, int x, int y) {
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 }
 
+void
+Display::draw_text(MusicSymbolValues value, int staff_x, int staff_y, int col, int line, int off_x, int off_y) {
+    SDL_Surface *surface;
+    SDL_Color textColor = {0, 0, 0, 0};
+
+    char text[2] = {0, 0};
+    text[0] = value;
+    surface = TTF_RenderText_Solid(m_font, text, textColor);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
+    SDL_FreeSurface(surface);
+    SDL_Rect rect{staff_x + (col * minimal_distance) + off_x, staff_y + (line * line_height) + off_y, surface->w,
+                  surface->h};
+    SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
+}
+
 void Display::draw_text_c(const string &text, int x, int y) {
     SDL_Surface *surface;
     SDL_Color textColor = {0, 0, 0, 0};

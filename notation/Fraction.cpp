@@ -57,6 +57,28 @@ Fraction Fraction::operator/(const Fraction &other) const {
     return result;
 }
 
+Fraction Fraction::operator*(const Fraction &other) const {
+    Fraction result(*this);
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return result;
+    }
+    result.m_value.first *= second.m_value.first;
+    result.m_value.second *= second.m_value.second;
+    simplify(result);
+    return result;
+}
+
+Fraction Fraction::operator*(int other) const {
+    Fraction result(*this);
+    if (!(m_value.second)) {
+        return result;
+    }
+    result.m_value.first *= other;
+    simplify(result);
+    return result;
+}
+
 Fraction Fraction::operator%(const Fraction &other) const {
     Fraction result(*this);
     Fraction second(other);

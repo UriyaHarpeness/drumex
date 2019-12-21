@@ -118,6 +118,7 @@ enum Modifier {
     ModCrossStick,
     ModGhost,
     ModAccent,
+    ModDot,
     ModRimshot,
     ModFlam,
     ModDrag,

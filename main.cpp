@@ -85,9 +85,9 @@ void disp(shared_ptr<Display> &d) {
     //t.display(100, 100, 10);
 
     vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
-                                          {{BasePlay, ChinaInst, {1, 8},  {ModAccent}}, {BasePlay, HighTomInst, {1, 8}, {}}},
-                                          {{BaseRest, UnboundUp,   {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 8},  {ModAccent}}}};
+                                          {{BasePlay, ChinaInst, {1, 8},  {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 8}, {ModDot}}},
+                                          {{BaseRest, UnboundUp, {1, 8},  {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModDot}}}};
     Notation::draw_connected_notes(50, 100, 0, notations);
 
     d->present();

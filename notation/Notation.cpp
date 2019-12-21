@@ -64,6 +64,20 @@ Notation::~Notation() {
     //}
 }
 
+void Notation::draw_modifiers(int staff_x, int staff_y, int col, int tail_length) const {
+    // currently supports one dot, also may not support more dots in future since more than one makes the notation
+    // confusing.
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModDot) != m_modifiers.end()) {
+        // todo: problematic with notes that have the head pointing the other direction.
+        m_display->draw_text(SymDot, staff_x, staff_y, col, m_line, 16, -4);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModAccent) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymAccent, staff_x, staff_y, col, m_line, 0, -(tail_length + 4) * line_height - 2);
+    }
+}
+
 void Notation::draw_tail(int staff_x, int staff_y, int col, int tail_length) const {
     int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
     if (m_line <= direction_line) {
@@ -124,16 +138,21 @@ void Notation::draw_head(int staff_x, int staff_y, int col) const {
 
 void Notation::display(int staff_x, int staff_y, int col, int tail_length) const {
     draw_ledgers(staff_x, staff_y, col);
+    draw_modifiers(staff_x, staff_y, col, tail_length);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
         draw_tail(staff_x, staff_y, col, tail_length);
     }
     draw_head(staff_x, staff_y, col);
 }
 
-void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, vector<vector<Notation>> notations) {
+void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col_i, vector<vector<Notation>> notations) {
+    assert(notations.size() >= 2);
+
     // todo: assumes all note are in the same direction.
     int max_height = notations[0][0].get_line();
     int min_height = notations[0][0].get_line();
+
+    double initial_col = initial_col_i;
 
     /*
      * How many connected rests can there really be beamed together?
@@ -150,7 +169,7 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
             if (abs(min_height - direction_line) > abs(note.get_line() - direction_line)) {
                 min_height = note.get_line();
             }
-            beams = (-2 - (int) note.get_length());
+            beams = (-2 - (int) note.get_rounded_length());
             if (max_beams < beams) {
                 max_beams = beams;
             }
@@ -172,7 +191,7 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
             note.display(staff_x, staff_y, initial_col, tail_length);
             if (note.get_playing() != BaseRest) {
                 // Rests in beams keep the previous note beams number.
-                beams = (-2 - (int) note.get_length());
+                beams = (-2 - (int) note.get_rounded_length());
             }
             if (&note == &(group[0])) {
                 // is this comparison really valid?
@@ -184,11 +203,16 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col, v
                                     ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     draw_connectors(staff_x, staff_y, group[0].get_line(),
-                                    initial_col - (((double) (note.get_length() / Fraction(1, 16))) / 2),
-                                    ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
+                                    initial_col - (((double) ((*(&group - 1))[0].get_length() / Fraction(1, 16))) / 2),
+                                    ((double) ((*(&group - 1))[0].get_length() / Fraction(1, 16))) / 2, beams,
+                                    tail_length);
                 }
             }
         }
+        //double d = ((double) (group[0].get_length() / Fraction(1, 16)));
+        //cout << group[0].get_length() << endl;
+        //cout << (group[0].get_length() / Fraction(1, 16)) << endl;
+        //cout << d << endl;
         initial_col += (int) ((double) (group[0].get_length() / Fraction(1, 16)));
     }
 }
@@ -328,4 +352,14 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
     cout << "end " << number << endl;*/
 
     return notations;
+}
+
+Fraction Notation::get_length() const {
+    // supports a single dot for now.
+    int dot_count = count(m_modifiers.begin(), m_modifiers.end(), ModDot);
+    if (!dot_count) {
+        return m_length;
+    }
+
+    return ((m_length * 2) - (m_length * Fraction(1, pow(2, dot_count))));
 }
