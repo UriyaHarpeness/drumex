@@ -29,6 +29,8 @@ public:
 
     static const int direction_line = 2;
 
+    static const Fraction minimal_supported_fraction;
+
     static shared_ptr<Display> m_display;
 
     Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers);

@@ -3,11 +3,12 @@
 // todo: this is kind of useless now...
 const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
-        {{WholeRest,     {SymWholeRest,     {0, -10}}},
-         {HalfRest,      {SymHalfRest,      {3, -10}}},
-         {QuarterRest,   {SymQuarterRest,   {3, -4}}},
-         {EightRest,     {SymEightRest,     {3, -4}}},
-         {SixteenthRest, {SymSixteenthRest, {3, -4}}}};
+        {{WholeRest,        {SymWholeRest,        {0, -10}}},
+         {HalfRest,         {SymHalfRest,         {3, -10}}},
+         {QuarterRest,      {SymQuarterRest,      {3, -4}}},
+         {EightRest,        {SymEightRest,        {3, -4}}},
+         {SixteenthRest,    {SymSixteenthRest,    {3, -4}}},
+         {ThirtySecondRest, {SymThirtySecondRest, {3, -4}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
 const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
@@ -15,7 +16,8 @@ const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
  {-1, HalfRest},
  {-2, QuarterRest},
  {-3, EightRest},
- {-4, SixteenthRest}};
+ {-4, SixteenthRest},
+ {-5, ThirtySecondRest}};
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,   -8},
@@ -26,6 +28,9 @@ const map<Instrument, int> Notation::instrument_to_line = {
         {UnboundUp,   -4},
         {UnboundDown, 4}
 };
+
+// todo: change to 1/32 after dynamic resizing.
+const Fraction Notation::minimal_supported_fraction(1, 16);
 
 shared_ptr<Display> Notation::m_display = nullptr;
 
@@ -199,13 +204,24 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col_i,
                     draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
                                     ((double) (note.get_length() / Fraction(1, 16))), beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
+                    Fraction length_resize = minimal_supported_fraction;
+                    if (note.get_rounded_length() <= minimal_supported_fraction) {
+                        length_resize = length_resize / Fraction(2, 1);
+                    }
                     draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
-                                    ((double) (note.get_length() / Fraction(1, 16))) / 2, beams, tail_length);
+                                    ((double) ((note.get_length() - length_resize) / minimal_supported_fraction)),
+                                    beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
+                    // beam note size, or half if must smaller...
+                    Fraction length_resize = minimal_supported_fraction;
+                    if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
+                        length_resize = length_resize / Fraction(2, 1);
+                    }
                     draw_connectors(staff_x, staff_y, group[0].get_line(),
-                                    initial_col - (((double) ((*(&group - 1))[0].get_length() / Fraction(1, 16))) / 2),
-                                    ((double) ((*(&group - 1))[0].get_length() / Fraction(1, 16))) / 2, beams,
-                                    tail_length);
+                                    initial_col - ((double) (((*(&group - 1))[0].get_length() - length_resize) /
+                                                             minimal_supported_fraction)),
+                                    (double) (length_resize / minimal_supported_fraction),
+                                    beams, tail_length);
                 }
             }
         }
