@@ -7,8 +7,8 @@ Display::Display() {
                                 SDL_WINDOW_SHOWN);
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
+
     m_font = TTF_OpenFont("../Petrucci.ttf", 39);
-    //m_font = TTF_OpenFont("../Stencil.ttf", 42);
 }
 
 Display::~Display() {

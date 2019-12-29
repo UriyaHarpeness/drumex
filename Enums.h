@@ -90,6 +90,15 @@ enum MusicSymbolValues {
     SymCymbal = 0xC0,
     SymAccent = '>',
     SymGhost = '}',
+    SymCrossStick = 'r',
+    SymRimshot = 'p',
+    SymFlam = 0xD9,
+    SymDrag = 0xDA,
+    SymClose = 0xF7,
+    SymLoose = 0xF8,
+    SymOpenClose = 0xF9,
+    SymOpen = 0xF6,
+    SymChoke = ',',
     SymLedger = '_',
     SymTempo = 0xF2,
     SymBarLine = 0x5C,
@@ -122,6 +131,11 @@ enum Modifier {
     ModRimshot,
     ModFlam,
     ModDrag,
+    ModClose,
+    ModLoose,
+    ModOpenClose,
+    ModOpen,
+    ModChoke,
 };
 
 typedef tuple<Playing, Sticking> Action;

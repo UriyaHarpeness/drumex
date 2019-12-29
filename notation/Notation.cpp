@@ -74,12 +74,62 @@ void Notation::draw_modifiers(int staff_x, int staff_y, int col, int tail_length
     // confusing.
     if (find(m_modifiers.begin(), m_modifiers.end(), ModDot) != m_modifiers.end()) {
         // todo: problematic with notes that have the head pointing the other direction.
-        m_display->draw_text(SymDot, staff_x, staff_y, col, m_line, 16, -4);
+        m_display->draw_text(SymDot, staff_x, staff_y, col, m_line, 0, 0);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModAccent) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
         m_display->draw_text(SymAccent, staff_x, staff_y, col, m_line, 0, -(tail_length + 4) * line_height - 2);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModGhost) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymGhost, staff_x, staff_y, col, m_line, -2, -9);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModCrossStick) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymCrossStick, staff_x, staff_y, col, m_line, 0, -9);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModRimshot) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymRimshot, staff_x, staff_y, col, m_line, -2, -9);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModFlam) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymFlam, staff_x, staff_y, col, m_line, -14, -10);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModDrag) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymDrag, staff_x, staff_y, col, m_line, -14, -11);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModClose) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymClose, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModLoose) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymLoose, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModOpenClose) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymOpenClose, staff_x, staff_y, col, m_line, 1, -(tail_length + 4) * line_height - 6);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModOpen) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymOpen, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+    }
+    if (find(m_modifiers.begin(), m_modifiers.end(), ModChoke) != m_modifiers.end()) {
+        // todo: also problematic when one connected notes have this only, plus others.
+        // also, supports only upper notes for now.
+        m_display->draw_text(SymChoke, staff_x, staff_y, col, m_line, 16, -18);
     }
 }
 
@@ -217,11 +267,9 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col_i,
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(staff_x, staff_y, group[0].get_line(),
-                                    initial_col - ((double) (((*(&group - 1))[0].get_length() - length_resize) /
-                                                             minimal_supported_fraction)),
-                                    (double) (length_resize / minimal_supported_fraction),
-                                    beams, tail_length);
+                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col - ((double) (
+                                            ((*(&group - 1))[0].get_length() - length_resize) / minimal_supported_fraction)),
+                                    (double) (length_resize / minimal_supported_fraction), beams, tail_length);
                 }
             }
         }

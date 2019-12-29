@@ -49,7 +49,6 @@ void disp(shared_ptr<Display> &d) {
     char s[2];
     s[1] = 0;
     d->clear_screen();
-    d->draw_text((MusicSymbolValues) 0xc0, 40 + (60), 100 + (60));
     //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
@@ -70,24 +69,23 @@ void disp(shared_ptr<Display> &d) {
         d->draw_base(20, p * 100, 3, 4);
     }
     Notation::m_display = d;
-    /*Notation w(WholeNote);
-    Notation h(HalfNote);
-    Notation q(QuarterNote);
-    Notation e(EightNote);
-    for (int p = -9; p < 10; p++) {
-        w.display(20 + 40, 100, p, 9 + p);
-        h.display(20 + 40, 200, p, 9 + p);
-        q.display(20 + 40, 300, p, 9 + p);
-        e.display(20 + 40, 400, p, 9 + p);
-    }*/
 
     //Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
     //t.display(100, 100, 10);
-
-    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
-                                          {{BasePlay, ChinaInst, {1, 8},  {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 8}, {ModDot}}},
-                                          {{BaseRest, UnboundUp, {1, 8},  {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModDot}}}};
+    vector<vector<Notation>> notations = {{{BasePlay, SnareInst,   {1, 16}, {ModAccent}}},
+                                          {{BasePlay, ChinaInst,   {1, 8},  {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 8}, {ModDot}}},
+                                          {{BaseRest, UnboundUp,   {1, 8},  {}}},
+                                          {{BasePlay, SnareInst,   {1, 8},  {ModGhost}}},
+                                          {{BasePlay, HighTomInst, {1, 8},  {ModCrossStick}}},
+                                          {{BasePlay, SnareInst,   {1, 8},  {ModRimshot}}},
+                                          {{BasePlay, SnareInst,   {1, 8},  {ModDrag}}},
+                                          {{BasePlay, SnareInst,   {1, 8},  {ModFlam}}},
+                                          {{BasePlay, HiHatInst,   {1, 8},  {ModClose}}},
+                                          {{BasePlay, HiHatInst,   {1, 8},  {ModLoose}}},
+                                          {{BasePlay, HiHatInst,   {1, 8},  {ModOpenClose}}},
+                                          {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
+                                          {{BasePlay, HiHatInst,   {1, 8},  {ModChoke}}},
+                                          {{BasePlay, HiHatInst,   {1, 16}, {ModDot}}}};
     Notation::draw_connected_notes(50, 100, 0, notations);
 
     d->present();
