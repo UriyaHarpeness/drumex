@@ -34,7 +34,7 @@ public:
 
     void draw_text(MusicSymbolValues value, int x, int y);
 
-    void draw_text(MusicSymbolValues value, int staff_x, int staff_y, int col, int line, int off_x = 0, int off_y = 0);
+    void draw_text(MusicSymbolValues value, int x, int staff_y, int line, int off_x = 0, int off_y = 0);
 
     void draw_text_c(const string &text, int x, int y);
 

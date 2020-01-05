@@ -20,13 +20,17 @@ const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
  {-5, ThirtySecondRest}};
 
 const map<Instrument, int> Notation::instrument_to_line = {
-        {ChinaInst,   -8},
-        {HiHatInst,   -5},
-        {HighTomInst, -3},
-        {SnareInst,   -1},
-        {BassInst,    3},
-        {UnboundUp,   -4},
-        {UnboundDown, 4}
+        {ChinaInst,    -8},
+        {HiHatInst,    -5},
+        {HighTomInst,  -3},
+        {MidTomInst,   -2},
+        {SnareInst,    -1},
+        {MidTomInst,   0},
+        {LowTomInst,   1},
+        {FloorTomInst, 2},
+        {BassInst,     3},
+        {UnboundUp,    -4},
+        {UnboundDown,  4}
 };
 
 const map<Modifier, Padding> Notation::modifier_to_padding = {
@@ -35,10 +39,43 @@ const map<Modifier, Padding> Notation::modifier_to_padding = {
         {ModAccent,     {0,  minimal_distance}},
         {ModDot,        {0,  minimal_distance}},
         {ModRimshot,    {3,  minimal_distance + 3}},
-        {ModFlam,       {17, minimal_distance}},
-        {ModDrag,       {17, minimal_distance}},
+        {ModFlam,       {18, minimal_distance}},
+        {ModDrag,       {18, minimal_distance}},
         {ModOpenClose,  {2,  minimal_distance + 2}},
         {ModChoke,      {0,  minimal_distance + 8}},
+};
+
+const map<Modifier, MusicSymbolValues> Notation::modifier_to_symbol = {
+        {ModCrossStick, SymCrossStick},
+        {ModGhost,      SymGhost},
+        {ModAccent,     SymAccent},
+        {ModDot,        SymDot},
+        {ModRimshot,    SymRimshot},
+        {ModFlam,       SymFlam},
+        {ModDrag,       SymDrag},
+        {ModClose,      SymClose},
+        {ModLoose,      SymLoose},
+        {ModOpenClose,  SymOpenClose},
+        {ModOpen,       SymOpen},
+        {ModChoke,      SymChoke},
+};
+
+/*
+ * Contains 3 ints: offset x, offset y, offset y stem length relation.
+ */
+const map<Modifier, array<int, 3>> Notation::modifier_to_position = {
+        {ModDot,        {0,   0, 0}},
+        {ModAccent,     {0,   4, -2}},
+        {ModGhost,      {-2,  0, -9}},
+        {ModCrossStick, {0,   0, -9}},
+        {ModRimshot,    {-2,  0, -9}},
+        {ModFlam,       {-15, 0, -10}},
+        {ModDrag,       {-15, 0, -11}},
+        {ModClose,      {4,   4, -6}},
+        {ModLoose,      {4,   4, -6}},
+        {ModOpenClose,  {1,   4, -6}},
+        {ModOpen,       {4,   4, -6}},
+        {ModChoke,      {16,  0, -18}},
 };
 
 // todo: change to 1/32 after dynamic resizing.
@@ -84,64 +121,32 @@ Notation::~Notation() {
 void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
     // currently supports one dot, also may not support more dots in future since more than one makes the notation
     // confusing.
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModDot) != m_modifiers.end()) {
-        // todo: problematic with notes that have the head pointing the other direction.
-        m_display->draw_text(SymDot, x, staff_y, 0, m_line, 0, 0);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModAccent) != m_modifiers.end()) {
+
+    for (const Modifier &modifier : m_modifiers) {
+        const auto position = modifier_to_position.at(modifier);
         // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymAccent, x, staff_y, 0, m_line, 0, -(tail_length + 4) * line_height - 2);
+        if (m_line <= direction_line) {
+            m_display->draw_text(modifier_to_symbol.at(modifier), x, staff_y, m_line, position[0],
+                                 ((position[1] ? (-(tail_length + position[1]) * line_height) : 0) + position[2]));
+        } else {
+            m_display->draw_text(modifier_to_symbol.at(modifier), x, staff_y, m_line, position[0],
+                                 ((position[1] ? (-(-1 + position[1]) * line_height) : 0) + position[2]));
+        }
     }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModGhost) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymGhost, x, staff_y, 0, m_line, -2, -9);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModCrossStick) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymCrossStick, x, staff_y, 0, m_line, 0, -9);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModRimshot) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymRimshot, x, staff_y, 0, m_line, -2, -9);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModFlam) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymFlam, x, staff_y, 0, m_line, -14, -10);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModDrag) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymDrag, x, staff_y, 0, m_line, -14, -11);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModClose) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymClose, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModLoose) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymLoose, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModOpenClose) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymOpenClose, x, staff_y, 0, m_line, 1, -(tail_length + 4) * line_height - 6);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModOpen) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymOpen, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
-    }
-    if (find(m_modifiers.begin(), m_modifiers.end(), ModChoke) != m_modifiers.end()) {
-        // todo: also problematic when one connected notes have this only, plus others.
-        // also, supports only upper notes for now.
-        m_display->draw_text(SymChoke, x, staff_y, 0, m_line, 16, -18);
+}
+
+void Notation::draw_flags(int x, int staff_y, int tail_length) const {
+    int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
+
+    for (int i = 0; i < (-(int) m_length) - 2; i++) {
+        if (m_line <= direction_line) {
+            m_display->draw_text(SymUpFlag, x + 13,
+                                 staff_y + ((m_line - tail_length + (i * 2)) * line_height) - staff_to_0);
+
+        } else {
+            m_display->draw_text(SymDownFlag, x + 4,
+                                 staff_y + ((m_line + tail_length - (i * 2)) * line_height) - staff_to_0);
+        }
     }
 }
 
@@ -153,14 +158,13 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
                              (tail_length + 2 - distance) * line_height - distance, 1);
     } else {
         //todo: this real
-        m_display->draw_rect(x + 3,
-                             staff_y + ((m_line + tail_length) * line_height) - staff_to_0,
-                             (tail_length) * line_height, 1);
+        m_display->draw_rect(x + 4,
+                             staff_y + ((m_line + 6) * line_height) - staff_to_0,
+                             (tail_length + 2 - distance) * line_height - distance, 1);
     }
 }
 
-void
-Notation::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
+void Notation::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
     while (number--) {
         if (line <= direction_line) {
             m_display->draw_rect(x + 13,
@@ -203,12 +207,16 @@ void Notation::draw_head(int x, int staff_y) const {
                          staff_y + (m_line * line_height) - staff_to_0);
 }
 
-void Notation::display(int x, int staff_y, int tail_length) const {
+void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_ledgers(x, staff_y);
-    draw_modifiers(x, staff_y, tail_length);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
+        if (flags) {
+            tail_length = max(tail_length, (((-(int) m_length) - 2) * 2) + 3);
+            draw_flags(x, staff_y, tail_length);
+        }
         draw_tail(x, staff_y, tail_length);
     }
+    draw_modifiers(x, staff_y, tail_length);
     draw_head(x, staff_y);
 }
 
@@ -254,7 +262,7 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
-            note.display(x, staff_y, tail_length);
+            note.display(x, staff_y, false, tail_length);
             if (note.get_playing() != BaseRest) {
                 // Rests in beams keep the previous note beams number.
                 beams = (-2 - (int) note.get_rounded_length());

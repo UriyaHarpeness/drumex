@@ -70,8 +70,37 @@ void disp(shared_ptr<Display> &d) {
     }
     Notation::m_display = d;
 
-    //Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
-    //t.display(100, 100, 10);
+
+    {
+        Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
+        t.display(100, 200, true);
+        Notation t2(BasePlay, SnareInst, {1, 16}, {ModAccent});
+        t2.display(130, 200, true);
+        Notation t3(BasePlay, SnareInst, {1, 32}, {ModAccent});
+        t3.display(160, 200, true);
+    }
+
+    {
+        Notation t(BasePlay, BassInst, {1, 8}, {ModAccent});
+        t.display(200, 200, true);
+        Notation t2(BasePlay, BassInst, {1, 16}, {ModAccent});
+        t2.display(230, 200, true);
+        Notation t3(BasePlay, BassInst, {1, 32}, {ModAccent});
+        t3.display(260, 200, true);
+        Notation t4(BasePlay, BassInst, {1, 64}, {ModAccent});
+        t4.display(290, 200, true);
+    }
+
+    {
+        // todo: check cymbals lower line.
+        Notation t(BasePlay, FloorTomInst, {1, 8}, {ModAccent});
+        t.display(300, 200, true);
+        Notation t2(BasePlay, FloorTomInst, {1, 16}, {ModAccent});
+        t2.display(330, 200, true);
+        Notation t3(BasePlay, FloorTomInst, {1, 32}, {ModAccent});
+        t3.display(360, 200, true);
+    }
+
     vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
                                           {{BasePlay, SnareInst, {1, 16}, {}}},
                                           {{BasePlay, ChinaInst, {1, 16}, {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 16}, {ModDot}}},

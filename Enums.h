@@ -17,7 +17,10 @@ enum Instrument {
     ChinaInst,
     HiHatInst,
     HighTomInst,
+    MidTomInst,
     SnareInst,
+    LowTomInst,
+    FloorTomInst,
     BassInst,
 };
 

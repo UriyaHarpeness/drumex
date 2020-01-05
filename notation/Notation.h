@@ -23,6 +23,10 @@ public:
 
     static const map<Modifier, Padding> modifier_to_padding;
 
+    static const map<Modifier, MusicSymbolValues> modifier_to_symbol;
+
+    static const map<Modifier, array<int, 3>> modifier_to_position;
+
     static const int minimal_distance = 11;
 
     static const int minimal_padding = 3;
@@ -45,6 +49,8 @@ public:
 
     void draw_modifiers(int x, int staff_y, int tail_length = 7) const;
 
+    void draw_flags(int x, int staff_y, int tail_length = 7) const;
+
     void draw_tail(int x, int staff_y, int tail_length = 7) const;
 
     static void draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length = 7);
@@ -53,7 +59,7 @@ public:
 
     void draw_head(int x, int staff_y) const;
 
-    void display(int x, int staff_y, int tail_length = 7) const;
+    void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
 
     //void display(int staff_x, int staff_y, int line, int col);
 
