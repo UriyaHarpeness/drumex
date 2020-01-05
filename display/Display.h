@@ -18,7 +18,7 @@ public:
 
     static const int staff_start = 100;
 
-    static const int minimal_distance = 14;
+    static const int minimal_distance = 11;
 
     static const int line_height = 5;
 

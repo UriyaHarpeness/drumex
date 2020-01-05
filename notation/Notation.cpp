@@ -29,6 +29,18 @@ const map<Instrument, int> Notation::instrument_to_line = {
         {UnboundDown, 4}
 };
 
+const map<Modifier, Padding> Notation::modifier_to_padding = {
+        {ModCrossStick, {4,  minimal_distance + 4}},
+        {ModGhost,      {5,  minimal_distance + 5}},
+        {ModAccent,     {0,  minimal_distance}},
+        {ModDot,        {0,  minimal_distance}},
+        {ModRimshot,    {3,  minimal_distance + 3}},
+        {ModFlam,       {17, minimal_distance}},
+        {ModDrag,       {17, minimal_distance}},
+        {ModOpenClose,  {2,  minimal_distance + 2}},
+        {ModChoke,      {0,  minimal_distance + 8}},
+};
+
 // todo: change to 1/32 after dynamic resizing.
 const Fraction Notation::minimal_supported_fraction(1, 16);
 
@@ -36,7 +48,7 @@ shared_ptr<Display> Notation::m_display = nullptr;
 
 Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
         m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
-        m_modifiers(modifiers) {
+        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
     //m_symbol = playing_to_music_symbols.at(playing).at(length);
     if (m_playing == BasePlay) {
@@ -69,145 +81,143 @@ Notation::~Notation() {
     //}
 }
 
-void Notation::draw_modifiers(int staff_x, int staff_y, int col, int tail_length) const {
+void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
     // currently supports one dot, also may not support more dots in future since more than one makes the notation
     // confusing.
     if (find(m_modifiers.begin(), m_modifiers.end(), ModDot) != m_modifiers.end()) {
         // todo: problematic with notes that have the head pointing the other direction.
-        m_display->draw_text(SymDot, staff_x, staff_y, col, m_line, 0, 0);
+        m_display->draw_text(SymDot, x, staff_y, 0, m_line, 0, 0);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModAccent) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymAccent, staff_x, staff_y, col, m_line, 0, -(tail_length + 4) * line_height - 2);
+        m_display->draw_text(SymAccent, x, staff_y, 0, m_line, 0, -(tail_length + 4) * line_height - 2);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModGhost) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymGhost, staff_x, staff_y, col, m_line, -2, -9);
+        m_display->draw_text(SymGhost, x, staff_y, 0, m_line, -2, -9);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModCrossStick) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymCrossStick, staff_x, staff_y, col, m_line, 0, -9);
+        m_display->draw_text(SymCrossStick, x, staff_y, 0, m_line, 0, -9);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModRimshot) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymRimshot, staff_x, staff_y, col, m_line, -2, -9);
+        m_display->draw_text(SymRimshot, x, staff_y, 0, m_line, -2, -9);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModFlam) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymFlam, staff_x, staff_y, col, m_line, -14, -10);
+        m_display->draw_text(SymFlam, x, staff_y, 0, m_line, -14, -10);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModDrag) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymDrag, staff_x, staff_y, col, m_line, -14, -11);
+        m_display->draw_text(SymDrag, x, staff_y, 0, m_line, -14, -11);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModClose) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymClose, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+        m_display->draw_text(SymClose, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModLoose) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymLoose, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+        m_display->draw_text(SymLoose, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModOpenClose) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymOpenClose, staff_x, staff_y, col, m_line, 1, -(tail_length + 4) * line_height - 6);
+        m_display->draw_text(SymOpenClose, x, staff_y, 0, m_line, 1, -(tail_length + 4) * line_height - 6);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModOpen) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymOpen, staff_x, staff_y, col, m_line, 4, -(tail_length + 4) * line_height - 6);
+        m_display->draw_text(SymOpen, x, staff_y, 0, m_line, 4, -(tail_length + 4) * line_height - 6);
     }
     if (find(m_modifiers.begin(), m_modifiers.end(), ModChoke) != m_modifiers.end()) {
         // todo: also problematic when one connected notes have this only, plus others.
         // also, supports only upper notes for now.
-        m_display->draw_text(SymChoke, staff_x, staff_y, col, m_line, 16, -18);
+        m_display->draw_text(SymChoke, x, staff_y, 0, m_line, 16, -18);
     }
 }
 
-void Notation::draw_tail(int staff_x, int staff_y, int col, int tail_length) const {
+void Notation::draw_tail(int x, int staff_y, int tail_length) const {
     int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
     if (m_line <= direction_line) {
-        m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
+        m_display->draw_rect(x + 13,
                              staff_y + ((m_line - tail_length + 4) * line_height) - staff_to_0,
                              (tail_length + 2 - distance) * line_height - distance, 1);
     } else {
         //todo: this real
-        m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
+        m_display->draw_rect(x + 3,
                              staff_y + ((m_line + tail_length) * line_height) - staff_to_0,
                              (tail_length) * line_height, 1);
     }
 }
 
 void
-Notation::draw_connectors(int staff_x, int staff_y, int line, double col, double length, int number, int tail_length) {
+Notation::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
     while (number--) {
         if (line <= direction_line) {
-            m_display->draw_rect(staff_x + (col * minimal_distance) + 13,
+            m_display->draw_rect(x + 13,
                                  staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
-                                 connector_height, length * minimal_distance);
+                                 connector_height, length);
         } else {
             //todo: check for all the below line
-            m_display->draw_rect(staff_x + (col * minimal_distance) + 3,
+            m_display->draw_rect(x + 3,
                                  staff_y + ((line + tail_length) * line_height) - staff_to_0,
-                                 tail_length * line_height, 1);
+                                 tail_length * line_height, length);
         }
         line += 2;
     }
 }
 
-void Notation::draw_ledgers(int staff_x, int staff_y, int col) const {
+void Notation::draw_ledgers(int x, int staff_y) const {
     if (m_line <= 0) {
         if (m_line <= -6) {
-            m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+            m_display->draw_text(SymLedger, x,
                                  staff_y + 1 + (-6 * line_height) - staff_to_0);
             if (m_line <= -8) {
-                m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                m_display->draw_text(SymLedger, x,
                                      staff_y + 1 + (-8 * line_height) - staff_to_0);
             }
         }
     } else {
         if (m_line >= 6) {
-            m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+            m_display->draw_text(SymLedger, x,
                                  staff_y + 1 + (6 * line_height) - staff_to_0);
             if (m_line >= 8) {
-                m_display->draw_text(SymLedger, staff_x + (col * minimal_distance),
+                m_display->draw_text(SymLedger, x,
                                      staff_y + 1 + (8 * line_height) - staff_to_0);
             }
         }
     }
 }
 
-void Notation::draw_head(int staff_x, int staff_y, int col) const {
-    m_display->draw_text(m_symbol_value.first, staff_x + m_symbol_value.second.first + (col * minimal_distance),
+void Notation::draw_head(int x, int staff_y) const {
+    m_display->draw_text(m_symbol_value.first, x + m_symbol_value.second.first,
                          staff_y + (m_line * line_height) - staff_to_0);
 }
 
-void Notation::display(int staff_x, int staff_y, int col, int tail_length) const {
-    draw_ledgers(staff_x, staff_y, col);
-    draw_modifiers(staff_x, staff_y, col, tail_length);
+void Notation::display(int x, int staff_y, int tail_length) const {
+    draw_ledgers(x, staff_y);
+    draw_modifiers(x, staff_y, tail_length);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
-        draw_tail(staff_x, staff_y, col, tail_length);
+        draw_tail(x, staff_y, tail_length);
     }
-    draw_head(staff_x, staff_y, col);
+    draw_head(x, staff_y);
 }
 
-void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col_i, vector<vector<Notation>> notations) {
+void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations) {
     assert(notations.size() >= 2);
 
     // todo: assumes all note are in the same direction.
     int max_height = notations[0][0].get_line();
     int min_height = notations[0][0].get_line();
-
-    double initial_col = initial_col_i;
 
     /*
      * How many connected rests can there really be beamed together?
@@ -238,46 +248,48 @@ void Notation::draw_connected_notes(int staff_x, int staff_y, int initial_col_i,
     //minimum 1.5 real line difference (1 line from the head end)
     //todo: support dot, which changes also the length of the note...
 
-    int line, tail_length;
+    int line, tail_length, distance = 0;
+    x += merge_padding(notations[0])[0];
     for (const auto &group : notations) {
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
-            note.display(staff_x, staff_y, initial_col, tail_length);
+            note.display(x, staff_y, tail_length);
             if (note.get_playing() != BaseRest) {
                 // Rests in beams keep the previous note beams number.
                 beams = (-2 - (int) note.get_rounded_length());
             }
+            distance = (int) ((((double) (note.get_length() / minimal_supported_fraction) - 1)) *
+                              (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
             if (&note == &(group[0])) {
                 // is this comparison really valid?
                 if (&group < &(notations[notations.size() - 2])) {
-                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
-                                    ((double) (note.get_length() / Fraction(1, 16))), beams, tail_length);
+                    distance += merge_padding(*(&group + 1))[0];
+                    draw_connectors(x, staff_y, group[0].get_line(), distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
+                    distance += merge_padding(*(&group + 1))[0];
                     Fraction length_resize = minimal_supported_fraction;
                     if (note.get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col,
-                                    ((double) ((note.get_length() - length_resize) / minimal_supported_fraction)),
-                                    beams, tail_length);
+                    draw_connectors(x, staff_y, group[0].get_line(),
+                                    ((double) ((note.get_length() - length_resize) / minimal_supported_fraction)) *
+                                    (minimal_distance + minimal_padding), beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     // beam note size, or half if must smaller...
                     Fraction length_resize = minimal_supported_fraction;
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(staff_x, staff_y, group[0].get_line(), initial_col - ((double) (
-                                            ((*(&group - 1))[0].get_length() - length_resize) / minimal_supported_fraction)),
-                                    (double) (length_resize / minimal_supported_fraction), beams, tail_length);
+                    draw_connectors(x - (((double) (
+                                            ((*(&group - 1))[0].get_length() - length_resize) / minimal_supported_fraction)) *
+                                         (minimal_distance + minimal_padding)), staff_y, group[0].get_line(),
+                                    ((double) (length_resize / minimal_supported_fraction)) *
+                                    (minimal_distance + minimal_padding), beams, tail_length);
                 }
             }
         }
-        //double d = ((double) (group[0].get_length() / Fraction(1, 16)));
-        //cout << group[0].get_length() << endl;
-        //cout << (group[0].get_length() / Fraction(1, 16)) << endl;
-        //cout << d << endl;
-        initial_col += (int) ((double) (group[0].get_length() / Fraction(1, 16)));
+        x += distance;
     }
 }
 
@@ -416,6 +428,39 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
     cout << "end " << number << endl;*/
 
     return notations;
+}
+
+Padding Notation::create_padding(const vector<Modifier> &modifiers) {
+    Padding padding = {0, minimal_distance};
+
+    for (const auto &modifier : modifiers) {
+        auto got_padding = modifier_to_padding.find(modifier);
+        if (got_padding != modifier_to_padding.end()) {
+            padding = merge_padding(padding, got_padding->second);
+        }
+    }
+
+    return padding;
+}
+
+Padding Notation::merge_padding(const Padding &a, const Padding &b) {
+    Padding padding = {0, 0};
+
+    for (int i = 0; i < tuple_size<Padding>::value; i++) {
+        padding[i] = max(a[i], b[i]);
+    }
+
+    return padding;
+}
+
+Padding Notation::merge_padding(const vector<Notation> &notes) {
+    Padding padding = {0, 0};
+
+    for (const Notation &note : notes) {
+        padding = merge_padding(padding, note.get_padding());
+    }
+
+    return padding;
 }
 
 Fraction Notation::get_length() const {

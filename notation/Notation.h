@@ -11,6 +11,8 @@
 
 using namespace std;
 
+typedef array<int, 2> Padding;
+
 class Notation {
 public:
     static const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>> music_symbols_to_values;
@@ -19,7 +21,11 @@ public:
 
     static const map<Instrument, int> instrument_to_line;
 
-    static const int minimal_distance = 14;
+    static const map<Modifier, Padding> modifier_to_padding;
+
+    static const int minimal_distance = 11;
+
+    static const int minimal_padding = 3;
 
     static const int line_height = 5;
 
@@ -37,25 +43,30 @@ public:
 
     ~Notation();
 
-    void draw_modifiers(int staff_x, int staff_y, int col, int tail_length = 7) const;
+    void draw_modifiers(int x, int staff_y, int tail_length = 7) const;
 
-    void draw_tail(int staff_x, int staff_y, int col, int tail_length = 7) const;
+    void draw_tail(int x, int staff_y, int tail_length = 7) const;
 
-    static void
-    draw_connectors(int staff_x, int staff_y, int line, double col, double length, int number, int tail_length = 7);
+    static void draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length = 7);
 
-    void draw_ledgers(int staff_x, int staff_y, int col) const;
+    void draw_ledgers(int x, int staff_y) const;
 
-    void draw_head(int staff_x, int staff_y, int col) const;
+    void draw_head(int x, int staff_y) const;
 
-    void display(int staff_x, int staff_y, int col, int tail_length = 7) const;
+    void display(int x, int staff_y, int tail_length = 7) const;
 
     //void display(int staff_x, int staff_y, int line, int col);
 
-    static void draw_connected_notes(int staff_x, int staff_y, int initial_col, vector<vector<Notation>> notations);
+    static void draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations);
 
     static vector<Notation>
     generate_notation(Action action, Fraction play, Fraction offset, TimeSignature signature, BasicPlaying base);
+
+    static Padding create_padding(const vector<Modifier> &modifiers);
+
+    static Padding merge_padding(const Padding &a, const Padding &b);
+
+    static Padding merge_padding(const vector<Notation> &notes);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 
@@ -68,6 +79,8 @@ public:
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
+
+    [[nodiscard]] inline Padding get_padding() const { return m_padding; }
 
 private:
     MusicSymbol m_symbol;
@@ -84,5 +97,5 @@ private:
 
     vector<Modifier> m_modifiers;
 
-    int m_minimal_needed_distance;
+    Padding m_padding;
 };

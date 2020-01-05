@@ -72,21 +72,42 @@ void disp(shared_ptr<Display> &d) {
 
     //Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
     //t.display(100, 100, 10);
-    vector<vector<Notation>> notations = {{{BasePlay, SnareInst,   {1, 16}, {ModAccent}}},
-                                          {{BasePlay, ChinaInst,   {1, 8},  {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 8}, {ModDot}}},
-                                          {{BaseRest, UnboundUp,   {1, 8},  {}}},
-                                          {{BasePlay, SnareInst,   {1, 8},  {ModGhost}}},
-                                          {{BasePlay, HighTomInst, {1, 8},  {ModCrossStick}}},
-                                          {{BasePlay, SnareInst,   {1, 8},  {ModRimshot}}},
-                                          {{BasePlay, SnareInst,   {1, 8},  {ModDrag}}},
-                                          {{BasePlay, SnareInst,   {1, 8},  {ModFlam}}},
-                                          {{BasePlay, HiHatInst,   {1, 8},  {ModClose}}},
-                                          {{BasePlay, HiHatInst,   {1, 8},  {ModLoose}}},
-                                          {{BasePlay, HiHatInst,   {1, 8},  {ModOpenClose}}},
-                                          {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
-                                          {{BasePlay, HiHatInst,   {1, 8},  {ModChoke}}},
-                                          {{BasePlay, HiHatInst,   {1, 16}, {ModDot}}}};
-    Notation::draw_connected_notes(50, 100, 0, notations);
+    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, ChinaInst, {1, 16}, {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 16}, {ModDot}}},
+                                          {{BaseRest, UnboundUp, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModGhost}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModGhost}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModDot}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModCrossStick}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModCrossStick}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModRimshot}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModRimshot}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModDrag}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModDrag}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModFlam}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModClose}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {ModFlam}},           {BasePlay, HighTomInst, {1, 16}, {ModGhost}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModLoose}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpenClose}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpenClose}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpen}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModChoke}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModChoke}}},
+                                          {{BasePlay, SnareInst, {1, 16}, {}}},
+                                          {{BasePlay, HiHatInst, {1, 16}, {ModDot}}}};
+    int off_x = 50;
+    Notation::draw_connected_notes(off_x, 100, notations);
 
     d->present();
     this_thread::sleep_for(chrono::milliseconds(1000));
