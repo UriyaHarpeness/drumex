@@ -43,6 +43,8 @@ public:
 
     static shared_ptr<Display> m_display;
 
+    Notation(const Notation &other);
+
     Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers);
 
     ~Notation();
@@ -65,8 +67,14 @@ public:
 
     static void draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations);
 
-    static vector<Notation>
-    generate_notation(Action action, Fraction play, Fraction offset, TimeSignature signature, BasicPlaying base);
+    static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
+
+    static vector<Fraction> split_fraction(Fraction fraction);
+
+    static vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
+
+    static vector<vector<Notation>>
+    generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -83,6 +91,8 @@ public:
     [[nodiscard]] Fraction get_length() const;
 
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
+
+    inline void set_rounded_length(Fraction length) { m_length = length; }
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
 

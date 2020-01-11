@@ -45,9 +45,10 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(shared_ptr<Display> &d) {
+void disp(const vector<vector<Notation>> &notations) {
     char s[2];
     s[1] = 0;
+    const auto &d = Notation::m_display;
     d->clear_screen();
     //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
@@ -68,9 +69,8 @@ void disp(shared_ptr<Display> &d) {
     for (p = 1; p <= 4; p++) {
         d->draw_base(20, p * 100, 3, 4);
     }
-    Notation::m_display = d;
 
-
+    /*
     {
         Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
         t.display(100, 200, true);
@@ -100,6 +100,8 @@ void disp(shared_ptr<Display> &d) {
         Notation t3(BasePlay, FloorTomInst, {1, 32}, {ModAccent});
         t3.display(360, 200, true);
     }
+
+    // todo: support polyrhythm beaming.
 
     vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
                                           {{BasePlay, SnareInst, {1, 16}, {}}},
@@ -137,19 +139,24 @@ void disp(shared_ptr<Display> &d) {
                                           {{BasePlay, HiHatInst, {1, 16}, {ModDot}}}};
     int off_x = 50;
     Notation::draw_connected_notes(off_x, 100, notations);
+    cout << off_x << endl;*/
+
+    int off_x = 50;
+    Notation::draw_connected_notes(off_x, 100, notations);
+    cout << off_x << endl;
+
 
     d->present();
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-void gamelogic() {
+void gamelogic(const vector<vector<Notation>> &notations) {
     SDL_Event e;
     bool done = false;
-    shared_ptr<Display> d(new Display());
 
     int a = 0;
     while (!done) {
-        disp(d);
+        disp(notations);
         a++;
         cout << a << endl;
 
@@ -170,17 +177,28 @@ int main() {
     Notation::m_display = d;
     //Notation::generate_notation(a, {6, 16}, {2, 16}, {3, 8}, BasePlay);
     //what if 0 is given as the numerator? like 0/4
-    Notation::generate_notation(a, {1, 2}, {4, 8}, {4, 4}, BasePlay);
+    /*Notation::generate_notation(a, {1, 2}, {4, 8}, {4, 4}, BasePlay);
     Notation::generate_notation(a, {1, 8}, {4, 8}, {4, 4}, BasePlay);
     Notation::generate_notation(a, {1, 8}, {1, 8}, {4, 4}, BasePlay);
     Notation::generate_notation(a, {1, 8}, {1, 16}, {4, 4}, BasePlay);
-    Notation::generate_notation(a, {15, 8}, {5, 16}, {4, 4}, BasePlay);
+    Notation::generate_notation(a, {15, 8}, {5, 16}, {4, 4}, BasePlay);*/
+
+    vector<vector<Notation>> stuff = {
+            {{BasePlay, SnareInst, {1, 16}, {}}},
+            {{BasePlay, SnareInst, {1, 8},  {ModRimshot}}},
+            {{BasePlay, SnareInst, {1, 16}, {}}},
+    };
+
+    vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
+
+    TimeSignature sig = {4, 4};
+    vector<vector<Notation>> notations = Notation::generate_notation(merged_stuff, sig);
 
     //return 0;
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic();
+    gamelogic(notations);
 
     return 0;
 }

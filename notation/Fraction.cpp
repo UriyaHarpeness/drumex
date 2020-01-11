@@ -11,6 +11,16 @@ Fraction::Fraction(int a, int b) : m_value({a, b}) {
 
 Fraction::Fraction(const Fraction &other) = default;
 
+bool Fraction::operator==(const Fraction &other) const {
+    Fraction result(*this);
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return result;
+    }
+    equalize_denominators(result, second);
+    return result.m_value.first == second.m_value.first;
+}
+
 Fraction Fraction::operator+(const Fraction &other) const {
     Fraction result(*this);
     Fraction second(other);
@@ -23,14 +33,14 @@ Fraction Fraction::operator+(const Fraction &other) const {
     return result;
 }
 
-bool Fraction::operator==(const Fraction &other) const {
-    Fraction result(*this);
+void Fraction::operator+=(const Fraction &other) {
     Fraction second(other);
     if (!(m_value.second && second.m_value.second)) {
-        return result;
+        return;
     }
-    equalize_denominators(result, second);
-    return result.m_value.first == second.m_value.first;
+    equalize_denominators(*this, second);
+    m_value.first += second.m_value.first;
+    simplify(*this);
 }
 
 Fraction Fraction::operator-(const Fraction &other) const {
@@ -43,6 +53,16 @@ Fraction Fraction::operator-(const Fraction &other) const {
     result.m_value.first -= second.m_value.first;
     simplify(result);
     return result;
+}
+
+void Fraction::operator-=(const Fraction &other) {
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return;
+    }
+    equalize_denominators(*this, second);
+    m_value.first -= second.m_value.first;
+    simplify(*this);
 }
 
 Fraction Fraction::operator/(const Fraction &other) const {
@@ -124,7 +144,7 @@ Fraction::operator bool() const {
 }
 
 Fraction::operator int() const {
-    return (int) log2((double) m_value.first / m_value.second);
+    return floor(log2((double) m_value.first / m_value.second));
 }
 
 Fraction::operator double() const {

@@ -83,15 +83,22 @@ const Fraction Notation::minimal_supported_fraction(1, 16);
 
 shared_ptr<Display> Notation::m_display = nullptr;
 
+Notation::Notation(const Notation &other) : m_symbol(other.m_symbol), m_symbol_value(other.m_symbol_value),
+                                            m_line(other.m_line), m_length(other.m_length),
+                                            m_instrument(other.m_instrument),
+                                            m_playing(other.m_playing), m_modifiers(other.m_modifiers),
+                                            m_padding(other.m_padding) {
+}
+
 Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
         m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
         m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
     //m_symbol = playing_to_music_symbols.at(playing).at(length);
     if (m_playing == BasePlay) {
-        //todo: no more than whole note support for now.
-        //todo: are music symbol and music symbols values needed?
-
+        // todo: no more than whole note support for now.
+        // todo: are music symbol and music symbols values needed?
+        // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
         if (m_line <= -4) {
             //for cymbals support, temporary i believe in this way.
             m_symbol_value = make_pair(SymCymbal, make_pair(3, -10));
@@ -157,7 +164,6 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
                              staff_y + ((m_line - tail_length + 4) * line_height) - staff_to_0,
                              (tail_length + 2 - distance) * line_height - distance, 1);
     } else {
-        //todo: this real
         m_display->draw_rect(x + 4,
                              staff_y + ((m_line + 6) * line_height) - staff_to_0,
                              (tail_length + 2 - distance) * line_height - distance, 1);
@@ -165,6 +171,7 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
+    assert(number > 0);
     while (number--) {
         if (line <= direction_line) {
             m_display->draw_rect(x + 13,
@@ -233,7 +240,7 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
      * rests leave the number of beams like the previous note
      */
 
-    int beams, max_beams = 1;
+    int beams = 0, max_beams = 1;
     for (const auto &group : notations) {
         for (const auto &note : group) {
             if (abs(max_height - direction_line) < abs(note.get_line() - direction_line)) {
@@ -282,18 +289,17 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                     }
                     draw_connectors(x, staff_y, group[0].get_line(),
                                     ((double) ((note.get_length() - length_resize) / minimal_supported_fraction)) *
-                                    (minimal_distance + minimal_padding), beams, tail_length);
+                                    distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     // beam note size, or half if must smaller...
                     Fraction length_resize = minimal_supported_fraction;
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(x - (((double) (
-                                            ((*(&group - 1))[0].get_length() - length_resize) / minimal_supported_fraction)) *
-                                         (minimal_distance + minimal_padding)), staff_y, group[0].get_line(),
-                                    ((double) (length_resize / minimal_supported_fraction)) *
-                                    (minimal_distance + minimal_padding), beams, tail_length);
+                    draw_connectors(x - (((double) (((*(&group - 1))[0].get_length() - length_resize) /
+                                                    minimal_supported_fraction)) * distance), staff_y,
+                                    group[0].get_line(), ((double) (length_resize / minimal_supported_fraction)) *
+                                                         distance, beams, tail_length);
                 }
             }
         }
@@ -301,18 +307,95 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
     }
 }
 
-vector<Notation>
-Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeSignature signature, BasicPlaying base) {
-    vector<Notation> notations;
+vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>> &notation) {
+    vector<vector<Notation>> merged_notation = {notation[0]};
 
-    if (!play) {
-        return notations;
+    // This function ignores ModDot since it will be decided when generating the notation.
+    // Also, this code assumes (which is a reasonable assumption) that every group has the same BasicPlaying.
+
+    auto group = notation.begin();
+    for (group++; group != notation.end(); group++) {
+        if ((*group)[0].get_playing() == BasePlay) {
+            merged_notation.push_back(*group);
+        } else {
+            for (auto &single : merged_notation[merged_notation.size() - 1]) {
+                single.set_rounded_length(single.get_rounded_length() + (*group)[0].get_rounded_length());
+            }
+        }
     }
 
+    return merged_notation;
+}
+
+vector<Fraction> Notation::split_fraction(Fraction fraction) {
+    vector<Fraction> fractions;
+    Fraction tmp;
+
+    while (fraction) {
+        tmp = Fraction(1, pow(2, -(int) fraction));
+        if (tmp <= fraction) {
+            fractions.push_back(tmp);
+            fraction -= tmp;
+        }
+    }
+
+    return fractions;
+}
+
+vector<Fraction> Notation::split_fraction(TimeSignature signature, Fraction offset, Fraction fraction) {
+    vector<Fraction> fractions;
+    vector<Fraction> tmp;
+
+    Fraction bar(signature.first, signature.second);
     Fraction beat(1, signature.second);
-    Fraction offset_space = offset % beat;
-    Fraction play_space = (play < beat) ? play : beat;
-    Fraction final_play;
+    Fraction fill = (fraction <= (beat - (offset % beat))) ? fraction : (beat - (offset % beat));
+
+    tmp = split_fraction(fill);
+    fractions.insert(fractions.end(), tmp.begin(), tmp.end());
+
+    offset += fill;
+    fraction -= fill;
+
+    while (fraction) {
+        fill = (fraction <= (bar - (offset % bar))) ? fraction : (bar - (offset % bar));
+
+        tmp = split_fraction(fill);
+        fractions.insert(fractions.end(), tmp.begin(), tmp.end());
+
+        offset += fill;
+        fraction -= fill;
+    }
+
+    return fractions;
+}
+
+vector<vector<Notation>>
+Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature) {
+    vector<vector<Notation>> generated_notation;
+
+    Fraction beat(1, signature.second);
+    Fraction bar(signature.first, signature.second);
+    Fraction offset(0, 1);
+
+    for (const auto &group : notation) {
+        // assumes all the group has the same BasicPlaying and length
+        auto fractions = split_fraction(signature, offset, group[0].get_rounded_length());
+        BasicPlaying playing = group[0].get_playing();
+        cout << group[0].get_rounded_length() << " " << offset << endl;
+        for (const auto &fraction : fractions) {
+            cout << "* " << fraction << endl;
+            if (playing == BasePlay) {
+                generated_notation.push_back(group);
+            } else {
+                // todo: only up for now, will change with two voices support.
+                generated_notation.push_back({{BaseRest, UnboundUp, fraction, {}}});
+            }
+            playing = BaseRest;
+        }
+        offset += group[0].get_rounded_length();
+    }
+
+    /*Fraction final_play;
     Fraction final_rest;
 
     if (!play_space) {
@@ -327,7 +410,8 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
 
     final_rest = play - final_play;
 
-    cout << play << " " << offset << " " << (int) signature.first << "/" << (int) signature.second << endl;
+    cout << "play: " << play << ", offset: " << offset << ", signature: " << (int) signature.first << "/"
+         << (int) signature.second << endl;
 
     cout << final_play << " "; // << final_rest << endl;
     // maybe static and pass arguments?
@@ -335,13 +419,13 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
     for (auto const &i : temp) {
         cout << i << " ";
     }
-    cout << endl;
-    return notations;
+    cout << endl;*/
+    return generated_notation;
 
 
-    if (base == BasePlay) {
-        // first play until note value and than rests.
-    }
+    //if (base == BasePlay) {
+    // first play until note value and than rests.
+    //}
 
     /*
      * note of 3/8 (1/4+.)
@@ -435,7 +519,7 @@ Notation::generate_notation(Action action, Fraction play, Fraction offset, TimeS
     }
     cout << "end " << number << endl;*/
 
-    return notations;
+    //return notations;
 }
 
 Padding Notation::create_padding(const vector<Modifier> &modifiers) {

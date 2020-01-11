@@ -19,7 +19,11 @@ public:
 
     Fraction operator+(const Fraction &other) const;
 
+    void operator+=(const Fraction &other);
+
     Fraction operator-(const Fraction &other) const;
+
+    void operator-=(const Fraction &other);
 
     Fraction operator/(const Fraction &other) const;
 
