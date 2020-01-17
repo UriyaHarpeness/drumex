@@ -63,15 +63,20 @@ public:
 
     void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
 
-    //void display(int staff_x, int staff_y, int line, int col);
-
     static void draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations);
+
+    static void draw_individual_notes(int &x, int staff_y, const vector<Notation> &group);
 
     static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
 
     static vector<Fraction> split_fraction(Fraction fraction);
 
     static vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
+
+    static vector<vector<vector<Notation>>> split_notation(const vector<vector<Notation>> &notation, Fraction bar);
+
+    static vector<vector<vector<Notation>>>
+    connect_notation(const vector<vector<Notation>> &notation, Fraction beat);
 
     static vector<vector<Notation>>
     generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature);

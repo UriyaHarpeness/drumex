@@ -132,11 +132,25 @@ bool Fraction::operator<(const Fraction &other) const {
     return a.m_value.first < b.m_value.first;
 }
 
+bool Fraction::operator>(const Fraction &other) const {
+    Fraction a(*this);
+    Fraction b(other);
+    equalize_denominators(a, b);
+    return a.m_value.first > b.m_value.first;
+}
+
 bool Fraction::operator<=(const Fraction &other) const {
     Fraction a(*this);
     Fraction b(other);
     equalize_denominators(a, b);
     return a.m_value.first <= b.m_value.first;
+}
+
+bool Fraction::operator>=(const Fraction &other) const {
+    Fraction a(*this);
+    Fraction b(other);
+    equalize_denominators(a, b);
+    return a.m_value.first >= b.m_value.first;
 }
 
 Fraction::operator bool() const {

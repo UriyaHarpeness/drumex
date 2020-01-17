@@ -45,7 +45,7 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<Notation>> &notations) {
+void disp(const vector<vector<vector<Notation>>> &notations) {
     char s[2];
     s[1] = 0;
     const auto &d = Notation::m_display;
@@ -70,79 +70,14 @@ void disp(const vector<vector<Notation>> &notations) {
         d->draw_base(20, p * 100, 3, 4);
     }
 
-    /*
-    {
-        Notation t(BasePlay, SnareInst, {1, 8}, {ModAccent});
-        t.display(100, 200, true);
-        Notation t2(BasePlay, SnareInst, {1, 16}, {ModAccent});
-        t2.display(130, 200, true);
-        Notation t3(BasePlay, SnareInst, {1, 32}, {ModAccent});
-        t3.display(160, 200, true);
-    }
-
-    {
-        Notation t(BasePlay, BassInst, {1, 8}, {ModAccent});
-        t.display(200, 200, true);
-        Notation t2(BasePlay, BassInst, {1, 16}, {ModAccent});
-        t2.display(230, 200, true);
-        Notation t3(BasePlay, BassInst, {1, 32}, {ModAccent});
-        t3.display(260, 200, true);
-        Notation t4(BasePlay, BassInst, {1, 64}, {ModAccent});
-        t4.display(290, 200, true);
-    }
-
-    {
-        // todo: check cymbals lower line.
-        Notation t(BasePlay, FloorTomInst, {1, 8}, {ModAccent});
-        t.display(300, 200, true);
-        Notation t2(BasePlay, FloorTomInst, {1, 16}, {ModAccent});
-        t2.display(330, 200, true);
-        Notation t3(BasePlay, FloorTomInst, {1, 32}, {ModAccent});
-        t3.display(360, 200, true);
-    }
-
-    // todo: support polyrhythm beaming.
-
-    vector<vector<Notation>> notations = {{{BasePlay, SnareInst, {1, 16}, {ModAccent}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, ChinaInst, {1, 16}, {ModAccent, ModDot}}, {BasePlay, HighTomInst, {1, 16}, {ModDot}}},
-                                          {{BaseRest, UnboundUp, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModGhost}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModGhost}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModDot}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModCrossStick}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModCrossStick}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModRimshot}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModRimshot}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModDrag}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModDrag}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModFlam}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModClose}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {ModFlam}},           {BasePlay, HighTomInst, {1, 16}, {ModGhost}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModLoose}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpenClose}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpenClose}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModOpen}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModChoke}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModChoke}}},
-                                          {{BasePlay, SnareInst, {1, 16}, {}}},
-                                          {{BasePlay, HiHatInst, {1, 16}, {ModDot}}}};
     int off_x = 50;
-    Notation::draw_connected_notes(off_x, 100, notations);
-    cout << off_x << endl;*/
-
-    int off_x = 50;
-    Notation::draw_connected_notes(off_x, 100, notations);
+    for (const vector<vector<Notation>> &note_groups : notations) {
+        if (note_groups.size() > 1) {
+            Notation::draw_connected_notes(off_x, 100, note_groups);
+        } else {
+            Notation::draw_individual_notes(off_x, 100, note_groups[0]);
+        }
+    }
     cout << off_x << endl;
 
 
@@ -150,7 +85,7 @@ void disp(const vector<vector<Notation>> &notations) {
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-void gamelogic(const vector<vector<Notation>> &notations) {
+void gamelogic(const vector<vector<vector<Notation>>> &notations) {
     SDL_Event e;
     bool done = false;
 
@@ -177,28 +112,49 @@ int main() {
     Notation::m_display = d;
     //Notation::generate_notation(a, {6, 16}, {2, 16}, {3, 8}, BasePlay);
     //what if 0 is given as the numerator? like 0/4
-    /*Notation::generate_notation(a, {1, 2}, {4, 8}, {4, 4}, BasePlay);
-    Notation::generate_notation(a, {1, 8}, {4, 8}, {4, 4}, BasePlay);
-    Notation::generate_notation(a, {1, 8}, {1, 8}, {4, 4}, BasePlay);
-    Notation::generate_notation(a, {1, 8}, {1, 16}, {4, 4}, BasePlay);
-    Notation::generate_notation(a, {15, 8}, {5, 16}, {4, 4}, BasePlay);*/
 
     vector<vector<Notation>> stuff = {
-            {{BasePlay, SnareInst, {1, 16}, {}}},
-            {{BasePlay, SnareInst, {1, 8},  {ModRimshot}}},
-            {{BasePlay, SnareInst, {1, 16}, {}}},
+            {{BasePlay, FloorTomInst, {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,    {1, 8},  {}}},
+            {{BasePlay, SnareInst,    {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,    {1, 8},  {ModOpen}}},
+            {{BaseRest, UnboundUp,    {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BaseRest, UnboundUp,    {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BaseRest, UnboundUp,    {1, 16}, {}}},
+            {{BaseRest, UnboundUp,    {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BaseRest, UnboundUp,    {1, 1},  {}}},
     };
+    // todo next: add dots in bars and display connected only where relevant.
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
 
     TimeSignature sig = {4, 4};
+    Fraction beat = {1, sig.second};
+    Fraction bar = {sig.first, sig.second};
+
+    // todo: shouldn't really use beat, first split to bars and then beats.
     vector<vector<Notation>> notations = Notation::generate_notation(merged_stuff, sig);
 
-    //return 0;
+    // seems problematic notations[2][0].m_symbol
+
+    vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(notations, bar);
+
+    vector<vector<vector<Notation>>> connected_notation;
+    vector<vector<vector<Notation>>> small_connected_notation;
+
+    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+        small_connected_notation = Notation::connect_notation(small_notation, beat);
+        connected_notation.insert(connected_notation.end(), small_connected_notation.begin(),
+                                  small_connected_notation.end());
+    }
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic(notations);
+    gamelogic(connected_notation);
 
     return 0;
 }

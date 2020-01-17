@@ -37,10 +37,13 @@ public:
 
     vector<Fraction> split(const Fraction &single) const;
 
-    // todo: make everything const reference...
     bool operator<(const Fraction &other) const;
 
+    bool operator>(const Fraction &other) const;
+
     bool operator<=(const Fraction &other) const;
+
+    bool operator>=(const Fraction &other) const;
 
     operator bool() const;
 

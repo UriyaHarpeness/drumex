@@ -15,6 +15,7 @@ enum Instrument {
     UnboundUp,
     UnboundDown,
     ChinaInst,
+    CrashInst,
     HiHatInst,
     HighTomInst,
     MidTomInst,

@@ -3,12 +3,12 @@
 // todo: this is kind of useless now...
 const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
-        {{WholeRest,        {SymWholeRest,        {0, -10}}},
-         {HalfRest,         {SymHalfRest,         {3, -10}}},
-         {QuarterRest,      {SymQuarterRest,      {3, -4}}},
-         {EightRest,        {SymEightRest,        {3, -4}}},
-         {SixteenthRest,    {SymSixteenthRest,    {3, -4}}},
-         {ThirtySecondRest, {SymThirtySecondRest, {3, -4}}}};
+        {{WholeRest,        {SymWholeRest,        {3, 10}}},
+         {HalfRest,         {SymHalfRest,         {3, 0}}},
+         {QuarterRest,      {SymQuarterRest,      {3, 0}}},
+         {EightRest,        {SymEightRest,        {3, 0}}},
+         {SixteenthRest,    {SymSixteenthRest,    {3, 0}}},
+         {ThirtySecondRest, {SymThirtySecondRest, {3, 0}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
 const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
@@ -21,6 +21,7 @@ const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,    -8},
+        {CrashInst,    -6},
         {HiHatInst,    -5},
         {HighTomInst,  -3},
         {MidTomInst,   -2},
@@ -101,14 +102,14 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length,
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
         if (m_line <= -4) {
             //for cymbals support, temporary i believe in this way.
-            m_symbol_value = make_pair(SymCymbal, make_pair(3, -10));
+            m_symbol_value = make_pair(SymCymbal, make_pair(3, 0));
         } else {
             if (Fraction(1, 1) == m_length) {
-                m_symbol_value = make_pair(SymWholeNote, make_pair(0, -10));
+                m_symbol_value = make_pair(SymWholeNote, make_pair(0, 0));
             } else if (Fraction(1, 2) == m_length) {
-                m_symbol_value = make_pair(SymHalfNote, make_pair(3, -10));
+                m_symbol_value = make_pair(SymHalfNote, make_pair(3, 0));
             } else {
-                m_symbol_value = make_pair(SymQuarterNote, make_pair(3, -10));
+                m_symbol_value = make_pair(SymQuarterNote, make_pair(3, 0));
             }
         }
     } else {
@@ -211,7 +212,7 @@ void Notation::draw_ledgers(int x, int staff_y) const {
 
 void Notation::draw_head(int x, int staff_y) const {
     m_display->draw_text(m_symbol_value.first, x + m_symbol_value.second.first,
-                         staff_y + (m_line * line_height) - staff_to_0);
+                         staff_y + (m_line * line_height) + m_symbol_value.second.second - staff_to_0);
 }
 
 void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
@@ -307,6 +308,23 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
     }
 }
 
+void Notation::draw_individual_notes(int &x, int staff_y, const vector<Notation> &group) {
+    // todo: assumes all note are in the same direction.
+
+    // todo: maybe draw_connected_notes can call this function
+
+    //cout << min_height << " " << max_height << endl;
+
+    int distance = 0;
+    x += merge_padding(group)[0];
+    for (const auto &note : group) {
+        note.display(x, staff_y, true);
+        distance = (int) ((((double) (note.get_length() / minimal_supported_fraction) - 1)) *
+                          (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
+        x += distance;
+    }
+}
+
 vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>> &notation) {
     vector<vector<Notation>> merged_notation = {notation[0]};
 
@@ -369,12 +387,76 @@ vector<Fraction> Notation::split_fraction(TimeSignature signature, Fraction offs
     return fractions;
 }
 
+vector<vector<vector<Notation>>>
+Notation::split_notation(const vector<vector<Notation> > &notation, Fraction bar) {
+    vector<vector<vector<Notation>>> splitted_notation;
+    vector<vector<Notation>> part_notation;
+    Fraction length_sum = {0, 1};
+
+    // This function ignores ModDot since it will be decided when generating the notation.
+    // Also, this code assumes (which is a reasonable assumption) that every group has the same BasicPlaying.
+
+    for (const auto &group : notation) {
+        length_sum += group[0].get_length();
+        cout << group[0].get_length() << " " << length_sum << endl;
+        part_notation.push_back(group);
+        assert(length_sum <= bar);
+        if (length_sum == bar) {
+            splitted_notation.push_back(part_notation);
+            part_notation.clear();
+            length_sum = {0, 1};
+            cout << "got to length" << endl;
+        }
+    }
+
+    //todo: add leftovers or assert there are none.
+    assert(part_notation.empty());
+
+    return splitted_notation;
+}
+
+vector<vector<vector<Notation>>>
+Notation::connect_notation(const vector<vector<Notation> > &notation, Fraction beat) {
+    vector<vector<vector<Notation>>> connected_notation;
+    vector<vector<Notation>> part_notation;
+    Fraction length_sum = {0, 1};
+
+    // This function ignores ModDot since it will be decided when generating the notation.
+    // Also, this code assumes (which is a reasonable assumption) that every group has the same BasicPlaying.
+
+    bool connecting = false;
+    for (const auto &group : notation) {
+        cout << "- " << group[0].get_length() << endl;
+        // todo: should if any is playing, although if one is playing than there's no rest...
+        if ((group[0].get_playing() == BasePlay) && (group[0].get_length() < beat)) {
+            connecting = true;
+        }
+        length_sum += group[0].get_length();
+        cout << group[0].get_length() << " " << length_sum << endl;
+        part_notation.push_back(group);
+        if (length_sum >= beat) {
+            connecting = false;
+        }
+        if (!connecting) {
+            connected_notation.push_back(part_notation);
+            part_notation.clear();
+        }
+        if (length_sum >= beat) {
+            length_sum = length_sum % beat;
+            cout << "got to length" << endl;
+        }
+    }
+
+    //todo: add leftovers or assert there are none.
+    assert(part_notation.empty());
+
+    return connected_notation;
+}
+
 vector<vector<Notation>>
 Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature) {
     vector<vector<Notation>> generated_notation;
 
-    Fraction beat(1, signature.second);
-    Fraction bar(signature.first, signature.second);
     Fraction offset(0, 1);
 
     for (const auto &group : notation) {
@@ -385,9 +467,15 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
         for (const auto &fraction : fractions) {
             cout << "* " << fraction << endl;
             if (playing == BasePlay) {
-                generated_notation.push_back(group);
+                vector<Notation> tmp;
+                for (const auto &note : group) {
+                    tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers());
+                }
+                generated_notation.push_back(tmp);
+                tmp.clear();
             } else {
                 // todo: only up for now, will change with two voices support.
+                // todo: also no modifiers for rests, check for playing.
                 generated_notation.push_back({{BaseRest, UnboundUp, fraction, {}}});
             }
             playing = BaseRest;
@@ -395,107 +483,8 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
         offset += group[0].get_rounded_length();
     }
 
-    /*Fraction final_play;
-    Fraction final_rest;
-
-    if (!play_space) {
-        final_play = beat - offset_space;
-    } else {
-        if (play_space <= (beat - offset_space)) {
-            final_play = play_space;
-        } else {
-            final_play = beat - offset_space;
-        }
-    }
-
-    final_rest = play - final_play;
-
-    cout << "play: " << play << ", offset: " << offset << ", signature: " << (int) signature.first << "/"
-         << (int) signature.second << endl;
-
-    cout << final_play << " "; // << final_rest << endl;
-    // maybe static and pass arguments?
-    auto temp = final_rest.split(beat);
-    for (auto const &i : temp) {
-        cout << i << " ";
-    }
-    cout << endl;*/
-    return generated_notation;
-
-
-    //if (base == BasePlay) {
-    // first play until note value and than rests.
-    //}
-
-    /*
-     * note of 3/8 (1/4+.)
-     * in time signature of 3/4
-     * number = 3
-     * of = 8
-     * note_value = 4
-     */
     // todo: will not work with 1/3 on 4/4 for example... need to support tuplets and stuff...
     // plus problematic if a note is as long as several bars, also does not consider other notes that may break the consistency.
-    /*for (int i = of; (number > 0) && (i > 0); i /= 2) {
-        //cout << number << " " << i << endl;
-        if (number >= i) {
-            cout << number / i << " - " << i << "/" << of << endl;
-            number %= i;
-            //gcd(a, b);
-        }
-    }
-    cout << "end " << number << endl;*/
-
-    // in drumming, a played note will not be longer than the basic note value of the signature,
-    /*number *= signature.second;
-    signature.first *= of;
-    of *= signature.second;
-    signature.second = of;
-
-    int whole_bars = number / signature.first;
-    cout << "using " << whole_bars << " full bars" << endl;
-
-    number %= signature.first;
-    cout << "left with " << number << "/" << of << endl;
-
-    double temp = log2(of);
-    if (!of || (temp == floor(temp))) {
-        cout << "normal note possible" << endl;
-    } else {
-        cout << "odd tempo needed" << endl;
-        // can try fitting anyway to power of 2, like 3/6 to 2/4...
-        // 3/6 3/12 5/10
-        // leaves the non full notes, which matter
-        int note_number = number % of;
-        if (!note_number) {
-            cout << "writeable with full notes" << endl;
-        } else {
-            if (of % note_number == 0) {
-                temp = log2(of / note_number);
-                if (temp == floor(temp)) {
-                    cout << "conversion to power of 2 possible" << endl;
-                } else {
-                    cout << "not convertible" << endl;
-                }
-            } else {
-                cout << "not rational" << endl;
-            }
-        }
-    }
-    return notations;
-
-    TimeSignature new_signature = signature;
-    new_signature.first *= of;
-    new_signature.second *= of;
-    int new_number = number * signature.second;
-    int new_of = of * signature.second;
-
-    cout << "fitting " << number << "/" << of << " into " << (int) signature.first << "/" << (int) signature.second
-         << endl;
-
-    int full_divisions = new_number / new_signature.first;
-    cout << "full note values: " << full_divisions << endl;*/
-
     /*
      * Irrational notes are rounded up for the notes used, for example: 2/3 would contain 2-1/2, 3/7 would contain 3-1/4.
      *
@@ -504,22 +493,8 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
      */
 
     // also support 2 whole, 4 whole, etc.
-    /*notations.resize(notations.size() + (full_divisions / signature.first), Notation(WholeNote));
-    notations.resize(notations.size() + (full_divisions % signature.first), Notation(BasePlay, signature.second));
 
-    int ratio = (of * gcd(of, signature.second)) / signature.second;
-
-    for (int i = of; (number > 0) && (i > 0); i /= 2) {
-        //cout << number << " " << i << endl;
-        if (number >= i) {
-            cout << number / i << " - " << i << "/" << of << endl;
-            number %= i;
-            //gcd(a, b);
-        }
-    }
-    cout << "end " << number << endl;*/
-
-    //return notations;
+    return generated_notation;
 }
 
 Padding Notation::create_padding(const vector<Modifier> &modifiers) {
