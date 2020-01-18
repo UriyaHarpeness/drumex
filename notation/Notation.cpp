@@ -173,18 +173,19 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
 
 void Notation::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
     assert(number > 0);
+    bool up = line <= direction_line;
     while (number--) {
-        if (line <= direction_line) {
+        if (up) {
             m_display->draw_rect(x + 13,
                                  staff_y + ((line - tail_length + 4) * line_height) - staff_to_0,
                                  connector_height, length);
+            line += 2;
         } else {
-            //todo: check for all the below line
-            m_display->draw_rect(x + 3,
-                                 staff_y + ((line + tail_length) * line_height) - staff_to_0,
-                                 tail_length * line_height, length);
+            m_display->draw_rect(x + 5,
+                                 staff_y + ((line + tail_length + 7) * line_height) - 2 - staff_to_0,
+                                 connector_height, length);
+            line -= 2;
         }
-        line += 2;
     }
 }
 
@@ -289,18 +290,18 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                         length_resize = length_resize / Fraction(2, 1);
                     }
                     draw_connectors(x, staff_y, group[0].get_line(),
-                                    ((double) ((note.get_length() - length_resize) / minimal_supported_fraction)) *
-                                    distance, beams, tail_length);
+                                    static_cast<double>(length_resize / minimal_supported_fraction) * distance, beams,
+                                    tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     // beam note size, or half if must smaller...
                     Fraction length_resize = minimal_supported_fraction;
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(x - (((double) (((*(&group - 1))[0].get_length() - length_resize) /
-                                                    minimal_supported_fraction)) * distance), staff_y,
-                                    group[0].get_line(), ((double) (length_resize / minimal_supported_fraction)) *
-                                                         distance, beams, tail_length);
+                    draw_connectors(x - (static_cast<double>(length_resize / minimal_supported_fraction) * distance),
+                                    staff_y, group[0].get_line(),
+                                    static_cast<double> (length_resize / minimal_supported_fraction) * distance, beams,
+                                    tail_length);
                 }
             }
         }
@@ -413,7 +414,6 @@ Notation::split_notation(const vector<vector<Notation> > &notation, Fraction bar
         }
     }
 
-    //todo: add leftovers or assert there are none.
     assert(part_notation.empty());
 
     return splitted_notation;
@@ -487,7 +487,7 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
                     auto note = generated_notation[generated_notation.size() - 1][0];
                     if ((note.get_playing() == BasePlay) &&
                         (find(note.get_modifiers().begin(), note.get_modifiers().end(), ModDot) ==
-                         note.get_modifiers().end())) {
+                         note.get_modifiers().end()) && (note.get_length() / fraction == Fraction(2, 1))) {
                         dot = true;
                     }
                 }

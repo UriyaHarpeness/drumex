@@ -127,19 +127,24 @@ int main() {
             {{BaseRest, UnboundUp,    {1, 1},  {}}},
     };
 
-    stuff = {
-            {{BasePlay, BassInst, {1, 16}, {}}},
-            {{BasePlay, BassInst, {1, 16}, {}}},
-            {{BasePlay, BassInst, {1, 8},  {}}},
-            {{BasePlay, BassInst, {3, 4},  {}}},
-    };
-    // todo: add whole note support here, and add dots.
-    stuff = {
-            {{BasePlay, SnareInst, {3, 8}, {}}},
-            {{BasePlay, SnareInst, {1, 8}, {}}},
-            {{BasePlay, SnareInst, {1, 2}, {}}},
-    };
-    // todo next: add dots in bars and display connected only where relevant.
+    /*stuff = {
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {}}},
+    };*/
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
 
@@ -147,7 +152,6 @@ int main() {
     Fraction beat = {1, sig.second};
     Fraction bar = {sig.first, sig.second};
 
-    // todo: shouldn't really use beat, first split to bars and then beats.
     vector<vector<Notation>> notations = Notation::generate_notation(merged_stuff, sig);
 
     // seems problematic notations[2][0].m_symbol
