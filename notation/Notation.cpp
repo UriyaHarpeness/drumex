@@ -366,13 +366,17 @@ vector<Fraction> Notation::split_fraction(TimeSignature signature, Fraction offs
 
     Fraction bar(signature.first, signature.second);
     Fraction beat(1, signature.second);
-    Fraction fill = (fraction <= (beat - (offset % beat))) ? fraction : (beat - (offset % beat));
+    Fraction fill;
 
-    tmp = split_fraction(fill);
-    fractions.insert(fractions.end(), tmp.begin(), tmp.end());
+    // If it's offset in a beat, first filling the beat is needed before stretching over it.
+    if (static_cast<bool>(offset % beat)) {
+        fill = (fraction <= (beat - (offset % beat))) ? fraction : (beat - (offset % beat));
+        tmp = split_fraction(fill);
+        fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
-    offset += fill;
-    fraction -= fill;
+        offset += fill;
+        fraction -= fill;
+    }
 
     while (fraction) {
         fill = (fraction <= (bar - (offset % bar))) ? fraction : (bar - (offset % bar));
@@ -476,12 +480,30 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
             } else {
                 // todo: only up for now, will change with two voices support.
                 // todo: also no modifiers for rests, check for playing.
-                generated_notation.push_back({{BaseRest, UnboundUp, fraction, {}}});
+
+                // Add ModDot if possible.
+                bool dot = false;
+                if (!generated_notation.empty()) {
+                    auto note = generated_notation[generated_notation.size() - 1][0];
+                    if ((note.get_playing() == BasePlay) &&
+                        (find(note.get_modifiers().begin(), note.get_modifiers().end(), ModDot) ==
+                         note.get_modifiers().end())) {
+                        dot = true;
+                    }
+                }
+                if (dot) {
+                    for (auto &note : generated_notation[generated_notation.size() - 1]) {
+                        note.add_modifier(ModDot);
+                    }
+                } else {
+                    generated_notation.push_back({{BaseRest, UnboundUp, fraction, {}}});
+                }
             }
             playing = BaseRest;
         }
         offset += group[0].get_rounded_length();
     }
+
 
     // todo: will not work with 1/3 on 4/4 for example... need to support tuplets and stuff...
     // plus problematic if a note is as long as several bars, also does not consider other notes that may break the consistency.
@@ -531,11 +553,5 @@ Padding Notation::merge_padding(const vector<Notation> &notes) {
 }
 
 Fraction Notation::get_length() const {
-    // supports a single dot for now.
-    int dot_count = count(m_modifiers.begin(), m_modifiers.end(), ModDot);
-    if (!dot_count) {
-        return m_length;
-    }
-
-    return ((m_length * 2) - (m_length * Fraction(1, pow(2, dot_count))));
+    return ((m_length * 2) - (m_length * Fraction(1, pow(2, count(m_modifiers.begin(), m_modifiers.end(), ModDot)))));
 }

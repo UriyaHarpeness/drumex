@@ -78,8 +78,6 @@ void disp(const vector<vector<vector<Notation>>> &notations) {
             Notation::draw_individual_notes(off_x, 100, note_groups[0]);
         }
     }
-    cout << off_x << endl;
-
 
     d->present();
     this_thread::sleep_for(chrono::milliseconds(1000));
@@ -127,6 +125,19 @@ int main() {
             {{BaseRest, UnboundUp,    {1, 16}, {}}},
             {{BasePlay, HighTomInst,  {1, 16}, {}}},
             {{BaseRest, UnboundUp,    {1, 1},  {}}},
+    };
+
+    stuff = {
+            {{BasePlay, BassInst, {1, 16}, {}}},
+            {{BasePlay, BassInst, {1, 16}, {}}},
+            {{BasePlay, BassInst, {1, 8},  {}}},
+            {{BasePlay, BassInst, {3, 4},  {}}},
+    };
+    // todo: add whole note support here, and add dots.
+    stuff = {
+            {{BasePlay, SnareInst, {3, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 2}, {}}},
     };
     // todo next: add dots in bars and display connected only where relevant.
 

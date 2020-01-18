@@ -67,6 +67,13 @@ public:
 
     static void draw_individual_notes(int &x, int staff_y, const vector<Notation> &group);
 
+    /**
+     * Unify notation where possible, optimize the notation and remove replaceable clutter.
+     *
+     * @example 1/4 play + 1/4 rest = 1/2 play.
+     * @param notation  Raw notation with plays and rests possibly.
+     * @return  The merged notation.
+     */
     static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
 
     static vector<Fraction> split_fraction(Fraction fraction);
@@ -100,6 +107,8 @@ public:
     inline void set_rounded_length(Fraction length) { m_length = length; }
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
+
+    inline void add_modifier(Modifier modifier) { m_modifiers.push_back(modifier); }
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
 
