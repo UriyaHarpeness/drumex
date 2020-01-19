@@ -268,6 +268,8 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
     int line, tail_length, distance = 0;
     x += merge_padding(notations[0])[0];
     for (const auto &group : notations) {
+        distance = (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
+                          (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
@@ -276,8 +278,6 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                 // Rests in beams keep the previous note beams number.
                 beams = (-2 - (int) note.get_rounded_length());
             }
-            distance = (int) ((((double) (note.get_length() / minimal_supported_fraction) - 1)) *
-                              (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
             if (&note == &(group[0])) {
                 // is this comparison really valid?
                 if (&group < &(notations[notations.size() - 2])) {
@@ -314,16 +314,12 @@ void Notation::draw_individual_notes(int &x, int staff_y, const vector<Notation>
 
     // todo: maybe draw_connected_notes can call this function
 
-    //cout << min_height << " " << max_height << endl;
-
-    int distance = 0;
     x += merge_padding(group)[0];
     for (const auto &note : group) {
         note.display(x, staff_y, true);
-        distance = (int) ((((double) (note.get_length() / minimal_supported_fraction) - 1)) *
-                          (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
-        x += distance;
     }
+    x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
+                (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;;
 }
 
 vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>> &notation) {

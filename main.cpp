@@ -108,7 +108,6 @@ int main() {
     // todo: dont use make_pair, use the Action constructor everywhere
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
-    //Notation::generate_notation(a, {6, 16}, {2, 16}, {3, 8}, BasePlay);
     //what if 0 is given as the numerator? like 0/4
 
     vector<vector<Notation>> stuff = {
@@ -117,34 +116,23 @@ int main() {
             {{BasePlay, SnareInst,    {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
             {{BasePlay, HiHatInst,    {1, 8},  {ModOpen}}},
             {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {ModFlam}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {ModDrag}}},
             {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {ModFlam}}},
             {{BaseRest, UnboundUp,    {1, 16}, {}}},
             {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {}}},
+            {{BasePlay, HighTomInst,  {1, 16}, {ModDrag}}},
             {{BaseRest, UnboundUp,    {1, 1},  {}}},
     };
 
-    /*stuff = {
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {}}},
-    };*/
+    stuff = {
+            {{BasePlay, FloorTomInst, {1, 8}, {}},
+                    {BasePlay, HiHatInst, {1, 8}, {}},
+                    {BasePlay, HighTomInst, {1, 8}, {}},
+                    {BasePlay, SnareInst, {1, 8}, {}}},
+            {{BaseRest, UnboundUp,    {7, 8}, {}}},
+    };
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
 
@@ -153,8 +141,6 @@ int main() {
     Fraction bar = {sig.first, sig.second};
 
     vector<vector<Notation>> notations = Notation::generate_notation(merged_stuff, sig);
-
-    // seems problematic notations[2][0].m_symbol
 
     vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(notations, bar);
 
