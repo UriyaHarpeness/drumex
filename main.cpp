@@ -127,12 +127,11 @@ int main() {
     };
 
     stuff = {
-            {{BasePlay, FloorTomInst, {1, 8}, {}},
-                    {BasePlay, HiHatInst, {1, 8}, {}},
-                    {BasePlay, HighTomInst, {1, 8}, {}},
-                    {BasePlay, SnareInst, {1, 8}, {}}},
-            {{BaseRest, UnboundUp,    {7, 8}, {}}},
+            {{BasePlay, HighTomInst, {1,  16}, {ModDrag}}},
+            {{BasePlay, HighTomInst, {1,  16}, {ModDrag}}},
+            {{BaseRest, UnboundUp,   {14, 16}, {}}},
     };
+    // todo: need to separate sounds and display individually and together at the same time...
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
 

@@ -4,7 +4,7 @@
 const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
         {{WholeRest,        {SymWholeRest,        {3, 10}}},
-         {HalfRest,         {SymHalfRest,         {3, 0}}},
+         {HalfRest,         {SymHalfRest,         {3, 10}}},
          {QuarterRest,      {SymQuarterRest,      {3, 0}}},
          {EightRest,        {SymEightRest,        {3, 0}}},
          {SixteenthRest,    {SymSixteenthRest,    {3, 0}}},
@@ -279,7 +279,6 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                 beams = (-2 - (int) note.get_rounded_length());
             }
             if (&note == &(group[0])) {
-                // is this comparison really valid?
                 if (&group < &(notations[notations.size() - 2])) {
                     distance += merge_padding(*(&group + 1))[0];
                     draw_connectors(x, staff_y, group[0].get_line(), distance, beams, tail_length);
@@ -290,18 +289,19 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                         length_resize = length_resize / Fraction(2, 1);
                     }
                     draw_connectors(x, staff_y, group[0].get_line(),
-                                    static_cast<double>(length_resize / minimal_supported_fraction) * distance, beams,
-                                    tail_length);
+                                    ceil(static_cast<double>(length_resize / minimal_supported_fraction) * distance) +
+                                    1, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     // beam note size, or half if must smaller...
                     Fraction length_resize = minimal_supported_fraction;
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
-                    draw_connectors(x - (static_cast<double>(length_resize / minimal_supported_fraction) * distance),
-                                    staff_y, group[0].get_line(),
-                                    static_cast<double> (length_resize / minimal_supported_fraction) * distance, beams,
-                                    tail_length);
+                    draw_connectors(
+                            x - floor((static_cast<double>(length_resize / minimal_supported_fraction) * distance)) - 1,
+                            staff_y, group[0].get_line(),
+                            ceil(static_cast<double> (length_resize / minimal_supported_fraction) * distance) + 1,
+                            beams, tail_length);
                 }
             }
         }
@@ -415,8 +415,23 @@ Notation::split_notation(const vector<vector<Notation> > &notation, Fraction bar
     return splitted_notation;
 }
 
+int
+Notation::count_remaining_plays(Fraction offset, Fraction beat, vector<vector<Notation>>::const_iterator notation_it) {
+    int count = 0;
+
+    // warning; optional segfault, iterates through the iterator without knowing there it ends, the callet should be
+    // aware.
+    while (offset < beat) {
+        notation_it++;
+        offset += (*notation_it)[0].get_length();
+        count += (*notation_it)[0].get_playing() == BasePlay ? 1 : 0;
+    }
+
+    return count;
+}
+
 vector<vector<vector<Notation>>>
-Notation::connect_notation(const vector<vector<Notation> > &notation, Fraction beat) {
+Notation::connect_notation(const vector<vector<Notation>> &notation, Fraction beat) {
     vector<vector<vector<Notation>>> connected_notation;
     vector<vector<Notation>> part_notation;
     Fraction length_sum = {0, 1};
@@ -424,17 +439,20 @@ Notation::connect_notation(const vector<vector<Notation> > &notation, Fraction b
     // This function ignores ModDot since it will be decided when generating the notation.
     // Also, this code assumes (which is a reasonable assumption) that every group has the same BasicPlaying.
 
+    // Beaming needs to be done inside a single beat, only between the first and last played note if there are at least
+    // two, also includes the rests between them.
     bool connecting = false;
-    for (const auto &group : notation) {
+    for (auto group_it = notation.begin(); group_it != notation.end(); group_it++) {
+        const auto &group = *group_it;
         cout << "- " << group[0].get_length() << endl;
+        length_sum += group[0].get_length();
         // todo: should if any is playing, although if one is playing than there's no rest...
         if ((group[0].get_playing() == BasePlay) && (group[0].get_length() < beat)) {
             connecting = true;
         }
-        length_sum += group[0].get_length();
         cout << group[0].get_length() << " " << length_sum << endl;
         part_notation.push_back(group);
-        if (length_sum >= beat) {
+        if ((((group_it + 1 == notation.end()) ? 0 : count_remaining_plays(length_sum, beat, group_it))) == 0) {
             connecting = false;
         }
         if (!connecting) {
@@ -447,7 +465,6 @@ Notation::connect_notation(const vector<vector<Notation> > &notation, Fraction b
         }
     }
 
-    //todo: add leftovers or assert there are none.
     assert(part_notation.empty());
 
     return connected_notation;

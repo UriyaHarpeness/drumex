@@ -82,6 +82,9 @@ public:
 
     static vector<vector<vector<Notation>>> split_notation(const vector<vector<Notation>> &notation, Fraction bar);
 
+    static int
+    count_remaining_plays(Fraction offset, Fraction beat, vector<vector<Notation>>::const_iterator notation_it);
+
     static vector<vector<vector<Notation>>>
     connect_notation(const vector<vector<Notation>> &notation, Fraction beat);
 
