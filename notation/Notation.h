@@ -37,7 +37,7 @@ public:
 
     static const int staff_to_0 = 2 * line_height;
 
-    static const int direction_line = 2;
+    static const int direction_line = 9;
 
     static const Fraction minimal_supported_fraction;
 
@@ -62,6 +62,8 @@ public:
     void draw_head(int x, int staff_y) const;
 
     void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
+
+    static int calc_needed_space(const vector<vector<Notation>> &notations);
 
     static void draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations);
 
@@ -96,6 +98,10 @@ public:
     static Padding merge_padding(const Padding &a, const Padding &b);
 
     static Padding merge_padding(const vector<Notation> &notes);
+
+    static Fraction sum_length(const vector<vector<Notation>> &notes);
+
+    static void display_notation(const vector<vector<vector<Notation>>> &notation, TimeSignature signature);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 

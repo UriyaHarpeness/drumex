@@ -289,24 +289,41 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
                         length_resize = length_resize / Fraction(2, 1);
                     }
                     draw_connectors(x, staff_y, group[0].get_line(),
-                                    ceil(static_cast<double>(length_resize / minimal_supported_fraction) * distance) +
-                                    1, beams, tail_length);
+                                    ceil(static_cast<double>(length_resize / minimal_supported_fraction) * distance),
+                                    beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
+                    int tmp_distance = (int) (((
+                            (double) (notations[notations.size() - 2][0].get_length() / minimal_supported_fraction) -
+                            1)) * (minimal_distance + minimal_padding)) +
+                                       merge_padding(notations[notations.size() - 2])[1] + minimal_padding +
+                                       merge_padding(group)[0];
                     // beam note size, or half if must smaller...
                     Fraction length_resize = minimal_supported_fraction;
                     if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
                         length_resize = length_resize / Fraction(2, 1);
                     }
                     draw_connectors(
-                            x - floor((static_cast<double>(length_resize / minimal_supported_fraction) * distance)) - 1,
+                            x - floor((static_cast<double>(length_resize / minimal_supported_fraction) * tmp_distance)),
                             staff_y, group[0].get_line(),
-                            ceil(static_cast<double> (length_resize / minimal_supported_fraction) * distance) + 1,
+                            ceil(static_cast<double> (length_resize / minimal_supported_fraction) * tmp_distance),
                             beams, tail_length);
                 }
             }
         }
         x += distance;
     }
+}
+
+int Notation::calc_needed_space(const vector<vector<Notation>> &notations) {
+    int x = 0;
+
+    for (const auto &group : notations) {
+        x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
+                    (minimal_distance + minimal_padding)) + merge_padding(group)[0] + merge_padding(group)[1] +
+             minimal_padding;
+    }
+
+    return x;
 }
 
 void Notation::draw_individual_notes(int &x, int staff_y, const vector<Notation> &group) {
@@ -563,6 +580,66 @@ Padding Notation::merge_padding(const vector<Notation> &notes) {
     }
 
     return padding;
+}
+
+Fraction Notation::sum_length(const vector<vector<Notation>> &notes) {
+    Fraction length = {0, 1};
+
+    for (const auto &note_group : notes) {
+        length += note_group[0].get_length();
+    }
+
+    return length;
+}
+
+void Notation::display_notation(const vector<vector<vector<Notation>>> &notation, TimeSignature signature) {
+    m_display->clear_screen();
+
+    //d.draw_base(3, 16);
+    /*for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 16; j++) {
+            s[0] = (char) (i * 16 + j);
+            if (s[0] == 0)continue;
+
+            //d.draw_image("../stuff.png", 400, 0, a * 8, a * 8);
+            //d.draw_rect(a, a, 80, 10);
+
+            string k(s);
+            d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
+            //d.draw_text(to_string(i * 16 + j), 100, 100);
+        }
+    }*/
+
+    int init_x = 50, off_x = init_x, off_y = 100;
+    Fraction length = {0, 1};
+    Fraction bar = {signature.first, signature.second};
+    m_display->draw_base(20, off_y, 3, 4);
+
+    for (const vector<vector<Notation>> &note_groups : notation) {
+        // The notes do not stretch over bars, so summing the length will not miss bars.
+        length += sum_length(note_groups);
+
+        if (off_x + calc_needed_space(note_groups) > 770) {
+            off_x = init_x;
+            off_y += 100;
+            m_display->draw_base(20, off_y, 3, 4);
+        }
+
+        if (note_groups.size() > 1) {
+            Notation::draw_connected_notes(off_x, off_y, note_groups);
+        } else {
+            Notation::draw_individual_notes(off_x, off_y, note_groups[0]);
+        }
+
+        if (!static_cast<bool>(length % bar)) {
+            off_x += 10;
+            m_display->draw_text("\\", off_x, off_y);
+            off_x += 10;
+        }
+        // printing numbers works great.
+    }
+
+    m_display->present();
 }
 
 Fraction Notation::get_length() const {

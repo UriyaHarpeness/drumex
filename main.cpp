@@ -45,51 +45,18 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<vector<Notation>>> &notations) {
-    char s[2];
-    s[1] = 0;
-    const auto &d = Notation::m_display;
-    d->clear_screen();
-    //d.draw_base(3, 16);
-    /*for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-            s[0] = (char) (i * 16 + j);
-            if (s[0] == 0)continue;
-
-            //d.draw_image("../stuff.png", 400, 0, a * 8, a * 8);
-            //d.draw_rect(a, a, 80, 10);
-
-            string k(s);
-            d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
-            //d.draw_text(to_string(i * 16 + j), 100, 100);
-        }
-    }*/
-
-    int p;
-    for (p = 1; p <= 4; p++) {
-        d->draw_base(20, p * 100, 3, 4);
-    }
-
-    int off_x = 50;
-    for (const vector<vector<Notation>> &note_groups : notations) {
-        if (note_groups.size() > 1) {
-            Notation::draw_connected_notes(off_x, 100, note_groups);
-        } else {
-            Notation::draw_individual_notes(off_x, 100, note_groups[0]);
-        }
-    }
-
-    d->present();
+void disp(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
+    Notation::display_notation(notations, signature);
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-void gamelogic(const vector<vector<vector<Notation>>> &notations) {
+void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
     SDL_Event e;
     bool done = false;
 
     int a = 0;
     while (!done) {
-        disp(notations);
+        disp(notations, signature);
         a++;
         cout << a << endl;
 
@@ -111,26 +78,33 @@ int main() {
     //what if 0 is given as the numerator? like 0/4
 
     vector<vector<Notation>> stuff = {
-            {{BasePlay, FloorTomInst, {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,    {1, 8},  {}}},
-            {{BasePlay, SnareInst,    {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,    {1, 8},  {ModOpen}}},
-            {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {ModFlam}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {ModFlam}}},
-            {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BaseRest, UnboundUp,    {1, 16}, {}}},
-            {{BasePlay, HighTomInst,  {1, 16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,    {1, 1},  {}}},
+            {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,   {1, 8},  {}}},
+            {{BasePlay, SnareInst,   {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
+            {{BaseRest, UnboundUp,   {1, 1},  {}}},
+            {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,   {1, 8},  {}}},
+            {{BasePlay, SnareInst,   {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
+            {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BaseRest, UnboundUp,   {1, 16}, {}}},
+            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
     };
 
-    stuff = {
-            {{BasePlay, HighTomInst, {1,  16}, {ModDrag}}},
-            {{BasePlay, HighTomInst, {1,  16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,   {14, 16}, {}}},
-    };
     // todo: need to separate sounds and display individually and together at the same time...
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
@@ -154,7 +128,7 @@ int main() {
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic(connected_notation);
+    gamelogic(connected_notation, sig);
 
     return 0;
 }
