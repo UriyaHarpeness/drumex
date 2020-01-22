@@ -45,12 +45,12 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
+void disp(const vector<vector<vector<vector<Notation>>>> &notations, TimeSignature signature) {
     Notation::display_notation(notations, signature);
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
+void gamelogic(const vector<vector<vector<vector<Notation>>>> &notations, TimeSignature signature) {
     SDL_Event e;
     bool done = false;
 
@@ -91,6 +91,8 @@ int main() {
             {{BaseRest, UnboundUp,   {1, 16}, {}}},
             {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
             {{BaseRest, UnboundUp,   {1, 1},  {}}},
+            {{BaseRest, UnboundUp,   {1, 2},  {}}},
+            {{BasePlay, SnareInst,   {1, 2},  {}},              {BasePlay, BassInst,  {1, 2}, {}}},
             {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
             {{BasePlay, HiHatInst,   {1, 8},  {}}},
             {{BasePlay, SnareInst,   {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
@@ -106,29 +108,22 @@ int main() {
     };
 
     // todo: need to separate sounds and display individually and together at the same time...
-
-    vector<vector<Notation>> merged_stuff = Notation::merge_notation(stuff);
+    // todo: maybe limit the note length to single beat optionally.
+    // todo: add support for buzz roll and maybe even open roll.
 
     TimeSignature sig = {4, 4};
-    Fraction beat = {1, sig.second};
-    Fraction bar = {sig.first, sig.second};
 
-    vector<vector<Notation>> notations = Notation::generate_notation(merged_stuff, sig);
+    // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
+    // between them.
 
-    vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(notations, bar);
+    vector<vector<vector<Notation>>> notation = Notation::split_voices(stuff);
 
-    vector<vector<vector<Notation>>> connected_notation;
-    vector<vector<vector<Notation>>> small_connected_notation;
-
-    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
-        small_connected_notation = Notation::connect_notation(small_notation, beat);
-        connected_notation.insert(connected_notation.end(), small_connected_notation.begin(),
-                                  small_connected_notation.end());
-    }
+    vector<vector<vector<Notation>>> notations_1 = Notation::generate_notation(notation[0], sig);
+    vector<vector<vector<Notation>>> notations_2 = Notation::generate_notation(notation[1], sig);
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic(connected_notation, sig);
+    gamelogic({notations_1, notations_2}, sig);
 
     return 0;
 }

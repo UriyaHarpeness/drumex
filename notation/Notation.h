@@ -37,7 +37,7 @@ public:
 
     static const int staff_to_0 = 2 * line_height;
 
-    static const int direction_line = 9;
+    static const int direction_line = 2;
 
     static const Fraction minimal_supported_fraction;
 
@@ -69,6 +69,8 @@ public:
 
     static void draw_individual_notes(int &x, int staff_y, const vector<Notation> &group);
 
+    static vector<vector<vector<Notation>>> split_voices(const vector<vector<Notation>> &notation);
+
     /**
      * Unify notation where possible, optimize the notation and remove replaceable clutter.
      *
@@ -90,8 +92,10 @@ public:
     static vector<vector<vector<Notation>>>
     connect_notation(const vector<vector<Notation>> &notation, Fraction beat);
 
-    static vector<vector<Notation>>
-    generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
+    static vector<vector<Notation>> convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
+
+    static vector<vector<vector<Notation>>>
+    generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -101,7 +105,17 @@ public:
 
     static Fraction sum_length(const vector<vector<Notation>> &notes);
 
-    static void display_notation(const vector<vector<vector<Notation>>> &notation, TimeSignature signature);
+    /**
+     * Display the notation.
+     *
+     * @param notation  The notation do display, its type is complicated and here's why, it's a vector:
+     *                  1.  of single notes.
+     *                  2.  of grouped notes (played at the same time with same length).
+     *                  3.  of connected notes (notes that are beamed tigether).
+     *                  4.  of voices.
+     * @param signature The time signature.
+     */
+    static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation, TimeSignature signature);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 

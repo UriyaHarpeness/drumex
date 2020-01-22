@@ -339,6 +339,62 @@ void Notation::draw_individual_notes(int &x, int staff_y, const vector<Notation>
                 (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;;
 }
 
+vector<vector<vector<Notation>>> Notation::split_voices(const vector<vector<Notation>> &notation) {
+    vector<vector<Notation>> voice_one;
+    vector<Notation> voice_one_group;
+    vector<Notation> tmp_one;
+
+    vector<vector<Notation>> voice_two;
+    vector<Notation> voice_two_group;
+    vector<Notation> tmp_two;
+
+    // todo: need to separate sounds and display individually and together at the same time...
+
+    TimeSignature sig = {4, 4};
+
+    for (const auto &group : notation) {
+        for (const auto &note : group) {
+            if (note.get_line() > Notation::direction_line) {
+                voice_two_group.push_back(note);
+                // todo: need to support modifiers in underlying functions.
+                voice_one_group.push_back({BaseRest, UnboundUp, note.get_length(), {}});
+            } else {
+                voice_one_group.push_back(note);
+                // todo: need to support modifiers in underlying functions.
+                voice_two_group.push_back({BaseRest, UnboundDown, note.get_length(), {}});
+            }
+        }
+        assert(!voice_one_group.empty());
+        assert(!voice_two_group.empty());
+
+        for (const auto &note : voice_one_group) {
+            if (note.get_playing() == BasePlay) {
+                tmp_one.push_back(note);
+            }
+        }
+        if (tmp_one.empty()) {
+            tmp_one.push_back(voice_one_group[0]);
+        }
+        voice_one.push_back(tmp_one);
+        voice_one_group.clear();
+        tmp_one.clear();
+
+        for (const auto &note : voice_two_group) {
+            if (note.get_playing() == BasePlay) {
+                tmp_two.push_back(note);
+            }
+        }
+        if (tmp_two.empty()) {
+            tmp_two.push_back(voice_two_group[0]);
+        }
+        voice_two.push_back(tmp_two);
+        voice_two_group.clear();
+        tmp_two.clear();
+    }
+
+    return {voice_one, voice_two};
+}
+
 vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>> &notation) {
     vector<vector<Notation>> merged_notation = {notation[0]};
 
@@ -487,8 +543,7 @@ Notation::connect_notation(const vector<vector<Notation>> &notation, Fraction be
     return connected_notation;
 }
 
-vector<vector<Notation>>
-Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignature signature) {
+vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature) {
     vector<vector<Notation>> generated_notation;
 
     Fraction offset(0, 1);
@@ -526,7 +581,8 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
                         note.add_modifier(ModDot);
                     }
                 } else {
-                    generated_notation.push_back({{BaseRest, UnboundUp, fraction, {}}});
+                    generated_notation.push_back({{BaseRest, (group[0].get_line() > direction_line) ? UnboundDown
+                                                                                                    : UnboundUp, fraction, {}}});
                 }
             }
             playing = BaseRest;
@@ -545,6 +601,28 @@ Notation::generate_notation(const vector<vector<Notation>> &notation, TimeSignat
      */
 
     // also support 2 whole, 4 whole, etc.
+
+    return generated_notation;
+}
+
+vector<vector<vector<Notation>>>
+Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
+    Fraction bar = {signature.first, signature.second};
+    Fraction beat = {1, signature.second};
+
+    vector<vector<Notation>> merged_stuff = Notation::merge_notation(raw_notation);
+
+    vector<vector<Notation>> converted_notation = Notation::convert_notation(merged_stuff, signature);
+    vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(converted_notation, bar);
+
+    vector<vector<vector<Notation>>> generated_notation;
+    vector<vector<vector<Notation>>> small_connected_notation;
+
+    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+        small_connected_notation = Notation::connect_notation(small_notation, beat);
+        generated_notation.insert(generated_notation.end(), small_connected_notation.begin(),
+                                  small_connected_notation.end());
+    }
 
     return generated_notation;
 }
@@ -592,7 +670,7 @@ Fraction Notation::sum_length(const vector<vector<Notation>> &notes) {
     return length;
 }
 
-void Notation::display_notation(const vector<vector<vector<Notation>>> &notation, TimeSignature signature) {
+void Notation::display_notation(const vector<vector<vector<vector<Notation>>>> &notation, TimeSignature signature) {
     m_display->clear_screen();
 
     //d.draw_base(3, 16);
@@ -610,33 +688,36 @@ void Notation::display_notation(const vector<vector<vector<Notation>>> &notation
         }
     }*/
 
-    int init_x = 50, off_x = init_x, off_y = 100;
+    int init_x = 50, off_x = init_x, off_y = 100, edge_padding = 20;
     Fraction length = {0, 1};
     Fraction bar = {signature.first, signature.second};
     m_display->draw_base(20, off_y, 3, 4);
 
-    for (const vector<vector<Notation>> &note_groups : notation) {
-        // The notes do not stretch over bars, so summing the length will not miss bars.
-        length += sum_length(note_groups);
+    for (const auto &voice : notation) {
+        for (const vector<vector<Notation>> &note_groups : voice) {
+            // The notes do not stretch over bars, so summing the length will not miss bars.
+            length += sum_length(note_groups);
 
-        if (off_x + calc_needed_space(note_groups) > 770) {
-            off_x = init_x;
-            off_y += 100;
-            m_display->draw_base(20, off_y, 3, 4);
-        }
+            // move to the next line to avoid displaying over the staff.
+            if (off_x + calc_needed_space(note_groups) > 800 - edge_padding) {
+                off_x = init_x;
+                off_y += 100;
+                m_display->draw_base(edge_padding, off_y, 3, 4);
+            }
 
-        if (note_groups.size() > 1) {
-            Notation::draw_connected_notes(off_x, off_y, note_groups);
-        } else {
-            Notation::draw_individual_notes(off_x, off_y, note_groups[0]);
-        }
+            if (note_groups.size() > 1) {
+                Notation::draw_connected_notes(off_x, off_y, note_groups);
+            } else {
+                Notation::draw_individual_notes(off_x, off_y, note_groups[0]);
+            }
 
-        if (!static_cast<bool>(length % bar)) {
-            off_x += 10;
-            m_display->draw_text("\\", off_x, off_y);
-            off_x += 10;
+            if (!static_cast<bool>(length % bar)) {
+                off_x += 10;
+                m_display->draw_text("\\", off_x, off_y);
+                off_x += 10;
+            }
+            // printing numbers works great.
         }
-        // printing numbers works great.
     }
 
     m_display->present();
