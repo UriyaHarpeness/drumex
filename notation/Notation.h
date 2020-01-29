@@ -27,9 +27,7 @@ public:
 
     static const map<Modifier, array<int, 3>> modifier_to_position;
 
-    static const int minimal_distance = 11;
-
-    static const int minimal_padding = 3;
+    static const int minimal_distance = 14;
 
     static const int line_height = 5;
 
@@ -65,9 +63,11 @@ public:
 
     static int calc_needed_space(const vector<vector<Notation>> &notations);
 
-    static void draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations);
+    static void draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
+                                     vector<vector<Notation>> notations);
 
-    static void draw_individual_notes(int &x, int staff_y, const vector<Notation> &group);
+    static void draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
+                                      const vector<Notation> &group);
 
     static vector<vector<vector<Notation>>> split_voices(const vector<vector<Notation>> &notation);
 
@@ -94,16 +94,20 @@ public:
 
     static vector<vector<Notation>> convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
 
-    static vector<vector<vector<Notation>>>
+    static vector<vector<Notation>>
     generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
+
+    static void insert_padding(vector<pair<Fraction, Padding>> &paddings, Fraction offset, Padding padding);
 
     static Padding merge_padding(const Padding &a, const Padding &b);
 
     static Padding merge_padding(const vector<Notation> &notes);
 
     static Fraction sum_length(const vector<vector<Notation>> &notes);
+
+    static Fraction sum_length(const vector<vector<vector<Notation>>> &notes);
 
     /**
      * Display the notation.
@@ -115,7 +119,7 @@ public:
      *                  4.  of voices.
      * @param signature The time signature.
      */
-    static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation, TimeSignature signature);
+    static void display_notation(const vector<vector<vector<Notation>>> &generated_notation, TimeSignature signature);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 
@@ -134,6 +138,18 @@ public:
     inline void add_modifier(Modifier modifier) { m_modifiers.push_back(modifier); }
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
+
+    [[nodiscard]] inline Padding get_distance() const {
+        return {m_padding[0],
+                max(static_cast<int>(static_cast<double>(get_length() / minimal_supported_fraction) * minimal_distance),
+                    minimal_distance + m_padding[1])};
+    }
+
+    [[nodiscard]] static inline Padding get_distance(const Fraction &length, Padding padding) {
+        return {padding[0],
+                max(static_cast<int>(static_cast<double>(length / minimal_supported_fraction) * minimal_distance),
+                    minimal_distance + padding[1])};
+    }
 
 private:
     MusicSymbol m_symbol;

@@ -35,15 +35,15 @@ const map<Instrument, int> Notation::instrument_to_line = {
 };
 
 const map<Modifier, Padding> Notation::modifier_to_padding = {
-        {ModCrossStick, {4,  minimal_distance + 4}},
-        {ModGhost,      {5,  minimal_distance + 5}},
-        {ModAccent,     {0,  minimal_distance}},
-        {ModDot,        {0,  minimal_distance}},
-        {ModRimshot,    {3,  minimal_distance + 3}},
-        {ModFlam,       {18, minimal_distance}},
-        {ModDrag,       {18, minimal_distance}},
-        {ModOpenClose,  {2,  minimal_distance + 2}},
-        {ModChoke,      {0,  minimal_distance + 8}},
+        {ModCrossStick, {4,  4}},
+        {ModGhost,      {5,  5}},
+        {ModAccent,     {0,  0}},
+        {ModDot,        {0,  0}},
+        {ModRimshot,    {3,  3}},
+        {ModFlam,       {18, 0}},
+        {ModDrag,       {18, 0}},
+        {ModOpenClose,  {2,  2}},
+        {ModChoke,      {0,  8}},
 };
 
 const map<Modifier, MusicSymbolValues> Notation::modifier_to_symbol = {
@@ -59,10 +59,12 @@ const map<Modifier, MusicSymbolValues> Notation::modifier_to_symbol = {
         {ModOpenClose,  SymOpenClose},
         {ModOpen,       SymOpen},
         {ModChoke,      SymChoke},
+        {ModRight,      SymRight},
+        {ModLeft,       SymLeft},
 };
 
 /*
- * Contains 3 ints: offset x, offset y, offset y stem length relation.
+ * Contains 3 ints: offset x, offset y stem length relation, offset y.
  */
 const map<Modifier, array<int, 3>> Notation::modifier_to_position = {
         {ModDot,        {0,   0, 0}},
@@ -77,6 +79,8 @@ const map<Modifier, array<int, 3>> Notation::modifier_to_position = {
         {ModOpenClose,  {1,   4, -6}},
         {ModOpen,       {4,   4, -6}},
         {ModChoke,      {16,  0, -18}},
+        {ModRight,      {-19, 1, 0}},
+        {ModLeft,       {-12, 1, 0}},
 };
 
 // todo: change to 1/32 after dynamic resizing.
@@ -84,12 +88,7 @@ const Fraction Notation::minimal_supported_fraction(1, 16);
 
 shared_ptr<Display> Notation::m_display = nullptr;
 
-Notation::Notation(const Notation &other) : m_symbol(other.m_symbol), m_symbol_value(other.m_symbol_value),
-                                            m_line(other.m_line), m_length(other.m_length),
-                                            m_instrument(other.m_instrument),
-                                            m_playing(other.m_playing), m_modifiers(other.m_modifiers),
-                                            m_padding(other.m_padding) {
-}
+Notation::Notation(const Notation &other) = default;
 
 Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
         m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
@@ -229,7 +228,19 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_head(x, staff_y);
 }
 
-void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>> notations) {
+int Notation::calc_needed_space(const vector<vector<Notation>> &notations) {
+    int x = 0;
+
+    for (const auto &group : notations) {
+        x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) * minimal_distance) +
+             merge_padding(group)[0] + merge_padding(group)[1];
+    }
+
+    return x;
+}
+
+void Notation::draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
+                                    vector<vector<Notation>> notations) {
     assert(notations.size() >= 2);
 
     // todo: assumes all note are in the same direction.
@@ -258,18 +269,19 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
         }
     }
 
-    //cout << min_height << " " << max_height << endl;
     int line_relation = max(abs(max_height - direction_line - max_beams) - abs(min_height - direction_line), 4) + 3;
-    //cout << line_relation << endl;
-    //todo: line relation needs to be aware of space for connectors.
-    //minimum 1.5 real line difference (1 line from the head end)
-    //todo: support dot, which changes also the length of the note...
+    // minimum 1.5 real line difference (1 line from the head end)
+    auto position = distances.begin();
+    while (position->first <= offset) position++;
 
-    int line, tail_length, distance = 0;
-    x += merge_padding(notations[0])[0];
+    int line, tail_length, distance, last_distance = 0;
+    Fraction length_end;
+    x += position->second[0];
     for (const auto &group : notations) {
-        distance = (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
-                          (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;
+        for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
+                position->second[1] + (position + 1)->second[0]), position++);
+        offset += group[0].get_length();
+
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
@@ -280,63 +292,45 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<vector<Notation>
             }
             if (&note == &(group[0])) {
                 if (&group < &(notations[notations.size() - 2])) {
-                    distance += merge_padding(*(&group + 1))[0];
                     draw_connectors(x, staff_y, group[0].get_line(), distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
-                    distance += merge_padding(*(&group + 1))[0];
-                    Fraction length_resize = minimal_supported_fraction;
-                    if (note.get_rounded_length() <= minimal_supported_fraction) {
-                        length_resize = length_resize / Fraction(2, 1);
+                    if (group[0].get_rounded_length() > minimal_supported_fraction) {
+                        last_distance = minimal_distance;
+                    } else {
+                        last_distance = distance / 2;
                     }
-                    draw_connectors(x, staff_y, group[0].get_line(),
-                                    ceil(static_cast<double>(length_resize / minimal_supported_fraction) * distance),
-                                    beams, tail_length);
+                    draw_connectors(x, staff_y, group[0].get_line(), distance - last_distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
-                    int tmp_distance = (int) (((
-                            (double) (notations[notations.size() - 2][0].get_length() / minimal_supported_fraction) -
-                            1)) * (minimal_distance + minimal_padding)) +
-                                       merge_padding(notations[notations.size() - 2])[1] + minimal_padding +
-                                       merge_padding(group)[0];
                     // beam note size, or half if must smaller...
-                    Fraction length_resize = minimal_supported_fraction;
-                    if ((*(&group - 1))[0].get_rounded_length() <= minimal_supported_fraction) {
-                        length_resize = length_resize / Fraction(2, 1);
-                    }
-                    draw_connectors(
-                            x - floor((static_cast<double>(length_resize / minimal_supported_fraction) * tmp_distance)),
-                            staff_y, group[0].get_line(),
-                            ceil(static_cast<double> (length_resize / minimal_supported_fraction) * tmp_distance),
-                            beams, tail_length);
+                    draw_connectors(x - last_distance, staff_y, group[0].get_line(), last_distance, beams, tail_length);
                 }
             }
         }
         x += distance;
     }
+
+    x -= position->second[0];
 }
 
-int Notation::calc_needed_space(const vector<vector<Notation>> &notations) {
-    int x = 0;
-
-    for (const auto &group : notations) {
-        x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
-                    (minimal_distance + minimal_padding)) + merge_padding(group)[0] + merge_padding(group)[1] +
-             minimal_padding;
-    }
-
-    return x;
-}
-
-void Notation::draw_individual_notes(int &x, int staff_y, const vector<Notation> &group) {
+void Notation::draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
+                                     const vector<Notation> &group) {
     // todo: assumes all note are in the same direction.
 
     // todo: maybe draw_connected_notes can call this function
 
-    x += merge_padding(group)[0];
+    int distance;
+    Fraction length_end;
+    auto position = distances.begin();
+    while (position->first <= offset) position++;
+
+    x += position->second[0];
     for (const auto &note : group) {
         note.display(x, staff_y, true);
     }
-    x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) *
-                (minimal_distance + minimal_padding)) + merge_padding(group)[1] + minimal_padding;;
+    for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
+            position->second[1] + (position + 1)->second[0]), position++);
+    x += distance;
+    x -= position->second[0];
 }
 
 vector<vector<vector<Notation>>> Notation::split_voices(const vector<vector<Notation>> &notation) {
@@ -472,14 +466,12 @@ Notation::split_notation(const vector<vector<Notation> > &notation, Fraction bar
 
     for (const auto &group : notation) {
         length_sum += group[0].get_length();
-        cout << group[0].get_length() << " " << length_sum << endl;
         part_notation.push_back(group);
         assert(length_sum <= bar);
         if (length_sum == bar) {
             splitted_notation.push_back(part_notation);
             part_notation.clear();
             length_sum = {0, 1};
-            cout << "got to length" << endl;
         }
     }
 
@@ -517,13 +509,11 @@ Notation::connect_notation(const vector<vector<Notation>> &notation, Fraction be
     bool connecting = false;
     for (auto group_it = notation.begin(); group_it != notation.end(); group_it++) {
         const auto &group = *group_it;
-        cout << "- " << group[0].get_length() << endl;
         length_sum += group[0].get_length();
         // todo: should if any is playing, although if one is playing than there's no rest...
         if ((group[0].get_playing() == BasePlay) && (group[0].get_length() < beat)) {
             connecting = true;
         }
-        cout << group[0].get_length() << " " << length_sum << endl;
         part_notation.push_back(group);
         if ((((group_it + 1 == notation.end()) ? 0 : count_remaining_plays(length_sum, beat, group_it))) == 0) {
             connecting = false;
@@ -534,7 +524,6 @@ Notation::connect_notation(const vector<vector<Notation>> &notation, Fraction be
         }
         if (length_sum >= beat) {
             length_sum = length_sum % beat;
-            cout << "got to length" << endl;
         }
     }
 
@@ -552,9 +541,7 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
         // assumes all the group has the same BasicPlaying and length
         auto fractions = split_fraction(signature, offset, group[0].get_rounded_length());
         BasicPlaying playing = group[0].get_playing();
-        cout << group[0].get_rounded_length() << " " << offset << endl;
         for (const auto &fraction : fractions) {
-            cout << "* " << fraction << endl;
             if (playing == BasePlay) {
                 vector<Notation> tmp;
                 for (const auto &note : group) {
@@ -605,30 +592,20 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
     return generated_notation;
 }
 
-vector<vector<vector<Notation>>>
+vector<vector<Notation>>
 Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
     Fraction bar = {signature.first, signature.second};
     Fraction beat = {1, signature.second};
 
     vector<vector<Notation>> merged_stuff = Notation::merge_notation(raw_notation);
 
-    vector<vector<Notation>> converted_notation = Notation::convert_notation(merged_stuff, signature);
-    vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(converted_notation, bar);
-
-    vector<vector<vector<Notation>>> generated_notation;
-    vector<vector<vector<Notation>>> small_connected_notation;
-
-    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
-        small_connected_notation = Notation::connect_notation(small_notation, beat);
-        generated_notation.insert(generated_notation.end(), small_connected_notation.begin(),
-                                  small_connected_notation.end());
-    }
+    vector<vector<Notation>> generated_notation = Notation::convert_notation(merged_stuff, signature);
 
     return generated_notation;
 }
 
 Padding Notation::create_padding(const vector<Modifier> &modifiers) {
-    Padding padding = {0, minimal_distance};
+    Padding padding = {0, 0};
 
     for (const auto &modifier : modifiers) {
         auto got_padding = modifier_to_padding.find(modifier);
@@ -638,6 +615,17 @@ Padding Notation::create_padding(const vector<Modifier> &modifiers) {
     }
 
     return padding;
+}
+
+void Notation::insert_padding(vector<pair<Fraction, Padding>> &paddings, Fraction offset, Padding padding) {
+    auto padding_iterator = paddings.begin();
+    while ((padding_iterator != paddings.end()) && (padding_iterator->first < offset)) padding_iterator++;
+
+    if ((padding_iterator != paddings.end()) && (padding_iterator->first == offset)) {
+        padding_iterator->second = merge_padding(padding_iterator->second, padding);
+    } else {
+        paddings.insert(padding_iterator, {offset, padding});
+    }
 }
 
 Padding Notation::merge_padding(const Padding &a, const Padding &b) {
@@ -670,8 +658,48 @@ Fraction Notation::sum_length(const vector<vector<Notation>> &notes) {
     return length;
 }
 
-void Notation::display_notation(const vector<vector<vector<vector<Notation>>>> &notation, TimeSignature signature) {
+Fraction Notation::sum_length(const vector<vector<vector<Notation>>> &notes) {
+    Fraction length = {0, 1};
+
+    for (const auto &connected_notes : notes) {
+        length += sum_length(connected_notes);
+    }
+
+    return length;
+}
+
+void Notation::display_notation(const vector<vector<vector<Notation>>> &generated_notation, TimeSignature signature) {
+    Fraction bar = {signature.first, signature.second};
+    Fraction beat = {1, signature.second};
+
+    vector<vector<vector<Notation>>> splitted_notation = Notation::split_notation(generated_notation[0], bar);
+
+    vector<vector<vector<Notation>>> voice_notation;
+    vector<vector<vector<Notation>>> small_connected_notation;
+    vector<vector<vector<vector<Notation>>>> notation;
+
+    // the displaying.
+    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+        small_connected_notation = Notation::connect_notation(small_notation, beat);
+        voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
+    }
+    notation.push_back(voice_notation);
+    voice_notation.clear();
+    splitted_notation = Notation::split_notation(generated_notation[1], bar);
+
+    // the displaying.
+    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+        small_connected_notation = Notation::connect_notation(small_notation, beat);
+        voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
+    }
+    notation.push_back(voice_notation);
+    voice_notation.clear();
+    ///////////////////////////////////////////////////////
+
     m_display->clear_screen();
+
+    // asserts two voices are same offset, when using one voice don't use this.
+    assert(sum_length(notation[0]) == sum_length(notation[1]));
 
     //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
@@ -688,16 +716,45 @@ void Notation::display_notation(const vector<vector<vector<vector<Notation>>>> &
         }
     }*/
 
-    int init_x = 50, off_x = init_x, off_y = 100, edge_padding = 20;
-    Fraction length = {0, 1};
-    Fraction bar = {signature.first, signature.second};
+    int init_x = 50, init_y = 100, off_x = init_x, off_y = init_y, edge_padding = 20;
+    Fraction offset;
     m_display->draw_base(20, off_y, 3, 4);
 
-    for (const auto &voice : notation) {
-        for (const vector<vector<Notation>> &note_groups : voice) {
-            // The notes do not stretch over bars, so summing the length will not miss bars.
-            length += sum_length(note_groups);
+    vector<pair<Fraction, Padding>> merged_padding;
+    // maybe typedef vector<pair<Fraction, Padding>> as Distances
+    vector<pair<Fraction, Padding>> distances;
 
+    // todo: maybe simply use 0,1 for default constructor and be over with all this initialization stuff.
+    // todo: think what to do with notes with value below minimum supported fraction on different lines.
+    Fraction notes_offset = {0, 1};
+    for (const auto &notes : generated_notation[0]) {
+        insert_padding(merged_padding, notes_offset, merge_padding(notes));
+        notes_offset += notes[0].get_length();
+    }
+    insert_padding(merged_padding, notes_offset, {0, 0});
+    insert_padding(merged_padding, notes_offset + bar, {0, 0});
+
+    notes_offset = {0, 1};
+    for (const auto &notes : generated_notation[1]) {
+        insert_padding(merged_padding, notes_offset, merge_padding(notes));
+        notes_offset += notes[0].get_length();
+    }
+    insert_padding(merged_padding, notes_offset, {0, 0});
+    insert_padding(merged_padding, notes_offset + bar, {0, 0});
+
+    pair<Fraction, Padding> previous;
+    for (const auto &padding : merged_padding) {
+        if (padding.first) {
+            distances.emplace_back(padding.first, get_distance(padding.first - previous.first, previous.second));
+        }
+        previous = padding;
+    }
+
+    for (const auto &voice : notation) {
+        offset = {0, 1};
+        off_x = init_x;
+        off_y = init_y;
+        for (const vector<vector<Notation>> &note_groups : voice) {
             // move to the next line to avoid displaying over the staff.
             if (off_x + calc_needed_space(note_groups) > 800 - edge_padding) {
                 off_x = init_x;
@@ -706,14 +763,17 @@ void Notation::display_notation(const vector<vector<vector<vector<Notation>>>> &
             }
 
             if (note_groups.size() > 1) {
-                Notation::draw_connected_notes(off_x, off_y, note_groups);
+                draw_connected_notes(off_x, off_y, distances, offset, note_groups);
             } else {
-                Notation::draw_individual_notes(off_x, off_y, note_groups[0]);
+                draw_individual_notes(off_x, off_y, distances, offset, note_groups[0]);
             }
 
-            if (!static_cast<bool>(length % bar)) {
+            // The notes do not stretch over bars, so summing the offset will not miss bars.
+            offset += sum_length(note_groups);
+
+            if (!static_cast<bool>(offset % bar)) {
                 off_x += 10;
-                m_display->draw_text("\\", off_x, off_y);
+                m_display->draw_text(SymBarLine, off_x, off_y);
                 off_x += 10;
             }
             // printing numbers works great.

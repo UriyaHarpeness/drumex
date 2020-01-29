@@ -8,7 +8,8 @@ Display::Display() {
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
 
-    m_font = TTF_OpenFont("../Drumex.ttf", 39);
+    m_music_font = TTF_OpenFont("../Drumex.ttf", 39);
+    m_text_font = TTF_OpenFont("../WallingtonRegular-PYK7.ttf", 39);
 }
 
 Display::~Display() {
@@ -16,7 +17,8 @@ Display::~Display() {
     free(m_renderer);
     free(m_screen);
     free(m_window);
-    free(m_font);
+    free(m_music_font);
+    free(m_text_font);
 }
 
 void Display::clear_screen() {
@@ -28,7 +30,7 @@ void Display::draw_text(const string &text, int x, int y) {
     SDL_Surface *surface;
     SDL_Color textColor = {0, 0, 0, 0};
 
-    surface = TTF_RenderText_Solid(m_font, text.c_str(), textColor);
+    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
     SDL_FreeSurface(surface);
     SDL_Rect rect{x, y, surface->w, surface->h};
@@ -41,7 +43,7 @@ void Display::draw_text(MusicSymbolValues value, int x, int y) {
 
     char text[2] = {0, 0};
     text[0] = value;
-    surface = TTF_RenderText_Solid(m_font, text, textColor);
+    surface = TTF_RenderText_Solid(m_music_font, text, textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
     SDL_FreeSurface(surface);
     SDL_Rect rect{x, y, surface->w, surface->h};
@@ -54,7 +56,7 @@ void Display::draw_text(MusicSymbolValues value, int x, int staff_y, int line, i
 
     char text[2] = {0, 0};
     text[0] = value;
-    surface = TTF_RenderText_Solid(m_font, text, textColor);
+    surface = TTF_RenderText_Solid(m_music_font, text, textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
     SDL_FreeSurface(surface);
     SDL_Rect rect{x + off_x, staff_y + (line * line_height) + off_y, surface->w, surface->h};
@@ -65,7 +67,7 @@ void Display::draw_text_c(const string &text, int x, int y) {
     SDL_Surface *surface;
     SDL_Color textColor = {0, 0, 0, 0};
 
-    surface = TTF_RenderText_Solid(m_font, text.c_str(), textColor);
+    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
     SDL_FreeSurface(surface);
     SDL_Rect rect{x - (surface->w / 2), y - (surface->h / 2), surface->w, surface->h};

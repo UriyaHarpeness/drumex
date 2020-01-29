@@ -103,9 +103,11 @@ enum MusicSymbolValues {
     SymOpenClose = 0xF9,
     SymOpen = 0xF6,
     SymChoke = ',',
+    SymRight = 'R',
+    SymLeft = 'L',
     SymLedger = '_',
     SymTempo = 0xF2,
-    SymBarLine = 0x5C,
+    SymBarLine = '\\',
 };
 
 enum MusicSymbol {
@@ -140,6 +142,8 @@ enum Modifier {
     ModOpenClose,
     ModOpen,
     ModChoke,
+    ModRight,
+    ModLeft,
 };
 
 typedef tuple<Playing, Sticking> Action;

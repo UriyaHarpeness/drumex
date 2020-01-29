@@ -45,28 +45,43 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<vector<vector<Notation>>>> &notations, TimeSignature signature) {
-    Notation::display_notation(notations, signature);
-    this_thread::sleep_for(chrono::milliseconds(1000));
+void disp(const vector<vector<vector<Notation>>
+
+> &notations,
+          TimeSignature signature
+) {
+    Notation::display_notation(notations, signature
+    );
+    this_thread::sleep_for(chrono::milliseconds(1000)
+    );
 }
 
-void gamelogic(const vector<vector<vector<vector<Notation>>>> &notations, TimeSignature signature) {
+void gamelogic(const vector<vector<vector<Notation>>
+
+> &notations,
+               TimeSignature signature
+) {
     SDL_Event e;
     bool done = false;
 
     int a = 0;
     while (!done) {
-        disp(notations, signature);
+        disp(notations, signature
+        );
         a++;
-        cout << a << endl;
+        cout << a <<
+             endl;
 
-        if (SDL_PollEvent(&e)) {
+        if (
+                SDL_PollEvent(&e)
+                ) {
             if (e.type == SDL_QUIT) {
                 done = true;
             }
         }
         if (a == 20) break;
-        this_thread::sleep_for(chrono::milliseconds(200));
+        this_thread::sleep_for(chrono::milliseconds(200)
+        );
     }
 }
 
@@ -107,19 +122,32 @@ int main() {
             {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
     };
 
+    stuff = {
+            {{BasePlay, SnareInst, {1, 8}, {ModRight}}, {BasePlay, BassInst, {1, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModLeft}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModRight}}, {BasePlay, BassInst, {1, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModRight}}, {BasePlay, BassInst, {1, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModLeft}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModRight}}, {BasePlay, BassInst, {1, 8}, {}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModLeft}}},
+            {{BasePlay, SnareInst, {1, 8}, {ModLeft}}},
+    };
+
     // todo: need to separate sounds and display individually and together at the same time...
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
+    // todo: full note rests on the low voice are outside the line.
+    // todo: must support polyrhythm later.
 
     TimeSignature sig = {4, 4};
 
     // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
     // between them.
 
-    vector<vector<vector<Notation>>> notation = Notation::split_voices(stuff);
+    vector<vector<vector<Notation >>> notation = Notation::split_voices(stuff);
 
-    vector<vector<vector<Notation>>> notations_1 = Notation::generate_notation(notation[0], sig);
-    vector<vector<vector<Notation>>> notations_2 = Notation::generate_notation(notation[1], sig);
+    vector<vector<Notation>> notations_1 = Notation::generate_notation(notation[0], sig);
+    vector<vector<Notation>> notations_2 = Notation::generate_notation(notation[1], sig);
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 

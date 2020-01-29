@@ -62,5 +62,6 @@ private:
     SDL_Window *m_window;
     SDL_Renderer *m_renderer;
     SDL_Surface *m_screen;
-    TTF_Font *m_font;
+    TTF_Font *m_music_font;
+    TTF_Font *m_text_font;
 };
