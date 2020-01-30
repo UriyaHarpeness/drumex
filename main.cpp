@@ -86,7 +86,6 @@ void gamelogic(const vector<vector<vector<Notation>>
 }
 
 int main() {
-    Action a(Regular, UnboundStick);
     // todo: dont use make_pair, use the Action constructor everywhere
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
@@ -144,14 +143,11 @@ int main() {
     // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
     // between them.
 
-    vector<vector<vector<Notation >>> notation = Notation::split_voices(stuff);
-
-    vector<vector<Notation>> notations_1 = Notation::generate_notation(notation[0], sig);
-    vector<vector<Notation>> notations_2 = Notation::generate_notation(notation[1], sig);
+    vector<vector<vector<Notation>>> notation = Notation::generate_notation(stuff, sig);
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic({notations_1, notations_2}, sig);
+    gamelogic(notation, sig);
 
     return 0;
 }

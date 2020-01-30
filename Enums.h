@@ -40,17 +40,6 @@ enum Sticking {
 };
 
 enum MusicSymbolValues {
-    SymZero = '0',
-    SymOne = '1',
-    SymTwo = '2',
-    SymThree = '3',
-    SymFour = '4',
-    SymFive = '5',
-    SymSix = '6',
-    SymSeven = '7',
-    SymEight = '8',
-    SymNine = '9',
-
     SymSmallZero = 0xBC,
     SymSmallOne = 0xC1,
     SymSmallTwo = 0xAA,
@@ -67,16 +56,7 @@ enum MusicSymbolValues {
     SymHalfNote = 0xFA,
     SymQuarterNote = 0xCF,
 
-    SymDownHalfNote = 0xFA,//'H',
-    SymDownQuarterNote = 0xCF,//'Q',
-    SymDownEightNote = 0xCF,//'E',
-    SymDownSixteenthNote = 0xCF,//'X',
     SymDownFlag = 'J',
-
-    SymUpHalfNote = 0xFA,//'h',
-    SymUpEightNote = 0xCF,//'e',
-    SymUpQuarterNote = 0xCF,//'q',
-    SymUpSixteenthNote = 0xCF,//'x',
     SymUpFlag = 'j',
 
     SymDoubleWholeRest = 0xE3,
@@ -111,14 +91,6 @@ enum MusicSymbolValues {
 };
 
 enum MusicSymbol {
-    DoubleWholeNote = 'W',
-    WholeNote = 'w',
-    HalfNote = 'H',
-    QuarterNote = 'Q',
-    EightNote = 'E',
-    SixteenthNote = 'X',
-    Flag = 'J',
-
     DoubleWholeRest = 0xE3,
     WholeRest = 0xB7,
     HalfRest = 0xEE,

@@ -4,6 +4,8 @@
 #include <numeric>
 #include <utility>
 #include <vector>
+#include <ctgmath>
+
 
 using namespace std;
 
@@ -33,10 +35,6 @@ public:
 
     Fraction operator%(const Fraction &other) const;
 
-    pair<int, Fraction> count(const Fraction &single) const;
-
-    vector<Fraction> split(const Fraction &single) const;
-
     bool operator<(const Fraction &other) const;
 
     bool operator>(const Fraction &other) const;
@@ -45,11 +43,11 @@ public:
 
     bool operator>=(const Fraction &other) const;
 
-    operator bool() const;
+    explicit operator bool() const;
 
-    operator int() const;
+    explicit operator int() const;
 
-    operator double() const;
+    explicit operator double() const;
 
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 

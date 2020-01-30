@@ -66,8 +66,9 @@ public:
     static void draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
                                      vector<vector<Notation>> notations);
 
-    static void draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
-                                      const vector<Notation> &group);
+    static void
+    draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, const Fraction &offset,
+                          const vector<Notation> &group);
 
     static vector<vector<vector<Notation>>> split_voices(const vector<vector<Notation>> &notation);
 
@@ -84,22 +85,26 @@ public:
 
     static vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
 
-    static vector<vector<vector<Notation>>> split_notation(const vector<vector<Notation>> &notation, Fraction bar);
+    static vector<vector<vector<Notation>>>
+    split_notation(const vector<vector<Notation>> &notation, const Fraction &bar);
 
     static int
-    count_remaining_plays(Fraction offset, Fraction beat, vector<vector<Notation>>::const_iterator notation_it);
+    count_remaining_plays(Fraction offset, const Fraction &beat, vector<vector<Notation>>::const_iterator notation_it);
 
     static vector<vector<vector<Notation>>>
-    connect_notation(const vector<vector<Notation>> &notation, Fraction beat);
+    connect_notation(const vector<vector<Notation>> &notation, const Fraction &beat);
 
     static vector<vector<Notation>> convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
 
     static vector<vector<Notation>>
+    generate_voice_notation(const vector<vector<Notation>> &raw_voice_notation, TimeSignature signature);
+
+    static vector<vector<vector<Notation>>>
     generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
-    static void insert_padding(vector<pair<Fraction, Padding>> &paddings, Fraction offset, Padding padding);
+    static void insert_padding(vector<pair<Fraction, Padding>> &paddings, const Fraction &offset, Padding padding);
 
     static Padding merge_padding(const Padding &a, const Padding &b);
 

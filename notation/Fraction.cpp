@@ -1,8 +1,7 @@
-#include <tgmath.h>
 #include "Fraction.h"
 
 
-Fraction::Fraction() : m_value({0, 0}) {
+Fraction::Fraction() : m_value({0, 1}) {
 }
 
 Fraction::Fraction(int a, int b) : m_value({a, b}) {
@@ -15,7 +14,7 @@ bool Fraction::operator==(const Fraction &other) const {
     Fraction result(*this);
     Fraction second(other);
     if (!(m_value.second && second.m_value.second)) {
-        return result;
+        return static_cast<bool>(result);
     }
     equalize_denominators(result, second);
     return result.m_value.first == second.m_value.first;
@@ -109,20 +108,6 @@ Fraction Fraction::operator%(const Fraction &other) const {
     result.m_value.first %= second.m_value.first;
     simplify(result);
     return result;
-}
-
-pair<int, Fraction> Fraction::count(const Fraction &single) const {
-    Fraction temp(*this / single);
-    return make_pair(temp.m_value.first / temp.m_value.second, *this % single);
-}
-
-vector<Fraction> Fraction::split(const Fraction &single) const {
-    pair<int, Fraction> counts = count(single);
-    vector<Fraction> fractions(counts.first, single);
-    if (counts.second) {
-        fractions.push_back(counts.second);
-    }
-    return fractions;
 }
 
 bool Fraction::operator<(const Fraction &other) const {
