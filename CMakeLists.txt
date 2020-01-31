@@ -5,12 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(drumex main.cpp
         Enums.h
-        role/Role.cpp
-        role/Role.h
         metronome/Metronome.cpp
         metronome/Metronome.h
-        part/Part.cpp
-        part/Part.h
         mixer/Mixer.cpp
         mixer/Mixer.h mixer/Sound.h
         reader/Reader.cpp
@@ -19,7 +15,7 @@ add_executable(drumex main.cpp
         exercise/Exercise.h
         ext.h
         variations/Variations.h
-        variations/Variations.cpp display/Display.cpp display/Display.h notation/Notation.cpp notation/Notation.h notation/Fraction.cpp notation/Fraction.h)
+        variations/Variations.cpp display/Display.cpp display/Display.h notation/Notation.cpp notation/Notation.h notation/Fraction.cpp notation/Fraction.h reader/Part.cpp reader/Part.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

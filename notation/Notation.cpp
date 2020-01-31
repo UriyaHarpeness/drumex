@@ -326,7 +326,7 @@ Notation::draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Paddi
     x -= position->second[0];
 }
 
-vector<vector<vector<Notation>>> Notation::split_voices(const vector<vector<Notation>> &notation) {
+Notations Notation::split_voices(const vector<vector<Notation>> &notation) {
     vector<vector<Notation>> voice_one;
     vector<Notation> voice_one_group;
     vector<Notation> tmp_one;
@@ -446,9 +446,8 @@ vector<Fraction> Notation::split_fraction(TimeSignature signature, Fraction offs
     return move(fractions);
 }
 
-vector<vector<vector<Notation>>>
-Notation::split_notation(const vector<vector<Notation> > &notation, const Fraction &bar) {
-    vector<vector<vector<Notation>>> splitted_notation;
+Notations Notation::split_notation(const vector<vector<Notation> > &notation, const Fraction &bar) {
+    Notations splitted_notation;
     vector<vector<Notation>> part_notation;
     Fraction length_sum;
 
@@ -486,9 +485,9 @@ int Notation::count_remaining_plays(Fraction offset, const Fraction &beat,
     return count;
 }
 
-vector<vector<vector<Notation>>>
+Notations
 Notation::connect_notation(const vector<vector<Notation>> &notation, const Fraction &beat) {
-    vector<vector<vector<Notation>>> connected_notation;
+    Notations connected_notation;
     vector<vector<Notation>> part_notation;
     Fraction length_sum;
 
@@ -590,11 +589,11 @@ Notation::generate_voice_notation(const vector<vector<Notation>> &raw_voice_nota
     return move(convert_notation(merged_stuff, signature));
 }
 
-vector<vector<vector<Notation>>>
+Notations
 Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
-    vector<vector<vector<Notation>>> notation = split_voices(raw_notation);
+    Notations notation = split_voices(raw_notation);
 
-    vector<vector<vector<Notation>>> generated_notation =
+    Notations generated_notation =
             {generate_voice_notation(notation[0], signature), generate_voice_notation(notation[1], signature)};
 
     return move(generated_notation);
@@ -654,7 +653,7 @@ Fraction Notation::sum_length(const vector<vector<Notation>> &notes) {
     return length;
 }
 
-Fraction Notation::sum_length(const vector<vector<vector<Notation>>> &notes) {
+Fraction Notation::sum_length(const Notations &notes) {
     Fraction length;
 
     for (const auto &connected_notes : notes) {
@@ -664,15 +663,15 @@ Fraction Notation::sum_length(const vector<vector<vector<Notation>>> &notes) {
     return length;
 }
 
-void Notation::display_notation(const vector<vector<vector<Notation>>> &generated_notation, TimeSignature signature) {
+void Notation::display_notation(const Notations &generated_notation, TimeSignature signature) {
     Fraction bar = {signature.first, signature.second};
     Fraction beat = {1, signature.second};
 
-    vector<vector<vector<Notation>>> splitted_notation = split_notation(generated_notation[0], bar);
+    Notations splitted_notation = split_notation(generated_notation[0], bar);
 
-    vector<vector<vector<Notation>>> voice_notation;
-    vector<vector<vector<Notation>>> small_connected_notation;
-    vector<vector<vector<vector<Notation>>>> notation;
+    Notations voice_notation;
+    Notations small_connected_notation;
+    vector<Notations> notation;
 
     for (const vector<vector<Notation>> &small_notation : splitted_notation) {
         small_connected_notation = connect_notation(small_notation, beat);

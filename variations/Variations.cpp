@@ -1,6 +1,8 @@
 #include "Variations.h"
 
-void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
+
+void variations::DoubleNotes::apply(Notations &notation, Json::Value arguments) {
+    /*
     TimeSignature time_signature = part.get_time_signature();
     // the nature of doubling notes can cause overriding, but since it is a single role, which should not have left and
     // right sticking at the same time, this is ok.
@@ -12,9 +14,11 @@ void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
         }
     }
     part.set_actions(actions);
+    */
 }
 
-void variations::QuickDoubleGhosts::apply(Part &part, Json::Value arguments) {
+void variations::QuickDoubleGhosts::apply(Notations &notation, Json::Value arguments) {
+    /*
     TimeSignature time_signature = part.get_time_signature();
     time_signature.first *= 2;
     time_signature.second *= 2;
@@ -31,10 +35,11 @@ void variations::QuickDoubleGhosts::apply(Part &part, Json::Value arguments) {
     }
     part.set_actions(actions);
     part.set_time_signature(time_signature);
+    */
 }
 
-void variations::PlayRight::apply(Part &part, Json::Value arguments) {
-    printf("variations::PlayRight::apply\n");
+void variations::PlayRight::apply(Notations &notation, Json::Value arguments) {
+    /*printf("variations::PlayRight::apply\n");
 
     TimeSignature time_signature = part.get_time_signature();
     Actions actions(time_signature.first);
@@ -44,9 +49,11 @@ void variations::PlayRight::apply(Part &part, Json::Value arguments) {
     }
     part.set_actions(actions);
     part.set_time_signature(time_signature);
+    */
 }
 
-void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
+void variations::PlayLeft::apply(Notations &notation, Json::Value arguments) {
+    /*
     TimeSignature time_signature = part.get_time_signature();
     Actions actions(time_signature.first);
     size_t index = 0;
@@ -55,18 +62,23 @@ void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
     }
     part.set_actions(actions);
     part.set_time_signature(time_signature);
+    */
 }
 
-void variations::StretchTimeSignature::apply(Part &part, Json::Value arguments) {
+void variations::StretchTimeSignature::apply(Notations &notation, Json::Value arguments) {
+    /*
     printf("variations::StretchTimeSignature::apply\n");
 
     // todo: this currently multiplies, need to support some time in "as triplets"
     part.convert_time_stretch(arguments[1].asInt());
+    */
 }
 
-void variations::ExtendTimeSignature::apply(Part &part, Json::Value arguments) {
+void variations::ExtendTimeSignature::apply(Notations &notation, Json::Value arguments) {
+    /*
     // todo: only words in whole note results, like 3/3 or 4/4
     TimeSignature time_signature = part.get_time_signature();
     time_signature.second = arguments[1].asInt();
     part.set_time_signature(time_signature);
+    */
 }

@@ -6,6 +6,14 @@
 
 ## General Info
 
+#### Notation Structure
+
+DrumEX sees notation in the following hierarchy (lowest to highest):
+1)  Single Note - Contains the instrument, length, and modifiers.
+2)  Note Group - Gathers multiple notes with same length that are played simultaneously.
+3)  Voice - Contains a list of all the note groups that belong to the same voice.
+4)  Notation - Contains multiple voices, and represents the full and final structure.
+
 #### Time
 
 1)  The note value is always a power of 2, since all the notes

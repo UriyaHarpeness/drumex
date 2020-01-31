@@ -2,13 +2,15 @@
 
 #include <utility>
 
-Metronome::Metronome(vector<Role> roles, uint8_t tempo, unique_ptr<Mixer> mixer) :
+Metronome::Metronome(Notations notation, uint8_t tempo, unique_ptr<Mixer> mixer) :
         m_tempo(tempo), m_counter(0), m_start(chrono::system_clock::now()), m_mixer(move(mixer)),
-        m_roles(move(roles)) {
+        m_notation(move(notation)) {
     uint32_t division = this->get_division();
-    for (auto &role : m_roles) {
+    for (auto &note_group : notation) {
         //todo: make sure this changes the part...
-        role.get_part().convert_time(division);
+
+        // todo: add convert time
+        //role.get_part().convert_time(division);
     }
 }
 
@@ -23,18 +25,10 @@ void Metronome::start() {
 
 void Metronome::beat() {
     string played;
-    pair<Instrument, Action> new_played;
-    for (auto &role: this->m_roles) {
-        new_played = role.play();
-        ///////////////////
-        //todo: playing sounds is problematic, maybe draw a chart
-        //if (new_played.second != Rest) {
-        //    m_mixer->play_sound(new_played.first);
-        //}
-        ///////////////////
-        played += '0' + get<0>(new_played.second);
+    for (auto &notation: m_notation) {
+        /*played += '0' + get<0>(new_played.second);
         played += '0' + get<1>(new_played.second);
-        played += ' ';
+        played += ' ';*/
         //(get<0>(new_played.second) == Rest) ? '-' : 'o';
     }
     cout << "played: " << played << endl;
@@ -43,9 +37,11 @@ void Metronome::beat() {
 uint32_t Metronome::get_division() {
     uint32_t division = 1;
     // Ensure that the uint8_t of role does not overlap, maybe casting needed.
-    for (auto &role: this->m_roles)
-        division = division * role.get_part().get_time_signature().second /
-                   gcd(division, role.get_part().get_time_signature().second);
+    // todo: multiple notation layers
+    for (auto &notation: m_notation) {
+        /*division = division * role.get_part().get_time_signature().second /
+                   gcd(division, role.get_part().get_time_signature().second);*/
+    }
     return division;
 }
 

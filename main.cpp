@@ -2,6 +2,7 @@
 
 #include "display/Display.h"
 #include "notation/Notation.h"
+#include "reader/Part.h"
 
 int main2(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
@@ -86,9 +87,16 @@ void gamelogic(const vector<vector<vector<Notation>>
 }
 
 int main() {
-    // todo: dont use make_pair, use the Action constructor everywhere
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
+
+    Part part("../resources/rudiments/paradidles.json", 0);
+
+    gamelogic(part.get_notation(), part.get_signature());
+
+    return 0;
+
+
     //what if 0 is given as the numerator? like 0/4
 
     vector<vector<Notation>> stuff = {

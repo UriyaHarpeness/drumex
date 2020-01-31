@@ -9,7 +9,7 @@
 #include <jsoncpp/json/json.h>
 
 #include "../ext.h"
-#include "../role/Role.h"
+#include "../notation/Notation.h"
 #include "../exercise/Exercise.h"
 #include "../mixer/Mixer.h"
 
@@ -21,7 +21,7 @@ class Exercise;
 
 class Metronome {
 public:
-    Metronome(vector<Role> roles, uint8_t tempo, unique_ptr<Mixer> mixer);
+    Metronome(Notations notation, uint8_t tempo, unique_ptr<Mixer> mixer);
 
     void start();
 
@@ -36,7 +36,7 @@ private:
     uint32_t m_counter;
     std::chrono::system_clock::time_point m_start;
     unique_ptr<Mixer> m_mixer;
-    vector<Role> m_roles;
+    Notations m_notation;
 };
 
 void do_something();

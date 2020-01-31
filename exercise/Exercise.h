@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../role/Role.h"
+#include "../notation/Notation.h"
 #include "../Enums.h"
 #include "../ext.h"
 
@@ -25,8 +25,8 @@ public:
 
     void apply_exercises(Json::Value exercise_json);
 
-    vector<Role> choose_exercises(vector<pair<string, int>> choice);
+    vector<Notations> choose_exercises(vector<pair<string, int>> choice);
 
 private:
-    map<string, vector<map<Instrument, unique_ptr<Role>>>> m_layers;
+    map<string, map<int, unique_ptr<Notations>>> m_layers;
 };

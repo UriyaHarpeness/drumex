@@ -136,7 +136,7 @@ public:
 
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
-    inline void set_rounded_length(Fraction length) { m_length = length; }
+    inline void set_rounded_length(const Fraction &length) { m_length = length; }
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
 
@@ -173,3 +173,8 @@ private:
 
     Padding m_padding;
 };
+
+// todo: use these typedefs in code.
+typedef vector<Notation> Group;
+typedef vector<Group> Voice;
+typedef vector<Voice> Notations;

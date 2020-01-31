@@ -20,7 +20,7 @@ Exercise::Exercise(const string &file_name) {
 }
 
 void Exercise::add_layer(string exercise) {
-    Json::Reader reader;
+    /*Json::Reader reader;
     Json::Value obj;
     ifstream file(exercise);
     reader.parse(file, obj);
@@ -52,7 +52,7 @@ void Exercise::add_layer(string exercise) {
         }
         layer.push_back(move(part));
     }
-    m_layers[obj["Name"].asString()] = move(layer);
+    m_layers[obj["Name"].asString()] = move(layer);*/
 }
 
 
@@ -66,7 +66,7 @@ vector<tuple<string, int, Json::Value>> Exercise::json_to_exercises_vector(Json:
 }
 
 void Exercise::apply_exercises(Json::Value exercise_json) {
-    vector<tuple<string, int, Json::Value>> choose = this->json_to_exercises_vector(exercise_json);
+    /*vector<tuple<string, int, Json::Value>> choose = this->json_to_exercises_vector(exercise_json);
     for (auto &choice : choose) {
         auto &layer = m_layers[get<0>(choice)];
         auto initial_index = get<1>(choice);
@@ -99,17 +99,17 @@ void Exercise::apply_exercises(Json::Value exercise_json) {
             if (initial_index != -1) break;
         }
         //add class to apply variations, or just the functionality to role.
-    }
+    }*/
 }
 
-vector<Role> Exercise::choose_exercises(vector<pair<string, int>> choice) {
-    vector<Role> roles;
+vector<Notations> Exercise::choose_exercises(vector<pair<string, int>> choice) {
+    vector<Notations> notations;
     // todo: make sure that it's a real copy, not shallow and no changes are done to the source exercise
     for (const auto &choose : choice) {
-        for (auto &inst : m_layers[choose.first][choose.second]) {
-            roles.emplace_back(Role(*inst.second));
-        }
+        //for (auto &inst : m_layers[choose.first][choose.second]) {
+            // notations.emplace_back(Role(*inst.second));
+        //}
     }
 
-    return roles;
+    return notations;
 }
