@@ -589,8 +589,7 @@ Notation::generate_voice_notation(const vector<vector<Notation>> &raw_voice_nota
     return move(convert_notation(merged_stuff, signature));
 }
 
-Notations
-Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
+Notations Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
     Notations notation = split_voices(raw_notation);
 
     Notations generated_notation =
@@ -748,6 +747,7 @@ void Notation::display_notation(const Notations &generated_notation, TimeSignatu
         off_y = init_y;
         for (const vector<vector<Notation>> &note_groups : voice) {
             // move to the next line to avoid displaying over the staff.
+            // todo: calc_needed_space is not correct anymore...
             if (off_x + calc_needed_space(note_groups) > 800 - edge_padding) {
                 off_x = init_x;
                 off_y += 100;

@@ -1,33 +1,5 @@
 #include "Part.h"
 
-const map<string, Instrument> Part::instrument_names = \
-        {{"Rest",     Unbound},
-         {"China",    ChinaInst},
-         {"Crash",    CrashInst},
-         {"HiHat",    HiHatInst},
-         {"HighTom",  HighTomInst},
-         {"MidTom",   MidTomInst},
-         {"Snare",    SnareInst},
-         {"LowTom",   LowTomInst},
-         {"FloorTom", FloorTomInst},
-         {"Bass",     BassInst},};
-
-const map<string, Modifier> Part::modifier_names = \
-    {{"CrossStick", ModCrossStick},
-     {"Ghost",      ModGhost},
-     {"Accent",     ModAccent},
-     {"Dot",        ModDot},
-     {"Rimshot",    ModRimshot},
-     {"Flam",       ModFlam},
-     {"Drag",       ModDrag},
-     {"Close",      ModClose},
-     {"Loose",      ModLoose},
-     {"OpenClose",  ModOpenClose},
-     {"Open",       ModOpen},
-     {"Choke",      ModChoke},
-     {"Right",      ModRight},
-     {"Left",       ModLeft}};
-
 
 Part::Part(const string &path, int index) {
     Json::Reader reader;
@@ -62,4 +34,13 @@ Part::Part(const string &path, int index) {
     /*Json::Value &links = obj["parse"]["links"];
 
     auto *str_links = new string[links.end() - links.begin()];*/
+}
+
+int Part::get_parts_number(const string &path) {
+    Json::Reader reader;
+    Json::Value obj;
+    ifstream f(path);
+    reader.parse(f, obj);
+
+    return obj["Parts"].size();
 }

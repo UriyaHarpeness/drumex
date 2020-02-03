@@ -3,6 +3,7 @@
 #include "display/Display.h"
 #include "notation/Notation.h"
 #include "reader/Part.h"
+#include "reader/Exercise.h"
 
 int main2(int argc, char *argv[]) {
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
@@ -46,22 +47,14 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<vector<Notation>>
-
-> &notations,
-          TimeSignature signature
-) {
+void disp(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
     Notation::display_notation(notations, signature
     );
     this_thread::sleep_for(chrono::milliseconds(1000)
     );
 }
 
-void gamelogic(const vector<vector<vector<Notation>>
-
-> &notations,
-               TimeSignature signature
-) {
+void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
     SDL_Event e;
     bool done = false;
 
@@ -90,9 +83,12 @@ int main() {
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    Part part("../resources/rudiments/paradidles.json", 0);
+    Exercise exercise("../resources/exercises/double-paradidles.json", 0);
+    // Part part("../resources/rudiments/paradidles.json", 0);
 
-    gamelogic(part.get_notation(), part.get_signature());
+    // todo: support merging exercises together or somethings for 3/4 and stuff.
+
+    gamelogic(exercise.get_parts()[0].get_notation(), exercise.get_parts()[0].get_signature());
 
     return 0;
 
@@ -177,7 +173,7 @@ int main() {
     //vector<pair<string, int>> choice = {{"3's Variations.",  3},
     //                                    {"4 On 4, 3 Notes.", 0}};
 
-    unique_ptr<Exercise> x(new Exercise("/home/uriya/CLionProjects/drumex/resources/exercises/double-stuff.json"));
+    unique_ptr<Exercise> x(new Exercise("/home/uriya/CLionProjects/drumex/resources/exercises/double-paradidles.json"));
     vector<pair<string, int>> choice = {{"3's Variations.", 3}};
 
     vector<Role> roles = x->choose_exercises(choice);

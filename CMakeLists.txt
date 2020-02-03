@@ -8,14 +8,24 @@ add_executable(drumex main.cpp
         metronome/Metronome.cpp
         metronome/Metronome.h
         mixer/Mixer.cpp
-        mixer/Mixer.h mixer/Sound.h
-        reader/Reader.cpp
-        reader/Reader.h
+        mixer/Mixer.h
+        mixer/Sound.h
         exercise/Exercise.cpp
         exercise/Exercise.h
         ext.h
         variations/Variations.h
-        variations/Variations.cpp display/Display.cpp display/Display.h notation/Notation.cpp notation/Notation.h notation/Fraction.cpp notation/Fraction.h reader/Part.cpp reader/Part.h)
+        variations/Variations.cpp
+        display/Display.cpp
+        display/Display.h
+        notation/Notation.cpp
+        notation/Notation.h
+        notation/Fraction.cpp
+        notation/Fraction.h
+        Translations.h
+        reader/Part.cpp
+        reader/Part.h
+        reader/Exercise.cpp
+        reader/Exercise.h location/Location.cpp location/Location.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

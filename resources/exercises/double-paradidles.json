@@ -1,0 +1,28 @@
+{
+  "Name": "Double Ghosts Paradidles",
+  "Variations": [
+    [
+      "rudiments/paradidles.json",
+      [
+        0
+      ],
+      [
+        {
+          "Name": "Quick Double",
+          "Arguments": {
+            "Instruments": [
+              "Snare"
+            ],
+            "Modifiers": [
+              "Ghost"
+            ],
+            "Distance": [
+              1,
+              8
+            ]
+          }
+        }
+      ]
+    ]
+  ]
+}

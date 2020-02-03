@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../notation/Notation.h"
+#include "../Translations.h"
 
 #include <fstream>
 #include <iostream>
@@ -10,13 +11,13 @@
 
 class Part {
 public:
-    static const map<string, Instrument> instrument_names;
-
-    static const map<string, Modifier> modifier_names;
-
     Part(const string &path, int index);
 
+    static int get_parts_number(const string &path);
+
     [[nodiscard]] inline const Notations &get_notation() const { return m_notation; };
+
+    [[nodiscard]] inline Notations &get_mutable_notation() { return m_notation; };
 
     [[nodiscard]] inline TimeSignature get_signature() const { return m_signature; };
 

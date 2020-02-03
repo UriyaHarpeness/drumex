@@ -1,6 +1,8 @@
 #pragma once
 
+#include "../location/Location.h"
 #include "../notation/Notation.h"
+#include "../Translations.h"
 
 #include <map>
 #include <jsoncpp/json/json.h>
@@ -18,10 +20,12 @@ using namespace std;
  */
 
 namespace variations {
+    bool match(const Notation &note, const Json::Value& instruments, const Json::Value& modifiers);
+
     namespace DoubleNotes {
         void apply(Notations &notation, Json::Value arguments);
     }
-    namespace QuickDoubleGhosts {
+    namespace QuickDouble {
         void apply(Notations &notation, Json::Value arguments);
     }
     namespace PlayRight {
@@ -38,7 +42,7 @@ namespace variations {
     }
     const map<string, void (*)(Notations &, Json::Value)> name_to_variation = \
                                                      {{"Double Notes",           DoubleNotes::apply},
-                                                      {"Quick Double Ghosts",    QuickDoubleGhosts::apply},
+                                                      {"Quick Double",           QuickDouble::apply},
                                                       {"Play Right",             PlayRight::apply},
                                                       {"Play Left",              PlayLeft::apply},
                                                       {"Stretch Time Signature", StretchTimeSignature::apply},

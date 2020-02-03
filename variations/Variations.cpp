@@ -1,6 +1,22 @@
 #include "Variations.h"
 
 
+bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
+    // todo: treat empty as all acceptable.
+    for (const auto &instrument : instruments) {
+        if (note.get_instrument() == instrument_names.at(instrument.asString())) {
+            for (const auto &modifier : modifiers) {
+                const auto &note_modifiers = note.get_modifiers();
+                if (find(note_modifiers.begin(), note_modifiers.end(),
+                         modifier_names.at(modifier.asString())) != note_modifiers.end()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void variations::DoubleNotes::apply(Notations &notation, Json::Value arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
@@ -17,7 +33,49 @@ void variations::DoubleNotes::apply(Notations &notation, Json::Value arguments) 
     */
 }
 
-void variations::QuickDoubleGhosts::apply(Notations &notation, Json::Value arguments) {
+void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) {
+    cout << "Applying variation: QuickDouble" << endl;
+
+    // overriding is not possible.
+
+    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+
+    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+
+    // todo: better for loop.
+    // todo: support identifying be modifiers, maybe extract to function.
+    Group new_group;
+    for (int i = 0; i < notation.size(); i++) {
+        auto &voice = notation[i];
+        auto locations = location::create_location_mapping(voice);
+        map<Fraction, Group> new_locations;
+
+        for (auto &location : locations) {
+            Fraction global_offset = location.first;
+            Group group = location.second;
+            new_locations[global_offset] = group;
+
+            for (auto &note : group) {
+                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
+                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
+
+                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
+                    // to the mapping.
+                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
+                    if (note.get_length() > distance) {
+                        cout << "apply here" << endl;
+                        new_group.push_back({BasePlay, SnareInst, note.get_length() - distance, note.get_modifiers()});
+                    }
+                }
+            }
+            if (!new_group.empty()) {
+                new_locations[location.first + distance] = new_group;
+                new_group.clear();
+            }
+        }
+        notation[i] = location::location_to_notation(new_locations);
+    }
     /*
     TimeSignature time_signature = part.get_time_signature();
     time_signature.first *= 2;
