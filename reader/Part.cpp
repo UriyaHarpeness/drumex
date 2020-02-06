@@ -22,13 +22,17 @@ Part::Part(const string &path, int index) {
             for (const auto &modifier : note[2]) {
                 modifiers.push_back(modifier_names.at(modifier.asString()));
             }
-            group.push_back({(inst == Unbound) ? BaseRest : BasePlay, inst, length, modifiers});
+            group.push_back(
+                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers});
             modifiers.clear();
         }
         voice.push_back(group);
         group.clear();
     }
 
+    // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in
+    // one voice may be easier to modify, but first regenerate the correct spacing of stuff.
+    // this needs to happen on the Exercise part since he modifies the pure notation.
     m_notation = Notation::generate_notation(voice, m_signature);
 
     /*Json::Value &links = obj["parse"]["links"];

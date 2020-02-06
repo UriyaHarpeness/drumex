@@ -48,10 +48,8 @@ int main2(int argc, char *argv[]) {
 
 
 void disp(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
-    Notation::display_notation(notations, signature
-    );
-    this_thread::sleep_for(chrono::milliseconds(1000)
-    );
+    Notation::display_notation(notations, signature);
+    this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
 void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
@@ -63,12 +61,9 @@ void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature 
         disp(notations, signature
         );
         a++;
-        cout << a <<
-             endl;
+        cout << a << endl;
 
-        if (
-                SDL_PollEvent(&e)
-                ) {
+        if (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 done = true;
             }
@@ -83,7 +78,7 @@ int main() {
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    Exercise exercise("../resources/exercises/double-paradidles.json", 0);
+    Exercise exercise("../resources/exercises/vars.json", 0);
     // Part part("../resources/rudiments/paradidles.json", 0);
 
     // todo: support merging exercises together or somethings for 3/4 and stuff.

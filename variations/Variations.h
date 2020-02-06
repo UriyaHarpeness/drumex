@@ -2,6 +2,7 @@
 
 #include "../location/Location.h"
 #include "../notation/Notation.h"
+#include "../reader/Part.h"
 #include "../Translations.h"
 
 #include <map>
@@ -20,27 +21,27 @@ using namespace std;
  */
 
 namespace variations {
-    bool match(const Notation &note, const Json::Value& instruments, const Json::Value& modifiers);
+    bool match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers);
 
     namespace DoubleNotes {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
     namespace QuickDouble {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
     namespace PlayRight {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
     namespace PlayLeft {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
     namespace StretchTimeSignature {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
     namespace ExtendTimeSignature {
-        void apply(Notations &notation, Json::Value arguments);
+        void apply(Part &part, Json::Value arguments);
     }
-    const map<string, void (*)(Notations &, Json::Value)> name_to_variation = \
+    const map<string, void (*)(Part &, Json::Value)> name_to_variation = \
                                                      {{"Double Notes",           DoubleNotes::apply},
                                                       {"Quick Double",           QuickDouble::apply},
                                                       {"Play Right",             PlayRight::apply},

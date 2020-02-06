@@ -2,22 +2,45 @@
 
 
 bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
-    // todo: treat empty as all acceptable.
-    for (const auto &instrument : instruments) {
-        if (note.get_instrument() == instrument_names.at(instrument.asString())) {
-            for (const auto &modifier : modifiers) {
-                const auto &note_modifiers = note.get_modifiers();
-                if (find(note_modifiers.begin(), note_modifiers.end(),
-                         modifier_names.at(modifier.asString())) != note_modifiers.end()) {
-                    return true;
+    bool all_instruments = instruments.empty();
+    bool all_modifiers = modifiers.empty();
+
+    if (all_instruments && all_modifiers) {
+        return true;
+    }
+
+    if (!all_instruments && !all_modifiers) {
+        for (const auto &instrument : instruments) {
+            if (note.get_instrument() == instrument_names.at(instrument.asString())) {
+                for (const auto &modifier : modifiers) {
+                    const auto &note_modifiers = note.get_modifiers();
+                    if (find(note_modifiers.begin(), note_modifiers.end(),
+                             modifier_names.at(modifier.asString())) != note_modifiers.end()) {
+                        return true;
+                    }
                 }
             }
         }
+    } else if (all_instruments) {
+        for (const auto &modifier : modifiers) {
+            const auto &note_modifiers = note.get_modifiers();
+            if (find(note_modifiers.begin(), note_modifiers.end(),
+                     modifier_names.at(modifier.asString())) != note_modifiers.end()) {
+                return true;
+            }
+        }
+    } else {
+        for (const auto &instrument : instruments) {
+            if (note.get_instrument() == instrument_names.at(instrument.asString())) {
+                return true;
+            }
+        }
     }
+
     return false;
 }
 
-void variations::DoubleNotes::apply(Notations &notation, Json::Value arguments) {
+void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
     // the nature of doubling notes can cause overriding, but since it is a single role, which should not have left and
@@ -33,8 +56,10 @@ void variations::DoubleNotes::apply(Notations &notation, Json::Value arguments) 
     */
 }
 
-void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) {
+void variations::QuickDouble::apply(Part &part, Json::Value arguments) {
     cout << "Applying variation: QuickDouble" << endl;
+
+    Notations &notation = part.get_mutable_notation();
 
     // overriding is not possible.
 
@@ -43,10 +68,8 @@ void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) 
     Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
 
     // todo: better for loop.
-    // todo: support identifying be modifiers, maybe extract to function.
     Group new_group;
-    for (int i = 0; i < notation.size(); i++) {
-        auto &voice = notation[i];
+    for (auto &voice : notation) {
         auto locations = location::create_location_mapping(voice);
         map<Fraction, Group> new_locations;
 
@@ -56,7 +79,7 @@ void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) 
             new_locations[global_offset] = group;
 
             for (auto &note : group) {
-                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
                     // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
                     // can be problematic with modifiers, mostly isn't the case, currently let it slide.
 
@@ -64,8 +87,8 @@ void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) 
                     // to the mapping.
                     // also, think about the overlapping, and rounding the trespassing notes to the beginning.
                     if (note.get_length() > distance) {
-                        cout << "apply here" << endl;
-                        new_group.push_back({BasePlay, SnareInst, note.get_length() - distance, note.get_modifiers()});
+                        new_group.push_back(
+                                {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
                     }
                 }
             }
@@ -74,29 +97,11 @@ void variations::QuickDouble::apply(Notations &notation, Json::Value arguments) 
                 new_group.clear();
             }
         }
-        notation[i] = location::location_to_notation(new_locations);
+        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
     }
-    /*
-    TimeSignature time_signature = part.get_time_signature();
-    time_signature.first *= 2;
-    time_signature.second *= 2;
-    Actions actions(time_signature.first);
-    size_t index = 0;
-    for (const Action &action : part.get_actions()) {
-        if (get<0>(action) == Ghost) {
-            actions[index++] = make_tuple(Ghost, get<1>(action));
-            actions[index++] = make_tuple(Ghost, get<1>(action));
-        } else {
-            actions[index++] = action;
-            actions[index++] = make_tuple(Rest, UnboundStick);
-        }
-    }
-    part.set_actions(actions);
-    part.set_time_signature(time_signature);
-    */
 }
 
-void variations::PlayRight::apply(Notations &notation, Json::Value arguments) {
+void variations::PlayRight::apply(Part &part, Json::Value arguments) {
     /*printf("variations::PlayRight::apply\n");
 
     TimeSignature time_signature = part.get_time_signature();
@@ -110,7 +115,7 @@ void variations::PlayRight::apply(Notations &notation, Json::Value arguments) {
     */
 }
 
-void variations::PlayLeft::apply(Notations &notation, Json::Value arguments) {
+void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
     Actions actions(time_signature.first);
@@ -123,7 +128,7 @@ void variations::PlayLeft::apply(Notations &notation, Json::Value arguments) {
     */
 }
 
-void variations::StretchTimeSignature::apply(Notations &notation, Json::Value arguments) {
+void variations::StretchTimeSignature::apply(Part &part, Json::Value arguments) {
     /*
     printf("variations::StretchTimeSignature::apply\n");
 
@@ -132,7 +137,7 @@ void variations::StretchTimeSignature::apply(Notations &notation, Json::Value ar
     */
 }
 
-void variations::ExtendTimeSignature::apply(Notations &notation, Json::Value arguments) {
+void variations::ExtendTimeSignature::apply(Part &part, Json::Value arguments) {
     /*
     // todo: only words in whole note results, like 3/3 or 4/4
     TimeSignature time_signature = part.get_time_signature();
