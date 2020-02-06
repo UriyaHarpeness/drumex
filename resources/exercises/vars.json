@@ -2,24 +2,39 @@
   "Name": "Variations",
   "Variations": [
     [
-      "variations/3s-variations.json",
       [
-        0
-      ],
-      [
-        {
-          "Name": "Quick Double",
-          "Arguments": {
-            "Instruments": [
-            ],
-            "Modifiers": [
-            ],
-            "Distance": [
-              1,
-              8
-            ]
+        "variations/3s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Quick Double",
+            "Arguments": {
+              "Instruments": [
+              ],
+              "Modifiers": [
+              ],
+              "Distance": [
+                1,
+                8
+              ]
+            }
+          },
+          {
+            "Name": "Quick Double",
+            "Arguments": {
+              "Instruments": [
+              ],
+              "Modifiers": [
+              ],
+              "Distance": [
+                1,
+                64
+              ]
+            }
           }
-        }
+        ]
       ]
     ]
   ]

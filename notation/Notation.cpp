@@ -8,7 +8,8 @@ const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
          {QuarterRest,      {SymQuarterRest,      {3, 0}}},
          {EightRest,        {SymEightRest,        {3, 0}}},
          {SixteenthRest,    {SymSixteenthRest,    {3, 0}}},
-         {ThirtySecondRest, {SymThirtySecondRest, {3, 0}}}};
+         {ThirtySecondRest, {SymThirtySecondRest, {3, 0}}},
+         {SixtyFourthRest,  {SymSixtyFourthRest,  {3, 0}}}};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
 const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
@@ -17,7 +18,8 @@ const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
  {-2, QuarterRest},
  {-3, EightRest},
  {-4, SixteenthRest},
- {-5, ThirtySecondRest}};
+ {-5, ThirtySecondRest},
+ {-6, SixtyFourthRest}};
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,    -8},

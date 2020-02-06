@@ -79,11 +79,13 @@ int main() {
     Notation::m_display = d;
 
     Exercise exercise("../resources/exercises/vars.json", 0);
-    // Part part("../resources/rudiments/paradidles.json", 0);
+    gamelogic(exercise.get_parts()[0][0].get_notation(), exercise.get_parts()[0][0].get_signature());
 
+    // Part part("../resources/variations/2s-variations.json", 3);
+    // gamelogic(part.get_notation(), part.get_signature());
+
+    // todo: support when supplying -1 or something to part to just concat all options.
     // todo: support merging exercises together or somethings for 3/4 and stuff.
-
-    gamelogic(exercise.get_parts()[0].get_notation(), exercise.get_parts()[0].get_signature());
 
     return 0;
 

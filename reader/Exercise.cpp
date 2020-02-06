@@ -13,20 +13,27 @@ Exercise::Exercise(const string &path, int index) {
     // todo: change working directory or the dir to search for sources.
 
     // todo: think about the correct files' structures.
-    if (variation[1].empty()) {
-        for (int i = 0; i < Part::get_parts_number("../resources/" + variation[0].asString()); m_parts.emplace_back(
-                "../resources/" + variation[0].asString(), i++));
-    } else {
-        for (const auto &i : variation[1]) {
-            m_parts.emplace_back("../resources/" + variation[0].asString(), i.asInt());
-        }
-    }
-
-    for (auto &part : m_parts) {
-        for (const auto &single_variation : variation[2]) {
-            variations::name_to_variation.at(single_variation["Name"].asString())(part, single_variation["Arguments"]);
+    vector<Part> parts;
+    for (const auto &parts_variation : variation) {
+        if (parts_variation[1].empty()) {
+            for (int i = 0;
+                 i < Part::get_parts_number("../resources/" + parts_variation[0].asString()); parts.emplace_back(
+                    "../resources/" + parts_variation[0].asString(), i++));
+        } else {
+            for (const auto &i : parts_variation[1]) {
+                parts.emplace_back("../resources/" + parts_variation[0].asString(), i.asInt());
+            }
         }
 
+        for (auto &part : parts) {
+            for (const auto &single_variation : parts_variation[2]) {
+                variations::name_to_variation.at(single_variation["Name"].asString())
+                        (part, single_variation["Arguments"]);
+            }
+        }
+
+        m_parts.push_back(parts);
+        parts.clear();
     }
 
     /*Json::Value &links = obj["parse"]["links"];

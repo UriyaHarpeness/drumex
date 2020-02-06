@@ -24,24 +24,24 @@ namespace variations {
     bool match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers);
 
     namespace DoubleNotes {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
     namespace QuickDouble {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
     namespace PlayRight {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
     namespace PlayLeft {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
     namespace StretchTimeSignature {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
     namespace ExtendTimeSignature {
-        void apply(Part &part, Json::Value arguments);
+        void apply(Part &part, const Json::Value &arguments);
     }
-    const map<string, void (*)(Part &, Json::Value)> name_to_variation = \
+    const map<string, void (*)(Part &, const Json::Value &)> name_to_variation = \
                                                      {{"Double Notes",           DoubleNotes::apply},
                                                       {"Quick Double",           QuickDouble::apply},
                                                       {"Play Right",             PlayRight::apply},

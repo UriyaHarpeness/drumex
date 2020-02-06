@@ -15,8 +15,8 @@ class Exercise {
 public:
     Exercise(const string &path, int index);
 
-    [[nodiscard]] inline const vector<Part> &get_parts() const { return m_parts; };
+    [[nodiscard]] inline const vector<vector<Part>> &get_parts() const { return m_parts; };
 
 private:
-    vector<Part> m_parts;
+    vector<vector<Part>> m_parts;
 };

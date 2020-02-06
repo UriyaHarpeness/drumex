@@ -1,7 +1,8 @@
 #include "Variations.h"
 
 
-bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
+bool
+variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
     bool all_instruments = instruments.empty();
     bool all_modifiers = modifiers.empty();
 
@@ -40,7 +41,7 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
     return false;
 }
 
-void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
+void variations::DoubleNotes::apply(Part &part, const Json::Value &arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
     // the nature of doubling notes can cause overriding, but since it is a single role, which should not have left and
@@ -56,7 +57,7 @@ void variations::DoubleNotes::apply(Part &part, Json::Value arguments) {
     */
 }
 
-void variations::QuickDouble::apply(Part &part, Json::Value arguments) {
+void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
     cout << "Applying variation: QuickDouble" << endl;
 
     Notations &notation = part.get_mutable_notation();
@@ -101,7 +102,7 @@ void variations::QuickDouble::apply(Part &part, Json::Value arguments) {
     }
 }
 
-void variations::PlayRight::apply(Part &part, Json::Value arguments) {
+void variations::PlayRight::apply(Part &part, const Json::Value &arguments) {
     /*printf("variations::PlayRight::apply\n");
 
     TimeSignature time_signature = part.get_time_signature();
@@ -115,7 +116,7 @@ void variations::PlayRight::apply(Part &part, Json::Value arguments) {
     */
 }
 
-void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
+void variations::PlayLeft::apply(Part &part, const Json::Value &arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
     Actions actions(time_signature.first);
@@ -128,7 +129,7 @@ void variations::PlayLeft::apply(Part &part, Json::Value arguments) {
     */
 }
 
-void variations::StretchTimeSignature::apply(Part &part, Json::Value arguments) {
+void variations::StretchTimeSignature::apply(Part &part, const Json::Value &arguments) {
     /*
     printf("variations::StretchTimeSignature::apply\n");
 
@@ -137,7 +138,7 @@ void variations::StretchTimeSignature::apply(Part &part, Json::Value arguments) 
     */
 }
 
-void variations::ExtendTimeSignature::apply(Part &part, Json::Value arguments) {
+void variations::ExtendTimeSignature::apply(Part &part, const Json::Value &arguments) {
     /*
     // todo: only words in whole note results, like 3/3 or 4/4
     TimeSignature time_signature = part.get_time_signature();
