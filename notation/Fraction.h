@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Enums.h"
+
 #include <iostream>
 #include <numeric>
 #include <utility>
@@ -15,9 +17,14 @@ public:
 
     Fraction(int a, int b);
 
+    // use at some other places.
+    Fraction(TimeSignature signature);
+
     Fraction(const Fraction &other);
 
     bool operator==(const Fraction &other) const;
+
+    bool operator!=(const Fraction &other) const;
 
     Fraction operator+(const Fraction &other) const;
 
@@ -35,6 +42,8 @@ public:
 
     Fraction operator%(const Fraction &other) const;
 
+    Fraction operator&(const Fraction &other) const;
+
     bool operator<(const Fraction &other) const;
 
     bool operator>(const Fraction &other) const;
@@ -48,6 +57,8 @@ public:
     explicit operator int() const;
 
     explicit operator double() const;
+
+    [[nodiscard]] inline pair<int, int> get_value() { return m_value; };
 
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 

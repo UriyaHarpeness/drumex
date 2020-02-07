@@ -14,6 +14,7 @@ Exercise::Exercise(const string &path, int index) {
 
     // todo: think about the correct files' structures.
     vector<Part> parts;
+    vector<vector<Part>> all_parts;
     for (const auto &parts_variation : variation) {
         if (parts_variation[1].empty()) {
             for (int i = 0;
@@ -27,14 +28,22 @@ Exercise::Exercise(const string &path, int index) {
 
         for (auto &part : parts) {
             for (const auto &single_variation : parts_variation[2]) {
+                cout << "Applying variation: " << single_variation["Name"].asString() << endl;
                 variations::name_to_variation.at(single_variation["Name"].asString())
                         (part, single_variation["Arguments"]);
             }
         }
 
-        m_parts.push_back(parts);
+        all_parts.push_back(parts);
         parts.clear();
     }
+
+    vector<Part> all_parts_flat;
+    for (const auto &it : all_parts) {
+        all_parts_flat.insert(all_parts_flat.end(), it.begin(), it.end());
+    }
+
+    m_part = Part::merge_parts(all_parts_flat);
 
     /*Json::Value &links = obj["parse"]["links"];
 

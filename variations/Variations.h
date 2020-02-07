@@ -29,6 +29,9 @@ namespace variations {
     namespace QuickDouble {
         void apply(Part &part, const Json::Value &arguments);
     }
+    namespace ChangeNote {
+        void apply(Part &part, const Json::Value &arguments);
+    }
     namespace PlayRight {
         void apply(Part &part, const Json::Value &arguments);
     }
@@ -44,6 +47,7 @@ namespace variations {
     const map<string, void (*)(Part &, const Json::Value &)> name_to_variation = \
                                                      {{"Double Notes",           DoubleNotes::apply},
                                                       {"Quick Double",           QuickDouble::apply},
+                                                      {"Change Note",            ChangeNote::apply},
                                                       {"Play Right",             PlayRight::apply},
                                                       {"Play Left",              PlayLeft::apply},
                                                       {"Stretch Time Signature", StretchTimeSignature::apply},

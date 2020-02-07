@@ -81,6 +81,8 @@ public:
      */
     static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
 
+    static TimeSignature merge_time_signatures(const vector<TimeSignature> &signatures);
+
     static vector<Fraction> split_fraction(Fraction fraction);
 
     static vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
@@ -101,6 +103,9 @@ public:
 
     static vector<vector<vector<Notation>>>
     generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
+
+    static void stretch_notation(vector<vector<vector<Notation>>> &notation, TimeSignature old_signature,
+                                 TimeSignature new_signature);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -137,6 +142,8 @@ public:
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
     inline void set_rounded_length(const Fraction &length) { m_length = length; }
+
+    void reset_length(const Fraction &length);
 
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
 

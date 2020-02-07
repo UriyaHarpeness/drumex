@@ -58,8 +58,7 @@ void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature 
 
     int a = 0;
     while (!done) {
-        disp(notations, signature
-        );
+        disp(notations, signature);
         a++;
         cout << a << endl;
 
@@ -79,7 +78,7 @@ int main() {
     Notation::m_display = d;
 
     Exercise exercise("../resources/exercises/vars.json", 0);
-    gamelogic(exercise.get_parts()[0][0].get_notation(), exercise.get_parts()[0][0].get_signature());
+    gamelogic(exercise.get_part().get_notation(), exercise.get_part().get_signature());
 
     // Part part("../resources/variations/2s-variations.json", 3);
     // gamelogic(part.get_notation(), part.get_signature());

@@ -1,8 +1,7 @@
 #include "Variations.h"
 
 
-bool
-variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
+bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
     bool all_instruments = instruments.empty();
     bool all_modifiers = modifiers.empty();
 
@@ -58,8 +57,6 @@ void variations::DoubleNotes::apply(Part &part, const Json::Value &arguments) {
 }
 
 void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
-    cout << "Applying variation: QuickDouble" << endl;
-
     Notations &notation = part.get_mutable_notation();
 
     // overriding is not possible.
@@ -95,6 +92,47 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
             }
             if (!new_group.empty()) {
                 new_locations[location.first + distance] = new_group;
+                new_group.clear();
+            }
+        }
+        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+    }
+}
+
+void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
+    Notations &notation = part.get_mutable_notation();
+
+    // overriding is not possible.
+
+    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+
+    Instrument destination_instrument = instrument_names.at(arguments["DestinationInstrument"].asString());
+
+    // todo: better for loop.
+    Group new_group;
+    for (auto &voice : notation) {
+        auto locations = location::create_location_mapping(voice);
+        map<Fraction, Group> new_locations;
+
+        for (auto &location : locations) {
+            Fraction global_offset = location.first;
+            Group group = location.second;
+            new_locations[global_offset] = group;
+
+            for (auto &note : group) {
+                if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
+                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
+
+                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
+                    // to the mapping.
+                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
+                    new_group.push_back(
+                            {BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
+                }
+            }
+            if (!new_group.empty()) {
+                new_locations[location.first] = new_group;
                 new_group.clear();
             }
         }

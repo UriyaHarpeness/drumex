@@ -1,6 +1,8 @@
 #include "Part.h"
 
 
+Part::Part(Notations notation, TimeSignature signature) : m_notation(notation), m_signature(signature) {}
+
 Part::Part(const string &path, int index) {
     Json::Reader reader;
     Json::Value obj;
@@ -47,4 +49,42 @@ int Part::get_parts_number(const string &path) {
     reader.parse(f, obj);
 
     return obj["Parts"].size();
+}
+
+Part Part::merge_parts(vector<Part> parts) {
+    Notations notation;
+    Voice voice;
+    vector<Notations> notations;
+    vector<TimeSignature> signatures;
+
+    for (const auto &part : parts) {
+        signatures.push_back(part.get_signature());
+    }
+
+    TimeSignature merged_signature = Notation::merge_time_signatures(signatures);
+
+    for (auto &part : parts) {
+        Notation::stretch_notation(part.get_mutable_notation(), part.get_signature(), merged_signature);
+        notations.push_back(part.get_notation());
+    }
+
+    Notations merged_full_notation;
+    vector<map<Fraction, Group>> locations;
+
+    for (const auto &separate_notation : notations) {
+        locations.push_back(location::create_location_mapping(separate_notation[0]));
+        locations.push_back(location::create_location_mapping(separate_notation[1]));
+    }
+
+    // todo: may need to calc the time signature before and pass it down.
+    // after that stretch the notes to have the same length with the calculated signature.
+    map<Fraction, Group> merged_location = location::merge_locations(locations);
+
+    voice = location::location_to_notation(merged_location);
+
+    notation = Notation::generate_notation(voice, signatures[0]);
+
+    // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
+    // todo: solve this in some better way.
+    return Part(notation, signatures[0]);
 }

@@ -8,7 +8,9 @@
 using namespace std;
 
 const map<string, Instrument> instrument_names = \
-        {{"Rest",     Unbound},
+        {{"Up",       UnboundUp},
+         {"Down",     UnboundDown},
+         {"Rest",     Unbound},
          {"China",    ChinaInst},
          {"Crash",    CrashInst},
          {"HiHat",    HiHatInst},

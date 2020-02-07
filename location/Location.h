@@ -3,7 +3,9 @@
 #include "../notation/Notation.h"
 
 namespace location {
-    map<Fraction, vector<Notation>> create_location_mapping(const vector<vector<Notation>> &voice);
+    map<Fraction, Group> create_location_mapping(const Voice &voice);
+
+    map<Fraction, Group> merge_locations(const vector<map<Fraction, Group>> &locations);
 
     Voice location_to_notation(map<Fraction, Group> &locations);
 };

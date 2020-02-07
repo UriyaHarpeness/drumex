@@ -2,6 +2,7 @@
 
 #include "../notation/Notation.h"
 #include "../Translations.h"
+#include "../location/Location.h"
 
 #include <fstream>
 #include <iostream>
@@ -11,9 +12,15 @@
 
 class Part {
 public:
+    Part() = default;
+
+    Part(Notations notation, TimeSignature signature);
+
     Part(const string &path, int index);
 
     static int get_parts_number(const string &path);
+
+    static Part merge_parts(vector<Part> parts);
 
     [[nodiscard]] inline const Notations &get_notation() const { return m_notation; };
 

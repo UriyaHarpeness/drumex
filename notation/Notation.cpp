@@ -32,8 +32,8 @@ const map<Instrument, int> Notation::instrument_to_line = {
         {LowTomInst,   1},
         {FloorTomInst, 2},
         {BassInst,     3},
-        {UnboundUp,    -4},
-        {UnboundDown,  4}
+        {UnboundUp,    -3},
+        {UnboundDown,  3}
 };
 
 const map<Modifier, Padding> Notation::modifier_to_padding = {
@@ -256,7 +256,9 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, P
             if (abs(min_height - direction_line) > abs(note.get_line() - direction_line)) {
                 min_height = note.get_line();
             }
-            beams = (-2 - (int) note.get_rounded_length());
+            assert(static_cast<double>(note.get_rounded_length()) ==
+                   static_cast<int>(static_cast<double>(note.get_rounded_length())));
+            beams = (-2 - static_cast<int>(note.get_rounded_length()));
             if (max_beams < beams) {
                 max_beams = beams;
             }
@@ -402,6 +404,17 @@ vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>>
     return move(merged_notation);
 }
 
+TimeSignature Notation::merge_time_signatures(const vector<TimeSignature> &signatures) {
+    auto it = signatures.begin();
+    Fraction signature = {it->first, it->second};
+
+    for (it++; it != signatures.end(); it++) {
+        signature = (signature & *it);
+    }
+
+    return signature.get_value();
+}
+
 vector<Fraction> Notation::split_fraction(Fraction fraction) {
     vector<Fraction> fractions;
     Fraction tmp;
@@ -528,6 +541,7 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
     vector<vector<Notation>> generated_notation;
 
     Fraction offset(0, 1);
+    Fraction bar(signature);
 
     for (const auto &group : notation) {
         // assumes all the group has the same BasicPlaying and length
@@ -551,7 +565,8 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
                     auto note = generated_notation[generated_notation.size() - 1][0];
                     if ((note.get_playing() == BasePlay) &&
                         (find(note.get_modifiers().begin(), note.get_modifiers().end(), ModDot) ==
-                         note.get_modifiers().end()) && (note.get_length() / fraction == Fraction(2, 1))) {
+                         note.get_modifiers().end()) && (note.get_length() / fraction == Fraction(2, 1)) &&
+                        (offset + note.get_length() < bar)) {
                         dot = true;
                     }
                 }
@@ -598,6 +613,15 @@ Notations Notation::generate_notation(const vector<vector<Notation>> &raw_notati
             {generate_voice_notation(notation[0], signature), generate_voice_notation(notation[1], signature)};
 
     return move(generated_notation);
+}
+
+void Notation::stretch_notation(Notations &notation, TimeSignature old_signature, TimeSignature new_signature) {
+    const Notations original = notation;
+
+    for (Fraction new_sig(new_signature), old_sig(old_signature); new_sig != old_sig; new_sig -= old_sig) {
+        notation[0].insert(notation[0].end(), original[0].begin(), original[0].end());
+        notation[1].insert(notation[1].end(), original[1].begin(), original[1].end());
+    }
 }
 
 Padding Notation::create_padding(const vector<Modifier> &modifiers) {
@@ -779,4 +803,12 @@ void Notation::display_notation(const Notations &generated_notation, TimeSignatu
 
 Fraction Notation::get_length() const {
     return ((m_length * 2) - (m_length * Fraction(1, pow(2, count(m_modifiers.begin(), m_modifiers.end(), ModDot)))));
+}
+
+void Notation::reset_length(const Fraction &length) {
+    m_length = length;
+    auto location = find(m_modifiers.begin(), m_modifiers.end(), ModDot);
+    if (location != m_modifiers.end()) {
+        m_modifiers.erase(location);
+    }
 }

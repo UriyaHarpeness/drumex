@@ -8,6 +8,9 @@ Fraction::Fraction(int a, int b) : m_value({a, b}) {
     simplify(*this);
 }
 
+Fraction::Fraction(TimeSignature signature) : m_value(signature) {
+}
+
 Fraction::Fraction(const Fraction &other) = default;
 
 bool Fraction::operator==(const Fraction &other) const {
@@ -18,6 +21,16 @@ bool Fraction::operator==(const Fraction &other) const {
     }
     equalize_denominators(result, second);
     return result.m_value.first == second.m_value.first;
+}
+
+bool Fraction::operator!=(const Fraction &other) const {
+    Fraction result(*this);
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return static_cast<bool>(result);
+    }
+    equalize_denominators(result, second);
+    return result.m_value.first != second.m_value.first;
 }
 
 Fraction Fraction::operator+(const Fraction &other) const {
@@ -106,6 +119,18 @@ Fraction Fraction::operator%(const Fraction &other) const {
     }
     equalize_denominators(result, second);
     result.m_value.first %= second.m_value.first;
+    simplify(result);
+    return result;
+}
+
+Fraction Fraction::operator&(const Fraction &other) const {
+    Fraction result(*this);
+    Fraction second(other);
+    if (!(m_value.second && second.m_value.second)) {
+        return result;
+    }
+    equalize_denominators(result, second);
+    result.m_value.first = lcm(result.m_value.first, second.m_value.first);
     simplify(result);
     return result;
 }
