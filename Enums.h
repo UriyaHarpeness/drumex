@@ -25,20 +25,6 @@ enum Instrument {
     BassInst,
 };
 
-enum Playing {
-    Rest,
-    Regular,
-    Flam,
-    Ghost,
-    Accent,
-};
-
-enum Sticking {
-    UnboundStick,
-    Right,
-    Left,
-};
-
 enum MusicSymbolValues {
     SymSmallZero = 0xBC,
     SymSmallOne = 0xC1,
@@ -118,6 +104,4 @@ enum Modifier {
     ModLeft,
 };
 
-typedef tuple<Playing, Sticking> Action;
-typedef vector<Action> Actions;
 typedef pair<uint8_t, uint8_t> TimeSignature;

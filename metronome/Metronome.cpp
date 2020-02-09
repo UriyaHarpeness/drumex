@@ -2,9 +2,9 @@
 
 #include <utility>
 
-Metronome::Metronome(Notations notation, uint8_t tempo, unique_ptr<Mixer> mixer) :
-        m_tempo(tempo), m_counter(0), m_start(chrono::system_clock::now()), m_mixer(move(mixer)),
-        m_notation(move(notation)) {
+Metronome::Metronome(Notations notation, uint8_t tempo) : m_tempo(tempo), m_counter(0),
+                                                          m_start(chrono::system_clock::now()),
+                                                          m_notation(move(notation)) {
     uint32_t division = this->get_division();
     for (auto &note_group : notation) {
         //todo: make sure this changes the part...

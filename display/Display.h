@@ -42,16 +42,6 @@ public:
 
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 
-    void draw_time_signature(uint8_t a, uint8_t b);
-
-    void draw_clef();
-
-    void draw_staff();
-
-    void draw_ending();
-
-    void draw_base_bak(uint8_t a, uint8_t b);
-
     void draw_base(int x, int y, uint8_t a, uint8_t b);
 
     void draw_image(const string &path, int x, int y, int h, int w);

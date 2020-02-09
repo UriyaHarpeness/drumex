@@ -7,11 +7,6 @@ add_executable(drumex main.cpp
         Enums.h
         metronome/Metronome.cpp
         metronome/Metronome.h
-        mixer/Mixer.cpp
-        mixer/Mixer.h
-        mixer/Sound.h
-        exercise/Exercise.cpp
-        exercise/Exercise.h
         ext.h
         variations/Variations.h
         variations/Variations.cpp
@@ -25,7 +20,9 @@ add_executable(drumex main.cpp
         reader/Part.cpp
         reader/Part.h
         reader/Exercise.cpp
-        reader/Exercise.h location/Location.cpp location/Location.h)
+        reader/Exercise.h
+        location/Location.cpp
+        location/Location.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

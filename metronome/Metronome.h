@@ -10,18 +10,12 @@
 
 #include "../ext.h"
 #include "../notation/Notation.h"
-#include "../exercise/Exercise.h"
-#include "../mixer/Mixer.h"
 
 using namespace std;
 
-class Role;
-
-class Exercise;
-
 class Metronome {
 public:
-    Metronome(Notations notation, uint8_t tempo, unique_ptr<Mixer> mixer);
+    Metronome(Notations notation, uint8_t tempo);
 
     void start();
 
@@ -35,10 +29,5 @@ private:
     uint8_t m_tempo;
     uint32_t m_counter;
     std::chrono::system_clock::time_point m_start;
-    unique_ptr<Mixer> m_mixer;
     Notations m_notation;
 };
-
-void do_something();
-
-int main2();
