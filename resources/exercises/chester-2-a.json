@@ -1,0 +1,39 @@
+{
+  "Name": "Variations",
+  "Variations": [
+    [
+      [
+        "rudiments/chester-2-a.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "Up"
+            }
+          }
+        ]
+      ],
+      [
+        "variations/3s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "Down"
+            }
+          }
+        ]
+      ]
+    ]
+  ]
+}

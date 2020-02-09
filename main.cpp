@@ -47,18 +47,18 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
-    Notation::display_notation(notations, signature);
+void disp(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances, Fraction bar) {
+    Notation::display_notation(notation, distances, bar);
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
-void gamelogic(const vector<vector<vector<Notation>>> &notations, TimeSignature signature) {
+void gamelogic(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances, Fraction bar) {
     SDL_Event e;
     bool done = false;
 
     int a = 0;
     while (!done) {
-        disp(notations, signature);
+        disp(notation, distances, bar);
         a++;
         cout << a << endl;
 
@@ -77,17 +77,26 @@ int main() {
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    Exercise exercise("../resources/exercises/vars.json", 0);
-    gamelogic(exercise.get_part().get_notation(), exercise.get_part().get_signature());
+    Exercise exercise("../resources/exercises/chester-2-a.json", 0);
 
-    // Part part("../resources/variations/2s-variations.json", 3);
+    vector<Notations> notation;
+    vector<pair<Fraction, Padding>> distances;
+    Fraction bar(exercise.get_part().get_signature());
+
+    Notation::prepare_displayable_notation(exercise.get_part().get_notation(), notation, distances, bar);
+
+    gamelogic(notation, distances, bar);
+
+    // Part part("../resources/rudiments/chester-2-a.json", 0);
     // gamelogic(part.get_notation(), part.get_signature());
 
     // todo: support when supplying -1 or something to part to just concat all options.
     // todo: support merging exercises together or somethings for 3/4 and stuff.
+    // todo: need to print the time signature next to the clef.
 
     return 0;
 
+    /*
 
     //what if 0 is given as the numerator? like 0/4
 
@@ -147,7 +156,7 @@ int main() {
 
     // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 
-    gamelogic(notation, sig);
+    gamelogic(notation, sig);*/
 
     return 0;
 }

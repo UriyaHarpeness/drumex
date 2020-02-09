@@ -10,15 +10,23 @@
 #include <jsoncpp/json/json.h>
 
 
+using namespace std;
+
 class Part {
 public:
     Part() = default;
 
-    Part(Notations notation, TimeSignature signature);
+    Part(Notations notation, TimeSignature signature, Fraction length);
 
     Part(const string &path, int index);
 
+    static Voice read_regular_voice(const Json::Value &part);
+
+    static Voice read_custom_voice(const Json::Value &part);
+
     static int get_parts_number(const string &path);
+
+    static Voice merge_voices(const vector<Voice> &voices);
 
     static Part merge_parts(vector<Part> parts);
 
@@ -28,8 +36,12 @@ public:
 
     [[nodiscard]] inline TimeSignature get_signature() const { return m_signature; };
 
+    [[nodiscard]] inline Fraction get_length() const { return m_length; };
+
 private:
     TimeSignature m_signature;
 
     Notations m_notation;
+
+    Fraction m_length;
 };

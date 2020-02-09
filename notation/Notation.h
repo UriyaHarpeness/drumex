@@ -81,7 +81,7 @@ public:
      */
     static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
 
-    static TimeSignature merge_time_signatures(const vector<TimeSignature> &signatures);
+    static Fraction merge_lengths(const vector<Fraction> &lengths);
 
     static vector<Fraction> split_fraction(Fraction fraction);
 
@@ -104,8 +104,7 @@ public:
     static vector<vector<vector<Notation>>>
     generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
 
-    static void stretch_notation(vector<vector<vector<Notation>>> &notation, TimeSignature old_signature,
-                                 TimeSignature new_signature);
+    static void stretch_notation(vector<vector<vector<Notation>>> &notation, Fraction old_length, Fraction new_length);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -119,6 +118,8 @@ public:
 
     static Fraction sum_length(const vector<vector<vector<Notation>>> &notes);
 
+    static Fraction sum_final_length(const vector<vector<vector<Notation>>> &notes);
+
     /**
      * Display the notation.
      *
@@ -129,7 +130,12 @@ public:
      *                  4.  of voices.
      * @param signature The time signature.
      */
-    static void display_notation(const vector<vector<vector<Notation>>> &generated_notation, TimeSignature signature);
+    static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
+                                 const vector<pair<Fraction, Padding>> &distances, Fraction bar);
+
+    static void prepare_displayable_notation(const vector<vector<vector<Notation>>> &generated_notation,
+                                             vector<vector<vector<vector<Notation>>>> &notation,
+                                             vector<pair<Fraction, Padding>> &distances, Fraction bar);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 
