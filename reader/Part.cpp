@@ -9,6 +9,7 @@ Part::Part(const string &path, int index) {
     Json::Value obj;
     ifstream f(path);
     reader.parse(f, obj);
+    f.close();
 
     cout << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value part = obj["Parts"][index];
@@ -50,10 +51,10 @@ Voice Part::read_regular_voice(const Json::Value &part) {
                 modifiers.push_back(modifier_names.at(modifier.asString()));
             }
             group.push_back(
-                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers});
+                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, move(modifiers)});
             modifiers.clear();
         }
-        voice.push_back(group);
+        voice.push_back(move(group));
         group.clear();
     }
     return move(voice);
@@ -73,7 +74,7 @@ Voice Part::read_custom_voice(const Json::Value &part) {
         }
 
         definitions.insert(pair<char, Notation>(name[0], {(inst == Unbound) ? BaseRest : BasePlay,
-                                                          (inst == Unbound) ? UnboundUp : inst, length, modifiers}));
+                                                          (inst == Unbound) ? UnboundUp : inst, length, move(modifiers)}));
         modifiers.clear();
     }
 
@@ -94,8 +95,7 @@ Voice Part::read_custom_voice(const Json::Value &part) {
             continue;
         }
 
-        // todo: see if move is possible instead of copy and clear, and if so, use everywhere, there are many usages.
-        voices.push_back(voice);
+        voices.push_back(move(voice));
         voice.clear();
     }
 
@@ -107,6 +107,7 @@ int Part::get_parts_number(const string &path) {
     Json::Value obj;
     ifstream f(path);
     reader.parse(f, obj);
+    f.close();
 
     return obj["Parts"].size();
 }
@@ -118,8 +119,6 @@ Voice Part::merge_voices(const vector<Voice> &notations) {
         locations.push_back(location::create_location_mapping(notation));
     }
 
-    // todo: may need to calc the time signature before and pass it down.
-    // after that stretch the notes to have the same length with the calculated signature.
     map<Fraction, Group> merged_location = location::merge_locations(locations);
 
     return move(location::location_to_notation(merged_location));
@@ -156,5 +155,5 @@ Part Part::merge_parts(vector<Part> parts) {
 
     // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
     // todo: solve this in some better way.
-    return Part(notation, parts[0].get_signature(), length);
+    return move(Part(notation, parts[0].get_signature(), length));
 }

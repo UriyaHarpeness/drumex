@@ -60,6 +60,8 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
     Notations &notation = part.get_mutable_notation();
 
     // overriding is not possible.
+    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
+    // may be solvable with some conversion function, actually aplit notation may just be that.
 
     // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
 
@@ -71,12 +73,12 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
         auto locations = location::create_location_mapping(voice);
         map<Fraction, Group> new_locations;
 
-        for (auto &location : locations) {
+        for (const auto &location : locations) {
             Fraction global_offset = location.first;
             Group group = location.second;
             new_locations[global_offset] = group;
 
-            for (auto &note : group) {
+            for (const auto &note : group) {
                 if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
                     // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
                     // can be problematic with modifiers, mostly isn't the case, currently let it slide.
@@ -114,12 +116,12 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
         auto locations = location::create_location_mapping(voice);
         map<Fraction, Group> new_locations;
 
-        for (auto &location : locations) {
+        for (const auto &location : locations) {
             Fraction global_offset = location.first;
             Group group = location.second;
             new_locations[global_offset] = group;
 
-            for (auto &note : group) {
+            for (const auto &note : group) {
                 if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
                     // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
                     // can be problematic with modifiers, mostly isn't the case, currently let it slide.
@@ -132,7 +134,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
                 }
             }
             if (!new_group.empty()) {
-                new_locations[location.first] = new_group;
+                new_locations[location.first] = move(new_group);
                 new_group.clear();
             }
         }

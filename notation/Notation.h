@@ -63,11 +63,12 @@ public:
 
     static int calc_needed_space(const vector<vector<Notation>> &notations);
 
-    static void draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
-                                     vector<vector<Notation>> notations);
+    static void
+    draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances, Fraction offset,
+                         const vector<vector<Notation>> &notations);
 
     static void
-    draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, const Fraction &offset,
+    draw_individual_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances, Fraction offset,
                           const vector<Notation> &group);
 
     static vector<vector<vector<Notation>>> split_voices(const vector<vector<Notation>> &notation);
@@ -131,7 +132,7 @@ public:
      * @param signature The time signature.
      */
     static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
-                                 const vector<pair<Fraction, Padding>> &distances, Fraction bar);
+                                 const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
 
     static void prepare_displayable_notation(const vector<vector<vector<Notation>>> &generated_notation,
                                              vector<vector<vector<vector<Notation>>>> &notation,

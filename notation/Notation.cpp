@@ -236,11 +236,11 @@ int Notation::calc_needed_space(const vector<vector<Notation>> &notations) {
     return x;
 }
 
-void Notation::draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, Fraction offset,
-                                    vector<vector<Notation>> notations) {
+void Notation::draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances,
+                                    Fraction offset, const vector<vector<Notation>> &notations) {
     assert(notations.size() >= 2);
 
-    // todo: assumes all note are in the same direction.
+    // Assumes all note are in the same direction.
     int max_height = notations[0][0].get_line();
     int min_height = notations[0][0].get_line();
 
@@ -309,9 +309,8 @@ void Notation::draw_connected_notes(int &x, int staff_y, vector<pair<Fraction, P
     x -= position->second[0];
 }
 
-void
-Notation::draw_individual_notes(int &x, int staff_y, vector<pair<Fraction, Padding>> distances, const Fraction &offset,
-                                const vector<Notation> &group) {
+void Notation::draw_individual_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances,
+                                     Fraction offset, const vector<Notation> &group) {
     // todo: assumes all note are in the same direction.
 
     // todo: maybe draw_connected_notes can call this function
@@ -365,7 +364,7 @@ Notations Notation::split_voices(const vector<vector<Notation>> &notation) {
         if (tmp_one.empty()) {
             tmp_one.push_back(voice_one_group[0]);
         }
-        voice_one.push_back(tmp_one);
+        voice_one.push_back(move(tmp_one));
         voice_one_group.clear();
         tmp_one.clear();
 
@@ -377,7 +376,7 @@ Notations Notation::split_voices(const vector<vector<Notation>> &notation) {
         if (tmp_two.empty()) {
             tmp_two.push_back(voice_two_group[0]);
         }
-        voice_two.push_back(tmp_two);
+        voice_two.push_back(move(tmp_two));
         voice_two_group.clear();
         tmp_two.clear();
     }
@@ -475,7 +474,7 @@ Notations Notation::split_notation(const vector<vector<Notation> > &notation, co
         part_notation.push_back(group);
         assert(length_sum <= bar);
         if (length_sum == bar) {
-            splitted_notation.push_back(part_notation);
+            splitted_notation.push_back(move(part_notation));
             part_notation.clear();
             length_sum = {0, 1};
         }
@@ -525,7 +524,7 @@ Notation::connect_notation(const vector<vector<Notation>> &notation, const Fract
             connecting = false;
         }
         if (!connecting) {
-            connected_notation.push_back(part_notation);
+            connected_notation.push_back(move(part_notation));
             part_notation.clear();
         }
         if (length_sum >= beat) {
@@ -554,11 +553,10 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
                 for (const auto &note : group) {
                     tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers());
                 }
-                generated_notation.push_back(tmp);
+                generated_notation.push_back(move(tmp));
                 tmp.clear();
             } else {
-                // todo: only up for now, will change with two voices support.
-                // todo: also no modifiers for rests, check for playing.
+                // todo: no modifiers for rests, check for playing.
 
                 // Add ModDot if possible.
                 bool dot = false;
@@ -701,7 +699,7 @@ Fraction Notation::sum_final_length(const Notations &notes) {
 }
 
 void Notation::display_notation(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances,
-                                Fraction bar) {
+                                const Fraction &bar) {
     m_display->clear_screen();
 
     //d.draw_base(3, 16);
@@ -776,7 +774,7 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
         small_connected_notation = connect_notation(small_notation, beat);
         voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
     }
-    notation.push_back(voice_notation);
+    notation.push_back(move(voice_notation));
     voice_notation.clear();
     splitted_notation = split_notation(generated_notation[1], bar);
 
@@ -784,7 +782,7 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
         small_connected_notation = connect_notation(small_notation, beat);
         voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
     }
-    notation.push_back(voice_notation);
+    notation.push_back(move(voice_notation));
     voice_notation.clear();
 
     // asserts two voices are same offset, when using one voice don't use this.

@@ -6,11 +6,10 @@ Exercise::Exercise(const string &path, int index) {
     Json::Value obj;
     ifstream f(path);
     reader.parse(f, obj);
+    f.close();
 
     cout << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
-
-    // todo: change working directory or the dir to search for sources.
 
     // todo: think about the correct files' structures.
     vector<Part> parts;
@@ -34,7 +33,7 @@ Exercise::Exercise(const string &path, int index) {
             }
         }
 
-        all_parts.push_back(parts);
+        all_parts.push_back(move(parts));
         parts.clear();
     }
 
@@ -43,7 +42,7 @@ Exercise::Exercise(const string &path, int index) {
         all_parts_flat.insert(all_parts_flat.end(), it.begin(), it.end());
     }
 
-    m_part = Part::merge_parts(all_parts_flat);
+    m_part = Part::merge_parts(move(all_parts_flat));
 
     /*Json::Value &links = obj["parse"]["links"];
 

@@ -3,7 +3,6 @@
 map<Fraction, Group> location::create_location_mapping(const Voice &voice) {
     map<Fraction, Group> locations;
 
-    // todo: maybe simply use 0,1 for default constructor and be over with all this initialization stuff.
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
     Fraction notes_offset;
     for (const auto &group : voice) {
@@ -65,12 +64,11 @@ Voice location::location_to_notation(map<Fraction, Group> &locations) {
             }
         }
         group = location->second;
-        // todo: it's more than adding dots here and there, it can change the whole notation structure with new rests...
 
         for (auto &note : group) {
             note.reset_length(next(location)->first - location->first);
         }
-        voice.push_back(group);
+        voice.push_back(move(group));
         group.clear();
     }
 
