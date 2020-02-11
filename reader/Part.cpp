@@ -51,7 +51,8 @@ Voice Part::read_regular_voice(const Json::Value &part) {
                 modifiers.push_back(modifier_names.at(modifier.asString()));
             }
             group.push_back(
-                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, move(modifiers)});
+                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length,
+                     move(modifiers)});
             modifiers.clear();
         }
         voice.push_back(move(group));
@@ -74,7 +75,8 @@ Voice Part::read_custom_voice(const Json::Value &part) {
         }
 
         definitions.insert(pair<char, Notation>(name[0], {(inst == Unbound) ? BaseRest : BasePlay,
-                                                          (inst == Unbound) ? UnboundUp : inst, length, move(modifiers)}));
+                                                          (inst == Unbound) ? UnboundUp : inst, length,
+                                                          move(modifiers)}));
         modifiers.clear();
     }
 
@@ -116,7 +118,7 @@ Voice Part::merge_voices(const vector<Voice> &notations) {
     vector<map<Fraction, Group>> locations;
 
     for (const auto &notation : notations) {
-        locations.push_back(location::create_location_mapping(notation));
+        locations.push_back(location::notation_to_location(notation));
     }
 
     map<Fraction, Group> merged_location = location::merge_locations(locations);
@@ -138,7 +140,7 @@ Part Part::merge_parts(vector<Part> parts) {
     Fraction merged_length = Notation::merge_lengths(lengths);
 
     for (auto &part : parts) {
-        Notation::stretch_notation(part.get_mutable_notation(), part.get_signature(), merged_length);
+        Notation::stretch_notation(part.get_mutable_notation(), part.get_length(), merged_length);
         notations.push_back(part.get_notation());
     }
 

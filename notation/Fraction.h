@@ -18,7 +18,8 @@ public:
     Fraction(int a, int b);
 
     // use at some other places.
-    Fraction(TimeSignature signature);
+    // Note that it does not optimize the value, in contrast to other constructors and after other methods.
+    explicit Fraction(TimeSignature signature);
 
     Fraction(const Fraction &other);
 
@@ -58,7 +59,7 @@ public:
 
     explicit operator double() const;
 
-    [[nodiscard]] inline pair<int, int> get_value() { return m_value; };
+    [[nodiscard]] inline pair<int, int> get_value() const { return m_value; };
 
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 

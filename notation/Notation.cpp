@@ -225,15 +225,16 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_head(x, staff_y);
 }
 
-int Notation::calc_needed_space(const vector<vector<Notation>> &notations) {
-    int x = 0;
+int Notation::calc_needed_space(const vector<pair<Fraction, Padding>> &distances, Fraction offset, Fraction length) {
+    int distance;
+    Fraction length_end;
+    auto position = distances.begin();
+    while (position->first <= offset) position++;
 
-    for (const auto &group : notations) {
-        x += (int) ((((double) (group[0].get_length() / minimal_supported_fraction) - 1)) * minimal_distance) +
-             merge_padding(group)[0] + merge_padding(group)[1];
-    }
+    for (distance = 0, length_end = offset + length; position->first <= length_end; distance += (
+            position->second[1] + (position + 1)->second[0]), position++);
 
-    return x;
+    return distance;
 }
 
 void Notation::draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances,
@@ -727,9 +728,8 @@ void Notation::display_notation(const vector<Notations> &notation, const vector<
         off_x = init_x;
         off_y = init_y;
         for (const vector<vector<Notation>> &note_groups : voice) {
-            // move to the next line to avoid displaying over the staff.
-            // todo: calc_needed_space is not correct anymore...
-            if (off_x + calc_needed_space(note_groups) > 800 - edge_padding) {
+            // Move to the next line to avoid displaying over the staff.
+            if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
                 off_x = init_x;
                 off_y += 100;
                 if (++lines > 4) {
@@ -757,8 +757,82 @@ void Notation::display_notation(const vector<Notations> &notation, const vector<
             // printing numbers works great.
         }
     }
+}
 
-    m_display->present();
+pair<int, int> Notation::get_note_location(const vector<Notations> &notation,
+                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
+                                           const Fraction &location) {
+    // todo: optimize this function.
+    int init_x = 50, init_y = 100, off_x = init_x, off_y = init_y, edge_padding = 20, lines = 1;
+    Fraction offset;
+
+    for (const vector<vector<Notation>> &note_groups : notation[0]) {
+        // Move to the next line to avoid displaying over the staff.
+        if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
+            off_x = init_x;
+            off_y += 100;
+            if (++lines > 4) {
+                // Display up to 4 lines.
+                break;
+            }
+        }
+
+        int distance;
+        Fraction length_end;
+        auto position = distances.begin();
+        while (position->first <= offset) position++;
+
+        if (offset + sum_length(note_groups) > location) {
+            int tmp_x = 0;
+            tmp_x += position->second[0];
+            for (distance = 0, length_end = location; position->first <= length_end; distance += (
+                    position->second[1] + (position + 1)->second[0]), position++);
+            tmp_x += distance;
+            tmp_x -= position->second[0];
+            off_x += tmp_x;
+            break;
+        }
+
+        int tmp_x = 0;
+        tmp_x += position->second[0];
+        for (distance = 0, length_end = offset + sum_length(note_groups); position->first <= length_end; distance += (
+                position->second[1] + (position + 1)->second[0]), position++);
+        tmp_x += distance;
+        tmp_x -= position->second[0];
+
+        off_x += tmp_x;
+
+        offset += sum_length(note_groups);
+
+        if (!static_cast<bool>(offset % bar)) {
+            off_x += 20;
+        }
+    }
+
+    return {off_x, off_y};
+}
+
+void Notation::continuous_display_notation(const vector<Notations> &notation,
+                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar) {
+    vector<Fraction> locations;
+    for (const auto &i : distances) {
+        locations.push_back(i.first);
+    }
+
+    Metronome m(move(locations), 60, {1, bar.get_value().second});
+    for (int i = 0; i < 1000; i++) {
+        cout << i << endl;
+        cout << *m.get_current_location() << endl;
+        pair<int, int> note_location = get_note_location(notation, distances, bar, *m.get_current_location());
+
+        display_notation(notation, distances, bar);
+
+        // todo: make a better line, maybe dotted and half transparent.
+        m_display->draw_rect(note_location.first, note_location.second - 20, line_height * 16, 2, 255);
+
+        m.poll();
+        m_display->present();
+    }
 }
 
 void Notation::prepare_displayable_notation(const Notations &generated_notation, vector<Notations> &notation,
@@ -813,6 +887,8 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
     for (const auto &padding : merged_padding) {
         if (padding.first) {
             distances.emplace_back(padding.first, get_distance(padding.first - previous.first, previous.second));
+        } else {
+            distances.emplace_back(padding.first, get_distance({}, previous.second));
         }
         previous = padding;
     }

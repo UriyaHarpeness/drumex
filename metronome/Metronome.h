@@ -1,33 +1,35 @@
 #pragma once
 
+#include "../ext.h"
+#include "../notation/Fraction.h"
+
 #include <chrono>
 #include <functional>
 #include <iomanip>
-#include <iostream>
 #include <thread>
 #include <numeric>
-#include <jsoncpp/json/json.h>
-
-#include "../ext.h"
-#include "../notation/Notation.h"
+#include <utility>
 
 using namespace std;
 
 class Metronome {
 public:
-    Metronome(Notations notation, uint8_t tempo);
+    Metronome(vector<Fraction> locations, int tempo, const Fraction &beat);
 
-    void start();
+    void poll();
+
+    [[nodiscard]] const vector<Fraction>::iterator get_current_location() const { return m_current_location; }
 
 private:
-    void beat();
-
-    uint32_t get_division();
-
     chrono::system_clock::time_point get_next_beat_time();
 
-    uint8_t m_tempo;
-    uint32_t m_counter;
+    vector<Fraction> m_locations;
+    vector<Fraction>::iterator m_current_location;
+
+    int m_tempo;
+
+    Fraction m_beat;
+
+    // Reset m_start after completing one round.
     std::chrono::system_clock::time_point m_start;
-    Notations m_notation;
 };

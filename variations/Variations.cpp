@@ -70,7 +70,7 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
     // todo: better for loop.
     Group new_group;
     for (auto &voice : notation) {
-        auto locations = location::create_location_mapping(voice);
+        auto locations = location::notation_to_location(voice);
         map<Fraction, Group> new_locations;
 
         for (const auto &location : locations) {
@@ -113,7 +113,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
     // todo: better for loop.
     Group new_group;
     for (auto &voice : notation) {
-        auto locations = location::create_location_mapping(voice);
+        auto locations = location::notation_to_location(voice);
         map<Fraction, Group> new_locations;
 
         for (const auto &location : locations) {

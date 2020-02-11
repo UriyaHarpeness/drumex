@@ -48,7 +48,7 @@ int main2(int argc, char *argv[]) {
 
 
 void disp(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances, Fraction bar) {
-    Notation::display_notation(notation, distances, bar);
+    Notation::continuous_display_notation(notation, distances, bar);
     this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
@@ -97,6 +97,7 @@ int main() {
     // todo: add support for buzz roll and maybe even open roll.
     // todo: full note rests on the low voice are outside the line.
     // todo: must support polyrhythm later.
+    // todo: prepare the next frame while waiting for the time to display, this will help avoid lagging.
 
     return 0;
 

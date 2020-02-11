@@ -3,6 +3,7 @@
 #include "Fraction.h"
 #include "../Enums.h"
 #include "../display/Display.h"
+#include "../metronome/Metronome.h"
 
 #include <map>
 #include <numeric>
@@ -61,7 +62,7 @@ public:
 
     void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
 
-    static int calc_needed_space(const vector<vector<Notation>> &notations);
+    static int calc_needed_space(const vector<pair<Fraction, Padding>> &distances, Fraction offset, Fraction length);
 
     static void
     draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances, Fraction offset,
@@ -133,6 +134,13 @@ public:
      */
     static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
                                  const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
+
+    static pair<int, int> get_note_location(const vector<vector<vector<vector<Notation>>>> &notation,
+                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
+                                            const Fraction &location);
+
+    static void continuous_display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
+                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
 
     static void prepare_displayable_notation(const vector<vector<vector<Notation>>> &generated_notation,
                                              vector<vector<vector<vector<Notation>>>> &notation,

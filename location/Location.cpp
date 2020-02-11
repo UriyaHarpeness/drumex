@@ -1,6 +1,6 @@
 #include "Location.h"
 
-map<Fraction, Group> location::create_location_mapping(const Voice &voice) {
+map<Fraction, Group> location::notation_to_location(const Voice &voice) {
     map<Fraction, Group> locations;
 
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
@@ -42,7 +42,6 @@ map<Fraction, Group> location::merge_locations(const vector<map<Fraction, Group>
     return merged_locations;
 }
 
-// nice name, maybe rename the other to notation_to_location
 Voice location::location_to_notation(map<Fraction, Group> &locations) {
     Voice voice;
     Group group;
