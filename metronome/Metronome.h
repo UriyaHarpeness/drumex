@@ -9,6 +9,7 @@
 #include <thread>
 #include <numeric>
 #include <utility>
+#include <cassert>
 
 using namespace std;
 

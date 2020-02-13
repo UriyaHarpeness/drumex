@@ -9,27 +9,22 @@
         ],
         [
           {
-            "Name": "Change Note",
+            "Name": "Quick Double",
             "Arguments": {
               "Instruments": [],
               "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "Distance": [
+                1,
+                16
+              ]
             }
-          }
-        ]
-      ],
-      [
-        "variations/3s-variations.json",
-        [
-          0
-        ],
-        [
+          },
           {
             "Name": "Change Note",
             "Arguments": {
               "Instruments": [],
               "Modifiers": [],
-              "DestinationInstrument": "Down"
+              "DestinationInstrument": "Up"
             }
           }
         ]

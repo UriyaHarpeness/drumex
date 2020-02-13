@@ -1,0 +1,55 @@
+{
+  "Name": "DragonForce - Ashes Of The Dust",
+  "Parts": [
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": [
+            "Snare",
+            [
+              1,
+              16
+            ],
+            []
+          ],
+          "b": [
+            "Bass",
+            [
+              1,
+              16
+            ],
+            []
+          ],
+          "c": [
+            "HiHat",
+            [
+              1,
+              16
+            ],
+            [
+              "Open"
+            ]
+          ],
+          ".": [
+            "Rest",
+            [
+              1,
+              16
+            ],
+            []
+          ]
+        },
+        "Use": [
+          "..c...c...c...c.",
+          "..s...s...s...s.",
+          "b...bb..b...bb.."
+        ]
+      }
+    }
+  ]
+}

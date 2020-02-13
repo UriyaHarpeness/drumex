@@ -3,8 +3,8 @@
 // todo: this is kind of useless now...
 const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
         Notation::music_symbols_to_values = \
-        {{WholeRest,        {SymWholeRest,        {3, 10}}},
-         {HalfRest,         {SymHalfRest,         {3, 10}}},
+        {{WholeRest,        {SymWholeRest,        {3, 5}}},
+         {HalfRest,         {SymHalfRest,         {3, 5}}},
          {QuarterRest,      {SymQuarterRest,      {3, 0}}},
          {EightRest,        {SymEightRest,        {3, 0}}},
          {SixteenthRest,    {SymSixteenthRest,    {3, 0}}},
@@ -92,9 +92,12 @@ shared_ptr<Display> Notation::m_display = nullptr;
 
 Notation::Notation(const Notation &other) = default;
 
-Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers) :
-        m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
-        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
+Notation::~Notation() = default;
+
+Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &length,
+                   const vector<Modifier> &modifiers) : m_line(instrument_to_line.at(instrument)), m_length(length),
+                                                        m_instrument(instrument), m_playing(playing),
+                                                        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
 
     if (m_playing == BasePlay) {
@@ -120,14 +123,6 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, Fraction length,
             m_symbol_value = music_symbols_to_values.at(m_symbol);
         }
     }
-}
-
-Notation::~Notation() {
-    // todo: is this the right destructor? a destructor is anyway neede because if it is destroyed and m_display is not
-    // set, a error is raised when trying to delete...
-    //if (m_display) {
-    //    m_display.reset();
-    //}
 }
 
 void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
@@ -225,7 +220,7 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_head(x, staff_y);
 }
 
-int Notation::calc_needed_space(const vector<pair<Fraction, Padding>> &distances, Fraction offset, Fraction length) {
+int Notation::calc_needed_space(const Paddings &distances, Fraction offset, Fraction length) {
     int distance;
     Fraction length_end;
     auto position = distances.begin();
@@ -237,19 +232,13 @@ int Notation::calc_needed_space(const vector<pair<Fraction, Padding>> &distances
     return distance;
 }
 
-void Notation::draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances,
-                                    Fraction offset, const vector<vector<Notation>> &notations) {
+void Notation::draw_connected_notes(int &x, int staff_y, const Paddings &distances, Fraction offset,
+                                    const Voice &notations) {
     assert(notations.size() >= 2);
 
     // Assumes all note are in the same direction.
     int max_height = notations[0][0].get_line();
     int min_height = notations[0][0].get_line();
-
-    /*
-     * How many connected rests can there really be beamed together?
-     * 1/32 - 6/32 - 1/32
-     * rests leave the number of beams like the previous note
-     */
 
     int beams = 0, max_beams = 1;
     for (const auto &group : notations) {
@@ -310,13 +299,10 @@ void Notation::draw_connected_notes(int &x, int staff_y, const vector<pair<Fract
     x -= position->second[0];
 }
 
-void Notation::draw_individual_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances,
-                                     Fraction offset, const vector<Notation> &group) {
+void Notation::draw_individual_notes(int &x, int staff_y, const Paddings &distances, const Fraction &offset,
+                                     const Group &group) {
     // todo: assumes all note are in the same direction.
 
-    // todo: maybe draw_connected_notes can call this function
-
-    int distance;
     Fraction length_end;
     auto position = distances.begin();
     while (position->first <= offset) position++;
@@ -325,20 +311,19 @@ void Notation::draw_individual_notes(int &x, int staff_y, const vector<pair<Frac
     for (const auto &note : group) {
         note.display(x, staff_y, true);
     }
-    for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
-            position->second[1] + (position + 1)->second[0]), position++);
-    x += distance;
+    for (length_end = offset + group[0].get_length();
+         position->first <= length_end; x += (position->second[1] + (position + 1)->second[0]), position++);
     x -= position->second[0];
 }
 
-Notations Notation::split_voices(const vector<vector<Notation>> &notation) {
-    vector<vector<Notation>> voice_one;
-    vector<Notation> voice_one_group;
-    vector<Notation> tmp_one;
+Notations Notation::split_voices(const Voice &notation) {
+    Voice voice_one;
+    Group voice_one_group;
+    Group tmp_one;
 
-    vector<vector<Notation>> voice_two;
-    vector<Notation> voice_two_group;
-    vector<Notation> tmp_two;
+    Voice voice_two;
+    Group voice_two_group;
+    Group tmp_two;
 
     // todo: need to separate sounds and display individually and together at the same time...
 
@@ -385,8 +370,8 @@ Notations Notation::split_voices(const vector<vector<Notation>> &notation) {
     return {move(voice_one), move(voice_two)};
 }
 
-vector<vector<Notation>> Notation::merge_notation(const vector<vector<Notation>> &notation) {
-    vector<vector<Notation>> merged_notation = {notation[0]};
+Voice Notation::merge_notation(const Voice &notation) {
+    Voice merged_notation = {notation[0]};
 
     // This function ignores ModDot since it will be decided when generating the notation.
     // Also, this code assumes (which is a reasonable assumption) that every group has the same BasicPlaying.
@@ -462,9 +447,9 @@ vector<Fraction> Notation::split_fraction(TimeSignature signature, Fraction offs
     return move(fractions);
 }
 
-Notations Notation::split_notation(const vector<vector<Notation> > &notation, const Fraction &bar) {
+Notations Notation::split_notation(const Voice &notation, const Fraction &bar) {
     Notations splitted_notation;
-    vector<vector<Notation>> part_notation;
+    Voice part_notation;
     Fraction length_sum;
 
     // This function ignores ModDot since it will be decided when generating the notation.
@@ -486,8 +471,7 @@ Notations Notation::split_notation(const vector<vector<Notation> > &notation, co
     return move(splitted_notation);
 }
 
-int Notation::count_remaining_plays(Fraction offset, const Fraction &beat,
-                                    vector<vector<Notation>>::const_iterator notation_it) {
+int Notation::count_remaining_plays(Fraction offset, const Fraction &beat, Voice::const_iterator notation_it) {
     int count = 0;
 
     // warning; optional segfault, iterates through the iterator without knowing there it ends, the callet should be
@@ -502,9 +486,9 @@ int Notation::count_remaining_plays(Fraction offset, const Fraction &beat,
 }
 
 Notations
-Notation::connect_notation(const vector<vector<Notation>> &notation, const Fraction &beat) {
+Notation::connect_notation(const Voice &notation, const Fraction &beat) {
     Notations connected_notation;
-    vector<vector<Notation>> part_notation;
+    Voice part_notation;
     Fraction length_sum;
 
     // This function ignores ModDot since it will be decided when generating the notation.
@@ -538,8 +522,8 @@ Notation::connect_notation(const vector<vector<Notation>> &notation, const Fract
     return move(connected_notation);
 }
 
-vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature) {
-    vector<vector<Notation>> generated_notation;
+Voice Notation::convert_notation(const Voice &notation, TimeSignature signature) {
+    Voice generated_notation;
 
     Fraction offset(0, 1);
     Fraction bar(signature);
@@ -550,7 +534,7 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
         BasicPlaying playing = group[0].get_playing();
         for (const auto &fraction : fractions) {
             if (playing == BasePlay) {
-                vector<Notation> tmp;
+                Group tmp;
                 for (const auto &note : group) {
                     tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers());
                 }
@@ -599,14 +583,14 @@ vector<vector<Notation>> Notation::convert_notation(const vector<vector<Notation
     return move(generated_notation);
 }
 
-vector<vector<Notation>>
-Notation::generate_voice_notation(const vector<vector<Notation>> &raw_voice_notation, TimeSignature signature) {
-    vector<vector<Notation>> merged_stuff = merge_notation(raw_voice_notation);
+Voice
+Notation::generate_voice_notation(const Voice &raw_voice_notation, TimeSignature signature) {
+    Voice merged_stuff = merge_notation(raw_voice_notation);
 
     return move(convert_notation(merged_stuff, signature));
 }
 
-Notations Notation::generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature) {
+Notations Notation::generate_notation(const Voice &raw_notation, TimeSignature signature) {
     Notations notation = split_voices(raw_notation);
 
     Notations generated_notation =
@@ -637,7 +621,7 @@ Padding Notation::create_padding(const vector<Modifier> &modifiers) {
     return padding;
 }
 
-void Notation::insert_padding(vector<pair<Fraction, Padding>> &paddings, const Fraction &offset, Padding padding) {
+void Notation::insert_padding(Paddings &paddings, const Fraction &offset, Padding padding) {
     auto padding_iterator = paddings.begin();
     while ((padding_iterator != paddings.end()) && (padding_iterator->first < offset)) padding_iterator++;
 
@@ -658,7 +642,7 @@ Padding Notation::merge_padding(const Padding &a, const Padding &b) {
     return padding;
 }
 
-Padding Notation::merge_padding(const vector<Notation> &notes) {
+Padding Notation::merge_padding(const Group &notes) {
     Padding padding = {0, 0};
 
     for (const Notation &note : notes) {
@@ -668,7 +652,7 @@ Padding Notation::merge_padding(const vector<Notation> &notes) {
     return padding;
 }
 
-Fraction Notation::sum_length(const vector<vector<Notation>> &notes) {
+Fraction Notation::sum_length(const Voice &notes) {
     Fraction length;
 
     for (const auto &note_group : notes) {
@@ -699,8 +683,8 @@ Fraction Notation::sum_final_length(const Notations &notes) {
     return length;
 }
 
-void Notation::display_notation(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances,
-                                const Fraction &bar) {
+void Notation::display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
+                                const int played_line) {
     //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
@@ -716,32 +700,41 @@ void Notation::display_notation(const vector<Notations> &notation, const vector<
         }
     }*/
 
-    int init_x = 50, init_y = 100, off_x, off_y = init_y, edge_padding = 20, lines;
+    int off_x, off_y, edge_padding = 20, lines;
     Fraction offset;
-    m_display->draw_base(20, off_y, 3, 4);
+    m_display->draw_base(20, displaying_init_y, 3, 4);
 
+    // todo: skip right to displayed notes, without calculating the distance all over again.
     for (const auto &voice : notation) {
-        lines = 1;
+        lines = 0;
         offset = {0, 1};
-        off_x = init_x;
-        off_y = init_y;
-        for (const vector<vector<Notation>> &note_groups : voice) {
+        off_x = displaying_init_x;
+        off_y = displaying_init_y;
+        for (const Voice &note_groups : voice) {
             // Move to the next line to avoid displaying over the staff.
             if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
-                off_x = init_x;
-                off_y += 100;
-                if (++lines > 4) {
+                off_x = displaying_init_x;
+                off_y += staff_lines_spacing;
+                lines++;
+                if (lines >= (played_line + max_lines_displayed)) {
                     // Display up to 4 lines.
                     break;
+                }
+                if ((lines % max_lines_displayed) == 0) {
+                    off_y = displaying_init_y;
                 }
 
                 m_display->draw_base(edge_padding, off_y, 3, 4);
             }
 
-            if (note_groups.size() > 1) {
-                draw_connected_notes(off_x, off_y, distances, offset, note_groups);
+            if (lines < played_line) {
+                off_x += calc_needed_space(distances, offset, sum_length(note_groups));
             } else {
-                draw_individual_notes(off_x, off_y, distances, offset, note_groups[0]);
+                if (note_groups.size() > 1) {
+                    draw_connected_notes(off_x, off_y, distances, offset, note_groups);
+                } else {
+                    draw_individual_notes(off_x, off_y, distances, offset, note_groups[0]);
+                }
             }
 
             // The notes do not stretch over bars, so summing the offset will not miss bars.
@@ -757,23 +750,19 @@ void Notation::display_notation(const vector<Notations> &notation, const vector<
     }
 }
 
-pair<pair<int, int>, Padding> Notation::get_note_location(const vector<Notations> &notation,
-                                                          const vector<pair<Fraction, Padding>> &distances,
-                                                          const Fraction &bar, const Fraction &location) {
+pair<pair<int, int>, Padding>
+Notation::get_note_location(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
+                            const Fraction &location) {
     // todo: optimize this function.
-    int init_x = 50, init_y = 100, off_x = init_x, off_y = init_y, edge_padding = 20, lines = 1;
+    int off_x = displaying_init_x, off_y = displaying_init_y, edge_padding = 20;
     Padding padding;
     Fraction offset;
 
-    for (const vector<vector<Notation>> &note_groups : notation[0]) {
+    for (const Voice &note_groups : notation[0]) {
         // Move to the next line to avoid displaying over the staff.
         if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
-            off_x = init_x;
-            off_y += 100;
-            if (++lines > 4) {
-                // Display up to 4 lines.
-                break;
-            }
+            off_x = displaying_init_x;
+            off_y += staff_lines_spacing;
         }
 
         int distance;
@@ -782,7 +771,7 @@ pair<pair<int, int>, Padding> Notation::get_note_location(const vector<Notations
         while (position->first <= offset) position++;
 
         if (offset + sum_length(note_groups) > location) {
-            for (distance = 0, length_end = location;
+            for (length_end = location;
                  position->first <= length_end; off_x += (position->second[0] + position->second[1]), position++);
             padding = (position)->second;
             break;
@@ -807,9 +796,9 @@ pair<pair<int, int>, Padding> Notation::get_note_location(const vector<Notations
     return {{off_x, off_y}, padding};
 }
 
-void Notation::continuous_display_notation(const vector<Notations> &notation,
-                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
-                                           int tempo) {
+void
+Notation::continuous_display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
+                                      int tempo) {
     vector<Fraction> locations;
     for (const auto &i : distances) {
         locations.push_back(i.first);
@@ -817,24 +806,29 @@ void Notation::continuous_display_notation(const vector<Notations> &notation,
 
     Metronome m(move(locations), tempo, {1, bar.get_value().second});
     while (true) {
+        // todo: be responsive to SDL events, to avoid the annoying pop-up.
         cout << *m.get_current_location() << endl;
+
         auto note_location = get_note_location(notation, distances, bar, *m.get_current_location());
+
+        const int played_line = (note_location.first.second - displaying_init_y) / staff_lines_spacing;
 
         m_display->clear_screen();
 
-        // todo: make a better line, maybe dotted and half transparent.
-        m_display->draw_rect(note_location.first.first, note_location.first.second - 20, line_height * 16,
-                             get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64, 128);
+        m_display->draw_rect(note_location.first.first + 1,
+                             ((played_line % max_lines_displayed) * staff_lines_spacing) + displaying_init_y - 20,
+                             line_height * 16, get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64,
+                             128);
 
-        display_notation(notation, distances, bar);
+        display_notation(notation, distances, bar, played_line);
 
-        m.poll();
         m_display->present();
+        m.poll();
     }
 }
 
-void Notation::prepare_displayable_notation(const Notations &generated_notation, vector<Notations> &notation,
-                                            vector<pair<Fraction, Padding>> &distances, Fraction bar) {
+void Notation::prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation,
+                                            Paddings &distances, const Fraction &bar) {
     Fraction beat = {1, bar.get_value().second};
 
     Notations splitted_notation = split_notation(generated_notation[0], bar);
@@ -842,7 +836,7 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
     Notations voice_notation;
     Notations small_connected_notation;
 
-    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+    for (const Voice &small_notation : splitted_notation) {
         small_connected_notation = connect_notation(small_notation, beat);
         voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
     }
@@ -850,7 +844,7 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
     voice_notation.clear();
     splitted_notation = split_notation(generated_notation[1], bar);
 
-    for (const vector<vector<Notation>> &small_notation : splitted_notation) {
+    for (const Voice &small_notation : splitted_notation) {
         small_connected_notation = connect_notation(small_notation, beat);
         voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
     }
@@ -860,8 +854,8 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
     // asserts two voices are same offset, when using one voice don't use this.
     assert(sum_length(notation[0]) == sum_length(notation[1]));
 
-    vector<pair<Fraction, Padding>> merged_padding;
-    // maybe typedef vector<pair<Fraction, Padding>> as Distances
+    Paddings merged_padding;
+    // maybe typedef Paddings as Distances
 
     // todo: maybe simply use 0,1 for default constructor and be over with all this initialization stuff.
     // todo: think what to do with notes with value below minimum supported fraction on different lines.

@@ -114,7 +114,7 @@ int Part::get_parts_number(const string &path) {
     return obj["Parts"].size();
 }
 
-Voice Part::merge_voices(const vector<Voice> &notations) {
+Voice Part::merge_voices(const Notations &notations) {
     vector<map<Fraction, Group>> locations;
 
     for (const auto &notation : notations) {
@@ -129,7 +129,7 @@ Voice Part::merge_voices(const vector<Voice> &notations) {
 Part Part::merge_parts(vector<Part> parts) {
     Notations notation;
     Voice voice;
-    vector<Notations> notations;
+    GroupedNotations notations;
     vector<Fraction> lengths;
     Fraction length;
 

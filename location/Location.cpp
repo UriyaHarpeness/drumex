@@ -9,6 +9,16 @@ map<Fraction, Group> location::notation_to_location(const Voice &voice) {
         // todo: need to think if may be possible that there will be a rest and a note in the same group.
         if (group[0].get_playing() == BasePlay) {
             locations[notes_offset] = group;
+        } else {
+            if (locations.empty()) {
+                assert(!static_cast<bool>(notes_offset));
+                locations[notes_offset] = group;
+            }
+            auto last_location = locations.end();
+            last_location--;
+            for (auto &note : last_location->second) {
+                note.reset_length(note.get_length() + group[0].get_length());
+            }
         }
         notes_offset += group[0].get_length();
     }
@@ -21,6 +31,7 @@ map<Fraction, Group> location::merge_locations(const vector<map<Fraction, Group>
     map<Fraction, Group> merged_locations;
     Group group;
 
+    // The returned locations are clean of rests.
     for (const auto &single_location : locations) {
         for (const auto &location : single_location) {
             for (const auto &note : location.second) {
@@ -48,7 +59,6 @@ Voice location::location_to_notation(map<Fraction, Group> &locations) {
 
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
     // add dots to get to the exact needed length.
-    Fraction notes_offset;
     auto location = locations.begin();
     if (location->first) {
         voice.push_back({{BaseRest, UnboundUp, location->first, {}}});

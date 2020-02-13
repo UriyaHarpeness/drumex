@@ -52,16 +52,19 @@ int main() {
     Notation::m_display = d;
 
     Exercise exercise("../resources/exercises/chester-2-a.json", 0);
+    const Part &part = exercise.get_part();
+
+    // Part part("../resources/play/playing.json", 0);
 
     vector<Notations> notation;
     vector<pair<Fraction, Padding>> distances;
-    Fraction bar(exercise.get_part().get_signature());
+    Fraction bar(part.get_signature());
 
-    Notation::prepare_displayable_notation(exercise.get_part().get_notation(), notation, distances, bar);
+    Notation::prepare_displayable_notation(part.get_notation(), notation, distances, bar);
 
     // todo: scroll notation when displaying long notation like the chester new breed.
     // todo: also support exiting through keyboard event and change tempo.
-    Notation::continuous_display_notation(notation, distances, bar, 120);
+    Notation::continuous_display_notation(notation, distances, bar, 180);
 
     // Part part("../resources/rudiments/chester-2-a.json", 0);
     // gamelogic(part.get_notation(), part.get_signature());

@@ -68,7 +68,8 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
     Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
 
     // todo: better for loop.
-    Group new_group;
+    int play_count = 0;
+    bool triggered_play;
     for (auto &voice : notation) {
         auto locations = location::notation_to_location(voice);
         map<Fraction, Group> new_locations;
@@ -77,24 +78,94 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
             Fraction global_offset = location.first;
             Group group = location.second;
             new_locations[global_offset] = group;
-
+            triggered_play = false;
             for (const auto &note : group) {
-                if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
                     // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
                     // can be problematic with modifiers, mostly isn't the case, currently let it slide.
 
                     // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
                     // to the mapping.
                     // also, think about the overlapping, and rounding the trespassing notes to the beginning.
+                    if (triggered_play) {
+                        break;
+                    }
+                    triggered_play = true;
+                    play_count = 1;
                     if (note.get_length() > distance) {
-                        new_group.push_back(
-                                {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
+                        for (Fraction play = global_offset + distance;
+                             (play < global_offset + note.get_length()) &&
+                             (play_count > 0); play_count--, play += distance) {
+                            new_locations[play] = {{BasePlay, note.get_instrument(),
+                                                           note.get_length() - distance, note.get_modifiers()}};
+                        }
+                        play_count = 0;
+                    } else if (note.get_length() == distance) {
+                        // todo: what if the next note is irrelevant to the doubled notes?
+                        //new_locations[location.first + distance].push_back(
+                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
+                    } else {
+                        // What otherwise?
                     }
                 }
             }
-            if (!new_group.empty()) {
-                new_locations[location.first + distance] = new_group;
-                new_group.clear();
+        }
+        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+    }
+}
+
+void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &arguments) {
+    Notations &notation = part.get_mutable_notation();
+
+    // overriding is not possible.
+    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
+    // may be solvable with some conversion function, actually aplit notation may just be that.
+
+    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+
+    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+
+    // todo: better for loop.
+    int play_count = 0;
+    bool triggered_play;
+    for (auto &voice : notation) {
+        auto locations = location::notation_to_location(voice);
+        map<Fraction, Group> new_locations;
+
+        for (const auto &location : locations) {
+            Fraction global_offset = location.first;
+            Group group = location.second;
+            new_locations[global_offset] = group;
+            triggered_play = false;
+            for (const auto &note : group) {
+                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
+                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
+
+                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
+                    // to the mapping.
+                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
+                    if (triggered_play) {
+                        break;
+                    }
+                    triggered_play = true;
+                    play_count++;
+                    if (note.get_length() > distance) {
+                        for (Fraction play = global_offset + distance;
+                             (play < global_offset + note.get_length()) &&
+                             (play_count > 0); play_count--, play += distance) {
+                            new_locations[play] = {{BasePlay, note.get_instrument(),
+                                                           note.get_length() - distance, note.get_modifiers()}};
+                        }
+                        play_count = 0;
+                    } else if (note.get_length() == distance) {
+                        // todo: what if the next note is irrelevant to the doubled notes?
+                        //new_locations[location.first + distance].push_back(
+                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
+                    } else {
+                        // What otherwise?
+                    }
+                }
             }
         }
         voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());

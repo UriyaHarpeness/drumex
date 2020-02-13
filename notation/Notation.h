@@ -12,7 +12,14 @@
 
 using namespace std;
 
+class Notation;
+
 typedef array<int, 2> Padding;
+typedef vector<pair<Fraction, Padding>> Paddings;
+typedef vector<Notation> Group;
+typedef vector<Group> Voice;
+typedef vector<Voice> Notations;
+typedef vector<Notations> GroupedNotations;
 
 class Notation {
 public:
@@ -38,13 +45,21 @@ public:
 
     static const int direction_line = 2;
 
+    static const int displaying_init_x = 50;
+
+    static const int displaying_init_y = 100;
+
+    static const int staff_lines_spacing = 100;
+
+    static const int max_lines_displayed = 4;
+
     static const Fraction minimal_supported_fraction;
 
     static shared_ptr<Display> m_display;
 
     Notation(const Notation &other);
 
-    Notation(BasicPlaying playing, Instrument instrument, Fraction length, vector<Modifier> modifiers);
+    Notation(BasicPlaying playing, Instrument instrument, const Fraction &length, const vector<Modifier> &modifiers);
 
     ~Notation();
 
@@ -62,17 +77,15 @@ public:
 
     void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
 
-    static int calc_needed_space(const vector<pair<Fraction, Padding>> &distances, Fraction offset, Fraction length);
+    static int calc_needed_space(const Paddings &distances, Fraction offset, Fraction length);
 
     static void
-    draw_connected_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances, Fraction offset,
-                         const vector<vector<Notation>> &notations);
+    draw_connected_notes(int &x, int staff_y, const Paddings &distances, Fraction offset, const Voice &notations);
 
     static void
-    draw_individual_notes(int &x, int staff_y, const vector<pair<Fraction, Padding>> &distances, Fraction offset,
-                          const vector<Notation> &group);
+    draw_individual_notes(int &x, int staff_y, const Paddings &distances, const Fraction &offset, const Group &group);
 
-    static vector<vector<vector<Notation>>> split_voices(const vector<vector<Notation>> &notation);
+    static Notations split_voices(const Voice &notation);
 
     /**
      * Unify notation where possible, optimize the notation and remove replaceable clutter.
@@ -81,7 +94,7 @@ public:
      * @param notation  Raw notation with plays and rests possibly.
      * @return  The merged notation.
      */
-    static vector<vector<Notation>> merge_notation(const vector<vector<Notation>> &notation);
+    static Voice merge_notation(const Voice &notation);
 
     static Fraction merge_lengths(const vector<Fraction> &lengths);
 
@@ -89,38 +102,33 @@ public:
 
     static vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
 
-    static vector<vector<vector<Notation>>>
-    split_notation(const vector<vector<Notation>> &notation, const Fraction &bar);
+    static Notations split_notation(const Voice &notation, const Fraction &bar);
 
-    static int
-    count_remaining_plays(Fraction offset, const Fraction &beat, vector<vector<Notation>>::const_iterator notation_it);
+    static int count_remaining_plays(Fraction offset, const Fraction &beat, Voice::const_iterator notation_it);
 
-    static vector<vector<vector<Notation>>>
-    connect_notation(const vector<vector<Notation>> &notation, const Fraction &beat);
+    static Notations connect_notation(const Voice &notation, const Fraction &beat);
 
-    static vector<vector<Notation>> convert_notation(const vector<vector<Notation>> &notation, TimeSignature signature);
+    static Voice convert_notation(const Voice &notation, TimeSignature signature);
 
-    static vector<vector<Notation>>
-    generate_voice_notation(const vector<vector<Notation>> &raw_voice_notation, TimeSignature signature);
+    static Voice generate_voice_notation(const Voice &raw_voice_notation, TimeSignature signature);
 
-    static vector<vector<vector<Notation>>>
-    generate_notation(const vector<vector<Notation>> &raw_notation, TimeSignature signature);
+    static Notations generate_notation(const Voice &raw_notation, TimeSignature signature);
 
-    static void stretch_notation(vector<vector<vector<Notation>>> &notation, Fraction old_length, Fraction new_length);
+    static void stretch_notation(Notations &notation, Fraction old_length, Fraction new_length);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
-    static void insert_padding(vector<pair<Fraction, Padding>> &paddings, const Fraction &offset, Padding padding);
+    static void insert_padding(Paddings &paddings, const Fraction &offset, Padding padding);
 
     static Padding merge_padding(const Padding &a, const Padding &b);
 
-    static Padding merge_padding(const vector<Notation> &notes);
+    static Padding merge_padding(const Group &notes);
 
-    static Fraction sum_length(const vector<vector<Notation>> &notes);
+    static Fraction sum_length(const Voice &notes);
 
-    static Fraction sum_length(const vector<vector<vector<Notation>>> &notes);
+    static Fraction sum_length(const Notations &notes);
 
-    static Fraction sum_final_length(const vector<vector<vector<Notation>>> &notes);
+    static Fraction sum_final_length(const Notations &notes);
 
     /**
      * Display the notation.
@@ -133,19 +141,19 @@ public:
      * @param signature The time signature.
      */
     static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
-                                 const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
+                                 const Paddings &distances, const Fraction &bar,
+                                 const int played_line);
 
-    static pair<pair<int, int>, Padding> get_note_location(const vector<vector<vector<vector<Notation>>>> &notation,
-                                                           const vector<pair<Fraction, Padding>> &distances,
+    static pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                            const Fraction &bar, const Fraction &location);
 
-    static void continuous_display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
-                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
-                                            int tempo);
+    static void
+    continuous_display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
+                                int tempo);
 
-    static void prepare_displayable_notation(const vector<vector<vector<Notation>>> &generated_notation,
-                                             vector<vector<vector<vector<Notation>>>> &notation,
-                                             vector<pair<Fraction, Padding>> &distances, Fraction bar);
+    static void
+    prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation, Paddings &distances,
+                                 const Fraction &bar);
 
     [[nodiscard]] inline int get_line() const { return m_line; }
 
@@ -166,12 +174,6 @@ public:
     inline void add_modifier(Modifier modifier) { m_modifiers.push_back(modifier); }
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
-
-    [[nodiscard]] inline Padding get_distance() const {
-        return {m_padding[0],
-                max(static_cast<int>(static_cast<double>(get_length() / minimal_supported_fraction) * minimal_distance),
-                    minimal_distance + m_padding[1])};
-    }
 
     [[nodiscard]] static inline Padding get_distance(const Fraction &length, Padding padding) {
         return {padding[0],
@@ -196,8 +198,3 @@ private:
 
     Padding m_padding;
 };
-
-// todo: use these typedefs in code.
-typedef vector<Notation> Group;
-typedef vector<Group> Voice;
-typedef vector<Voice> Notations;
