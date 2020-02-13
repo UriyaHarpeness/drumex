@@ -40,6 +40,8 @@ public:
 
     void draw_rect(int x, int y, int h, int w, int gray_scale = 0);
 
+    void draw_rect(int x, int y, int h, int w, int r, int b, int g, int a);
+
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 
     void draw_base(int x, int y, uint8_t a, uint8_t b);

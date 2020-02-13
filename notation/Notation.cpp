@@ -701,8 +701,6 @@ Fraction Notation::sum_final_length(const Notations &notes) {
 
 void Notation::display_notation(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances,
                                 const Fraction &bar) {
-    m_display->clear_screen();
-
     //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
@@ -759,11 +757,12 @@ void Notation::display_notation(const vector<Notations> &notation, const vector<
     }
 }
 
-pair<int, int> Notation::get_note_location(const vector<Notations> &notation,
-                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
-                                           const Fraction &location) {
+pair<pair<int, int>, Padding> Notation::get_note_location(const vector<Notations> &notation,
+                                                          const vector<pair<Fraction, Padding>> &distances,
+                                                          const Fraction &bar, const Fraction &location) {
     // todo: optimize this function.
     int init_x = 50, init_y = 100, off_x = init_x, off_y = init_y, edge_padding = 20, lines = 1;
+    Padding padding;
     Fraction offset;
 
     for (const vector<vector<Notation>> &note_groups : notation[0]) {
@@ -783,13 +782,9 @@ pair<int, int> Notation::get_note_location(const vector<Notations> &notation,
         while (position->first <= offset) position++;
 
         if (offset + sum_length(note_groups) > location) {
-            int tmp_x = 0;
-            tmp_x += position->second[0];
-            for (distance = 0, length_end = location; position->first <= length_end; distance += (
-                    position->second[1] + (position + 1)->second[0]), position++);
-            tmp_x += distance;
-            tmp_x -= position->second[0];
-            off_x += tmp_x;
+            for (distance = 0, length_end = location;
+                 position->first <= length_end; off_x += (position->second[0] + position->second[1]), position++);
+            padding = (position)->second;
             break;
         }
 
@@ -809,26 +804,29 @@ pair<int, int> Notation::get_note_location(const vector<Notations> &notation,
         }
     }
 
-    return {off_x, off_y};
+    return {{off_x, off_y}, padding};
 }
 
 void Notation::continuous_display_notation(const vector<Notations> &notation,
-                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar) {
+                                           const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
+                                           int tempo) {
     vector<Fraction> locations;
     for (const auto &i : distances) {
         locations.push_back(i.first);
     }
 
-    Metronome m(move(locations), 60, {1, bar.get_value().second});
-    for (int i = 0; i < 1000; i++) {
-        cout << i << endl;
+    Metronome m(move(locations), tempo, {1, bar.get_value().second});
+    while (true) {
         cout << *m.get_current_location() << endl;
-        pair<int, int> note_location = get_note_location(notation, distances, bar, *m.get_current_location());
+        auto note_location = get_note_location(notation, distances, bar, *m.get_current_location());
 
-        display_notation(notation, distances, bar);
+        m_display->clear_screen();
 
         // todo: make a better line, maybe dotted and half transparent.
-        m_display->draw_rect(note_location.first, note_location.second - 20, line_height * 16, 2, 255);
+        m_display->draw_rect(note_location.first.first, note_location.first.second - 20, line_height * 16,
+                             get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64, 128);
+
+        display_notation(notation, distances, bar);
 
         m.poll();
         m_display->present();

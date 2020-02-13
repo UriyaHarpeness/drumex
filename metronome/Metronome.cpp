@@ -12,8 +12,12 @@ void Metronome::poll() {
 chrono::system_clock::time_point Metronome::get_next_beat_time() {
     chrono::system_clock::time_point next_beat =
             m_start +
-            chrono::milliseconds(static_cast<int>(static_cast<double>(*m_current_location) * 1000.0 / 60.0 * m_tempo /
-                                                  static_cast<double>(m_beat)));
+            chrono::milliseconds(static_cast<int>(static_cast<double>(*m_current_location) * 1000.0 * 60.0 /
+                                                  static_cast<double>(m_tempo) / static_cast<double>(m_beat)));
     m_current_location++;
+    if (m_current_location + 1 == m_locations.end()) {
+        m_current_location = m_locations.begin();
+        m_start = next_beat;
+    }
     return next_beat;
 }

@@ -47,32 +47,6 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-void disp(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances, Fraction bar) {
-    Notation::continuous_display_notation(notation, distances, bar);
-    this_thread::sleep_for(chrono::milliseconds(1000));
-}
-
-void gamelogic(const vector<Notations> &notation, const vector<pair<Fraction, Padding>> &distances, Fraction bar) {
-    SDL_Event e;
-    bool done = false;
-
-    int a = 0;
-    while (!done) {
-        disp(notation, distances, bar);
-        a++;
-        cout << a << endl;
-
-        if (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                done = true;
-            }
-        }
-        if (a == 20) break;
-        this_thread::sleep_for(chrono::milliseconds(200)
-        );
-    }
-}
-
 int main() {
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
@@ -85,7 +59,9 @@ int main() {
 
     Notation::prepare_displayable_notation(exercise.get_part().get_notation(), notation, distances, bar);
 
-    gamelogic(notation, distances, bar);
+    // todo: scroll notation when displaying long notation like the chester new breed.
+    // todo: also support exiting through keyboard event and change tempo.
+    Notation::continuous_display_notation(notation, distances, bar, 120);
 
     // Part part("../resources/rudiments/chester-2-a.json", 0);
     // gamelogic(part.get_notation(), part.get_signature());
@@ -96,6 +72,7 @@ int main() {
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
     // todo: full note rests on the low voice are outside the line.
+    // todo: add option to enable dotted rests.
     // todo: must support polyrhythm later.
     // todo: prepare the next frame while waiting for the time to display, this will help avoid lagging.
 

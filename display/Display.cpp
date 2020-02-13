@@ -80,6 +80,12 @@ void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
     SDL_RenderFillRect(m_renderer, &sdl_rect);
 }
 
+void Display::draw_rect(int x, int y, int h, int w, int r, int b, int g, int a) {
+    SDL_Rect sdl_rect{x, y, w, h};
+    SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
+    SDL_RenderFillRect(m_renderer, &sdl_rect);
+}
+
 void Display::draw_rect_c(int x, int y, int h, int w, int gray_scale = 0) {
     SDL_Rect sdl_rect{x - (w / 2), y - (h / 2), w, h};
     SDL_SetRenderDrawColor(m_renderer, gray_scale, gray_scale, gray_scale, 255);

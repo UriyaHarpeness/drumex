@@ -135,12 +135,13 @@ public:
     static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
                                  const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
 
-    static pair<int, int> get_note_location(const vector<vector<vector<vector<Notation>>>> &notation,
-                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
-                                            const Fraction &location);
+    static pair<pair<int, int>, Padding> get_note_location(const vector<vector<vector<vector<Notation>>>> &notation,
+                                                           const vector<pair<Fraction, Padding>> &distances,
+                                                           const Fraction &bar, const Fraction &location);
 
     static void continuous_display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
-                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar);
+                                            const vector<pair<Fraction, Padding>> &distances, const Fraction &bar,
+                                            int tempo);
 
     static void prepare_displayable_notation(const vector<vector<vector<Notation>>> &generated_notation,
                                              vector<vector<vector<vector<Notation>>>> &notation,
