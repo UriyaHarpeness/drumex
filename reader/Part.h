@@ -16,7 +16,7 @@ class Part {
 public:
     Part() = default;
 
-    Part(Notations notation, TimeSignature signature, Fraction length);
+    Part(Notations notation, const TimeSignature &signature, const Fraction &length);
 
     Part(const string &path, int index);
 

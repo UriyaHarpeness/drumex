@@ -1,25 +1,25 @@
 #include "Notation.h"
 
-// todo: this is kind of useless now...
-const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>>
-        Notation::music_symbols_to_values = \
-        {{WholeRest,        {SymWholeRest,        {3, 5}}},
-         {HalfRest,         {SymHalfRest,         {3, 5}}},
-         {QuarterRest,      {SymQuarterRest,      {3, 0}}},
-         {EightRest,        {SymEightRest,        {3, 0}}},
-         {SixteenthRest,    {SymSixteenthRest,    {3, 0}}},
-         {ThirtySecondRest, {SymThirtySecondRest, {3, 0}}},
-         {SixtyFourthRest,  {SymSixtyFourthRest,  {3, 0}}}};
+const map<MusicSymbols, pair<int, int>> Notation::music_symbols_to_values = {
+        {SymWholeRest,        {3, 5}},
+        {SymHalfRest,         {3, 5}},
+        {SymQuarterRest,      {3, 0}},
+        {SymEightRest,        {3, 0}},
+        {SymSixteenthRest,    {3, 0}},
+        {SymThirtySecondRest, {3, 0}},
+        {SymSixtyFourthRest,  {3, 0}}
+};
 
 // further numbers would be generated, the values should stay as number or this will be endless...
-const map<int, MusicSymbol> Notation::rests_to_music_symbols = \
-{{0,  WholeRest},
- {-1, HalfRest},
- {-2, QuarterRest},
- {-3, EightRest},
- {-4, SixteenthRest},
- {-5, ThirtySecondRest},
- {-6, SixtyFourthRest}};
+const map<int, MusicSymbols> Notation::rests_to_music_symbols = {
+        {0,  SymWholeRest},
+        {-1, SymHalfRest},
+        {-2, SymQuarterRest},
+        {-3, SymEightRest},
+        {-4, SymSixteenthRest},
+        {-5, SymThirtySecondRest},
+        {-6, SymSixtyFourthRest}
+};
 
 const map<Instrument, int> Notation::instrument_to_line = {
         {ChinaInst,    -8},
@@ -48,7 +48,7 @@ const map<Modifier, Padding> Notation::modifier_to_padding = {
         {ModChoke,      {0,  8}},
 };
 
-const map<Modifier, MusicSymbolValues> Notation::modifier_to_symbol = {
+const map<Modifier, MusicSymbols> Notation::modifier_to_symbol = {
         {ModCrossStick, SymCrossStick},
         {ModGhost,      SymGhost},
         {ModAccent,     SymAccent},
@@ -85,7 +85,6 @@ const map<Modifier, array<int, 3>> Notation::modifier_to_position = {
         {ModLeft,       {-12, 1, 0}},
 };
 
-// todo: change to 1/32 after dynamic resizing.
 const Fraction Notation::minimal_supported_fraction(1, 16);
 
 shared_ptr<Display> Notation::m_display = nullptr;
@@ -102,18 +101,21 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &
 
     if (m_playing == BasePlay) {
         // todo: no more than whole note support for now.
-        // todo: are music symbol and music symbols values needed?
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
         if (m_line <= -4) {
             // for cymbals support, temporary i believe in this way.
-            m_symbol_value = make_pair(SymCymbal, make_pair(3, 0));
+            m_symbol = SymCymbal;
+            m_symbol_value = make_pair(3, 0);
         } else {
             if (Fraction(1, 1) == m_length) {
-                m_symbol_value = make_pair(SymWholeNote, make_pair(0, 0));
+                m_symbol = SymWholeNote;
+                m_symbol_value = make_pair(0, 0);
             } else if (Fraction(1, 2) == m_length) {
-                m_symbol_value = make_pair(SymHalfNote, make_pair(3, 0));
+                m_symbol = SymHalfNote;
+                m_symbol_value = make_pair(3, 0);
             } else {
-                m_symbol_value = make_pair(SymQuarterNote, make_pair(3, 0));
+                m_symbol = SymQuarterNote;
+                m_symbol_value = make_pair(3, 0);
             }
         }
     } else {
@@ -203,8 +205,8 @@ void Notation::draw_ledgers(int x, int staff_y) const {
 }
 
 void Notation::draw_head(int x, int staff_y) const {
-    m_display->draw_text(m_symbol_value.first, x + m_symbol_value.second.first,
-                         staff_y + (m_line * line_height) + m_symbol_value.second.second - staff_to_0);
+    m_display->draw_text(m_symbol, x + m_symbol_value.first,
+                         staff_y + (m_line * line_height) + m_symbol_value.second - staff_to_0);
 }
 
 void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
@@ -220,7 +222,7 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_head(x, staff_y);
 }
 
-int Notation::calc_needed_space(const Paddings &distances, Fraction offset, Fraction length) {
+int Notation::calc_needed_space(const Paddings &distances, const Fraction &offset, const Fraction &length) {
     int distance;
     Fraction length_end;
     auto position = distances.begin();
@@ -301,8 +303,7 @@ void Notation::draw_connected_notes(int &x, int staff_y, const Paddings &distanc
 
 void Notation::draw_individual_notes(int &x, int staff_y, const Paddings &distances, const Fraction &offset,
                                      const Group &group) {
-    // todo: assumes all note are in the same direction.
-
+    // Assumes all note are in the same direction.
     Fraction length_end;
     auto position = distances.begin();
     while (position->first <= offset) position++;
@@ -325,17 +326,13 @@ Notations Notation::split_voices(const Voice &notation) {
     Group voice_two_group;
     Group tmp_two;
 
-    // todo: need to separate sounds and display individually and together at the same time...
-
     for (const auto &group : notation) {
         for (const auto &note : group) {
             if (note.get_line() > Notation::direction_line) {
                 voice_two_group.push_back(note);
-                // todo: need to support modifiers in underlying functions.
                 voice_one_group.push_back({BaseRest, UnboundUp, note.get_length(), {}});
             } else {
                 voice_one_group.push_back(note);
-                // todo: need to support modifiers in underlying functions.
                 voice_two_group.push_back({BaseRest, UnboundDown, note.get_length(), {}});
             }
         }
@@ -500,7 +497,6 @@ Notation::connect_notation(const Voice &notation, const Fraction &beat) {
     for (auto group_it = notation.begin(); group_it != notation.end(); group_it++) {
         const auto &group = *group_it;
         length_sum += group[0].get_length();
-        // todo: should if any is playing, although if one is playing than there's no rest...
         if ((group[0].get_playing() == BasePlay) && (group[0].get_length() < beat)) {
             connecting = true;
         }
@@ -599,7 +595,7 @@ Notations Notation::generate_notation(const Voice &raw_notation, TimeSignature s
     return move(generated_notation);
 }
 
-void Notation::stretch_notation(Notations &notation, Fraction old_length, Fraction new_length) {
+void Notation::stretch_notation(Notations &notation, const Fraction &old_length, Fraction new_length) {
     const Notations original = notation;
 
     for (; new_length != old_length; new_length -= old_length) {
@@ -702,17 +698,17 @@ void Notation::display_notation(const GroupedNotations &notation, const Paddings
 
     int off_x, off_y, edge_padding = 20, lines;
     Fraction offset;
-    m_display->draw_base(20, displaying_init_y, 3, 4);
 
     // todo: skip right to displayed notes, without calculating the distance all over again.
     for (const auto &voice : notation) {
-        lines = 0;
+        lines = -1;
         offset = {0, 1};
-        off_x = displaying_init_x;
+        off_x = Display::width;
         off_y = displaying_init_y;
         for (const Voice &note_groups : voice) {
             // Move to the next line to avoid displaying over the staff.
-            if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
+            if (!static_cast<bool>(offset % bar) &&
+                (off_x + calc_needed_space(distances, offset, bar) > Display::width - edge_padding)) {
                 off_x = displaying_init_x;
                 off_y += staff_lines_spacing;
                 lines++;
@@ -724,7 +720,9 @@ void Notation::display_notation(const GroupedNotations &notation, const Paddings
                     off_y = displaying_init_y;
                 }
 
-                m_display->draw_base(edge_padding, off_y, 3, 4);
+                if (lines >= played_line) {
+                    m_display->draw_base(edge_padding, off_y, 3, 4);
+                }
             }
 
             if (lines < played_line) {
@@ -742,7 +740,9 @@ void Notation::display_notation(const GroupedNotations &notation, const Paddings
 
             if (!static_cast<bool>(offset % bar)) {
                 off_x += 10;
-                m_display->draw_text(SymBarLine, off_x, off_y);
+                if (lines >= played_line) {
+                    m_display->draw_text(SymBarLine, off_x, off_y);
+                }
                 off_x += 10;
             }
             // printing numbers works great.
@@ -760,7 +760,8 @@ Notation::get_note_location(const GroupedNotations &notation, const Paddings &di
 
     for (const Voice &note_groups : notation[0]) {
         // Move to the next line to avoid displaying over the staff.
-        if (off_x + calc_needed_space(distances, offset, sum_length(note_groups)) > 800 - edge_padding) {
+        if (!static_cast<bool>(offset % bar) &&
+            (off_x + calc_needed_space(distances, offset, bar) > Display::width - edge_padding)) {
             off_x = displaying_init_x;
             off_y += staff_lines_spacing;
         }
@@ -851,14 +852,11 @@ void Notation::prepare_displayable_notation(const Notations &generated_notation,
     notation.push_back(move(voice_notation));
     voice_notation.clear();
 
-    // asserts two voices are same offset, when using one voice don't use this.
+    // Asserts two voices are same offset, when using one voice don't use this.
     assert(sum_length(notation[0]) == sum_length(notation[1]));
 
     Paddings merged_padding;
-    // maybe typedef Paddings as Distances
 
-    // todo: maybe simply use 0,1 for default constructor and be over with all this initialization stuff.
-    // todo: think what to do with notes with value below minimum supported fraction on different lines.
     Fraction notes_offset;
     for (const auto &notes : generated_notation[0]) {
         insert_padding(merged_padding, notes_offset, merge_padding(notes));

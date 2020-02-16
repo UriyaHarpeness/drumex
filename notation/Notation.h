@@ -23,15 +23,15 @@ typedef vector<Notations> GroupedNotations;
 
 class Notation {
 public:
-    static const map<MusicSymbol, pair<MusicSymbolValues, pair<int, int>>> music_symbols_to_values;
+    static const map<MusicSymbols, pair<int, int>> music_symbols_to_values;
 
-    static const map<int, MusicSymbol> rests_to_music_symbols;
+    static const map<int, MusicSymbols> rests_to_music_symbols;
 
     static const map<Instrument, int> instrument_to_line;
 
     static const map<Modifier, Padding> modifier_to_padding;
 
-    static const map<Modifier, MusicSymbolValues> modifier_to_symbol;
+    static const map<Modifier, MusicSymbols> modifier_to_symbol;
 
     static const map<Modifier, array<int, 3>> modifier_to_position;
 
@@ -77,7 +77,7 @@ public:
 
     void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
 
-    static int calc_needed_space(const Paddings &distances, Fraction offset, Fraction length);
+    static int calc_needed_space(const Paddings &distances, const Fraction &offset, const Fraction &length);
 
     static void
     draw_connected_notes(int &x, int staff_y, const Paddings &distances, Fraction offset, const Voice &notations);
@@ -114,7 +114,7 @@ public:
 
     static Notations generate_notation(const Voice &raw_notation, TimeSignature signature);
 
-    static void stretch_notation(Notations &notation, Fraction old_length, Fraction new_length);
+    static void stretch_notation(Notations &notation, const Fraction &old_length, Fraction new_length);
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -140,9 +140,8 @@ public:
      *                  4.  of voices.
      * @param signature The time signature.
      */
-    static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation,
-                                 const Paddings &distances, const Fraction &bar,
-                                 const int played_line);
+    static void display_notation(const vector<vector<vector<vector<Notation>>>> &notation, const Paddings &distances,
+                                 const Fraction &bar, int played_line);
 
     static pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                            const Fraction &bar, const Fraction &location);
@@ -182,9 +181,9 @@ public:
     }
 
 private:
-    MusicSymbol m_symbol;
+    MusicSymbols m_symbol;
 
-    pair<MusicSymbolValues, pair<int, int>> m_symbol_value;
+    pair<int, int> m_symbol_value;
 
     int m_line;
 

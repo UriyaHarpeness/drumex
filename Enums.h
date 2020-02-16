@@ -25,7 +25,7 @@ enum Instrument {
     BassInst,
 };
 
-enum MusicSymbolValues {
+enum MusicSymbols {
     SymSmallZero = 0xBC,
     SymSmallOne = 0xC1,
     SymSmallTwo = 0xAA,
@@ -74,17 +74,6 @@ enum MusicSymbolValues {
     SymLedger = '_',
     SymTempo = 0xF2,
     SymBarLine = '\\',
-};
-
-enum MusicSymbol {
-    DoubleWholeRest = 0xE3,
-    WholeRest = 0xB7,
-    HalfRest = 0xEE,
-    QuarterRest = 0xCE,
-    EightRest = 0xC5,
-    SixteenthRest = 0xA8,
-    ThirtySecondRest = 0xF4,
-    SixtyFourthRest = 0xE5,
 };
 
 enum Modifier {

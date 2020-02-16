@@ -1,8 +1,9 @@
 #include "Part.h"
 
 
-Part::Part(Notations notation, TimeSignature signature, Fraction length) : m_notation(move(notation)),
-                                                                           m_signature(signature), m_length(length) {}
+Part::Part(Notations notation, const TimeSignature &signature, const Fraction &length) : m_notation(move(notation)),
+                                                                                         m_signature(signature),
+                                                                                         m_length(length) {}
 
 Part::Part(const string &path, int index) {
     Json::Reader reader;
@@ -51,8 +52,7 @@ Voice Part::read_regular_voice(const Json::Value &part) {
                 modifiers.push_back(modifier_names.at(modifier.asString()));
             }
             group.push_back(
-                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length,
-                     move(modifiers)});
+                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers});
             modifiers.clear();
         }
         voice.push_back(move(group));
@@ -76,7 +76,7 @@ Voice Part::read_custom_voice(const Json::Value &part) {
 
         definitions.insert(pair<char, Notation>(name[0], {(inst == Unbound) ? BaseRest : BasePlay,
                                                           (inst == Unbound) ? UnboundUp : inst, length,
-                                                          move(modifiers)}));
+                                                          modifiers}));
         modifiers.clear();
     }
 

@@ -13,7 +13,6 @@ Display::Display() {
 }
 
 Display::~Display() {
-    // todo: free all the pointers..., there are many more across the sdl code.
     // todo: there has been major improvement in code memory efficiency after calling SDL's destructors wherever needed, may help to look for more leaks.
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
@@ -40,7 +39,7 @@ void Display::draw_text(const string &text, int x, int y) {
     SDL_DestroyTexture(texture);
 }
 
-void Display::draw_text(MusicSymbolValues value, int x, int y) {
+void Display::draw_text(MusicSymbols value, int x, int y) {
     SDL_Surface *surface;
     SDL_Color textColor = {0, 0, 0, 0};
 
@@ -55,7 +54,7 @@ void Display::draw_text(MusicSymbolValues value, int x, int y) {
     SDL_DestroyTexture(texture);
 }
 
-void Display::draw_text(MusicSymbolValues value, int x, int staff_y, int line, int off_x, int off_y) {
+void Display::draw_text(MusicSymbols value, int x, int staff_y, int line, int off_x, int off_y) {
     SDL_Surface *surface;
     SDL_Color textColor = {0, 0, 0, 0};
 

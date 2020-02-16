@@ -16,13 +16,7 @@ public:
 
     static const int width = 800;
 
-    static const int staff_start = 100;
-
-    static const int minimal_distance = 11;
-
     static const int line_height = 5;
-
-    static const int staff_to_0 = 2 * line_height;
 
     Display();
 
@@ -32,9 +26,9 @@ public:
 
     void draw_text(const string &text, int x, int y);
 
-    void draw_text(MusicSymbolValues value, int x, int y);
+    void draw_text(MusicSymbols value, int x, int y);
 
-    void draw_text(MusicSymbolValues value, int x, int staff_y, int line, int off_x = 0, int off_y = 0);
+    void draw_text(MusicSymbols value, int x, int staff_y, int line, int off_x = 0, int off_y = 0);
 
     void draw_text_c(const string &text, int x, int y);
 

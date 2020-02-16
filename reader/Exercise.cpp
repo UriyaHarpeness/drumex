@@ -11,7 +11,6 @@ Exercise::Exercise(const string &path, int index) {
     cout << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
 
-    // todo: think about the correct files' structures.
     vector<Part> parts;
     vector<vector<Part>> all_parts;
     for (const auto &parts_variation : variation) {

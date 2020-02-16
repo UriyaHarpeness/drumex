@@ -62,28 +62,18 @@ int main() {
 
     Notation::prepare_displayable_notation(part.get_notation(), notation, distances, bar);
 
-    // todo: scroll notation when displaying long notation like the chester new breed.
     // todo: also support exiting through keyboard event and change tempo.
     Notation::continuous_display_notation(notation, distances, bar, 180);
 
-    // Part part("../resources/rudiments/chester-2-a.json", 0);
-    // gamelogic(part.get_notation(), part.get_signature());
-
-    // todo: support when supplying -1 or something to part to just concat all options.
-    // todo: support merging exercises together or somethings for 3/4 and stuff.
     // todo: need to print the time signature next to the clef.
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
-    // todo: full note rests on the low voice are outside the line.
     // todo: add option to enable dotted rests.
     // todo: must support polyrhythm later.
-    // todo: prepare the next frame while waiting for the time to display, this will help avoid lagging.
 
     return 0;
 
     /*
-
-    //what if 0 is given as the numerator? like 0/4
 
     vector<vector<Notation>> stuff = {
             {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
