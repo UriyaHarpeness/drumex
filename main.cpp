@@ -56,8 +56,8 @@ int main() {
 
     // Part part("../resources/play/playing.json", 0);
 
-    vector<Notations> notation;
-    vector<pair<Fraction, Padding>> distances;
+    GroupedNotations notation;
+    Paddings distances;
     Fraction bar(part.get_signature());
 
     Notation::prepare_displayable_notation(part.get_notation(), notation, distances, bar);

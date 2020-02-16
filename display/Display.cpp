@@ -14,11 +14,12 @@ Display::Display() {
 
 Display::~Display() {
     // todo: free all the pointers..., there are many more across the sdl code.
-    free(m_renderer);
+    // todo: there has been major improvement in code memory efficiency after calling SDL's destructors wherever needed, may help to look for more leaks.
+    SDL_DestroyRenderer(m_renderer);
+    SDL_DestroyWindow(m_window);
     free(m_screen);
-    free(m_window);
-    free(m_music_font);
-    free(m_text_font);
+    TTF_CloseFont(m_music_font);
+    TTF_CloseFont(m_text_font);
 }
 
 void Display::clear_screen() {
@@ -35,6 +36,8 @@ void Display::draw_text(const string &text, int x, int y) {
     SDL_FreeSurface(surface);
     SDL_Rect rect{x, y, surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::draw_text(MusicSymbolValues value, int x, int y) {
@@ -48,6 +51,8 @@ void Display::draw_text(MusicSymbolValues value, int x, int y) {
     SDL_FreeSurface(surface);
     SDL_Rect rect{x, y, surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::draw_text(MusicSymbolValues value, int x, int staff_y, int line, int off_x, int off_y) {
@@ -61,6 +66,8 @@ void Display::draw_text(MusicSymbolValues value, int x, int staff_y, int line, i
     SDL_FreeSurface(surface);
     SDL_Rect rect{x + off_x, staff_y + (line * line_height) + off_y, surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::draw_text_c(const string &text, int x, int y) {
@@ -72,6 +79,8 @@ void Display::draw_text_c(const string &text, int x, int y) {
     SDL_FreeSurface(surface);
     SDL_Rect rect{x - (surface->w / 2), y - (surface->h / 2), surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
