@@ -14,6 +14,10 @@ add_executable(drumex main.cpp
         display/Display.h
         notation/Notation.cpp
         notation/Notation.h
+        notation/NotationUtils.cpp
+        notation/NotationUtils.h
+        notation/NotationDisplay.cpp
+        notation/NotationDisplay.h
         notation/Fraction.cpp
         notation/Fraction.h
         Translations.h

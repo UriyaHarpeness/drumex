@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../notation/Notation.h"
+#include "../notation/NotationUtils.h"
 #include "../Translations.h"
 #include "../location/Location.h"
 

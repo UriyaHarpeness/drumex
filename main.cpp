@@ -2,6 +2,8 @@
 
 #include "display/Display.h"
 #include "notation/Notation.h"
+#include "notation/NotationUtils.h"
+#include "notation/NotationDisplay.h"
 #include "reader/Part.h"
 #include "reader/Exercise.h"
 
@@ -60,10 +62,10 @@ int main() {
     Paddings distances;
     Fraction bar(part.get_signature());
 
-    Notation::prepare_displayable_notation(part.get_notation(), notation, distances, bar);
+    NotationDisplay::prepare_displayable_notation(part.get_notation(), notation, distances, bar);
 
     // todo: also support exiting through keyboard event and change tempo.
-    Notation::continuous_display_notation(notation, distances, bar, 180);
+    NotationDisplay::continuous_display_notation(notation, distances, bar, 180);
 
     // todo: need to print the time signature next to the clef.
     // todo: maybe limit the note length to single beat optionally.

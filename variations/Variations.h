@@ -2,6 +2,7 @@
 
 #include "../location/Location.h"
 #include "../notation/Notation.h"
+#include "../notation/NotationUtils.h"
 #include "../reader/Part.h"
 #include "../Translations.h"
 

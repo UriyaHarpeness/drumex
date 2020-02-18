@@ -110,7 +110,8 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
                 }
             }
         }
-        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
+                                                       part.get_signature());
     }
 }
 
@@ -168,7 +169,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
                 }
             }
         }
-        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
     }
 }
 
@@ -209,7 +210,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
                 new_group.clear();
             }
         }
-        voice = Notation::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
     }
 }
 

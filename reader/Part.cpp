@@ -31,9 +31,9 @@ Part::Part(const string &path, int index) {
     // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in
     // one voice may be easier to modify, but first regenerate the correct spacing of stuff.
     // this needs to happen on the Exercise part since he modifies the pure notation.
-    m_notation = Notation::generate_notation(voice, m_signature);
+    m_notation = NotationUtils::generate_notation(voice, m_signature);
 
-    m_length = Notation::sum_final_length(m_notation);
+    m_length = NotationUtils::sum_final_length(m_notation);
 
     /*Json::Value &links = obj["parse"]["links"];
 
@@ -137,10 +137,10 @@ Part Part::merge_parts(vector<Part> parts) {
         lengths.push_back(part.get_length());
     }
 
-    Fraction merged_length = Notation::merge_lengths(lengths);
+    Fraction merged_length = NotationUtils::merge_lengths(lengths);
 
     for (auto &part : parts) {
-        Notation::stretch_notation(part.get_mutable_notation(), part.get_length(), merged_length);
+        NotationUtils::stretch_notation(part.get_mutable_notation(), part.get_length(), merged_length);
         notations.push_back(part.get_notation());
     }
 
@@ -153,7 +153,7 @@ Part Part::merge_parts(vector<Part> parts) {
 
     voice = merge_voices(voices);
 
-    notation = Notation::generate_notation(voice, parts[0].get_signature());
+    notation = NotationUtils::generate_notation(voice, parts[0].get_signature());
 
     // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
     // todo: solve this in some better way.
