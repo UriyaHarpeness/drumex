@@ -11,13 +11,22 @@ Part::Part(const string &path, int index) {
     Json::Reader reader;
     Json::Value obj;
     ifstream f(path);
+
+    if (!f.good()) {
+        throw runtime_error("Part File Does Not Exist");
+    }
+
     reader.parse(f, obj);
     f.close();
 
     cout << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value part = obj["Parts"][index];
 
-    m_signature = {part["Time Signature"][0].asUInt(), obj["Parts"][0]["Time Signature"][1].asUInt()};
+    if (part.isNull()) {
+        throw runtime_error("Invalid Part Index");
+    }
+
+    m_signature = {part["Time Signature"][0].asUInt(), part["Time Signature"][1].asUInt()};
 
     // currently supported types are only "Regular" and "Custom", maybe will need to expand.
     Voice voice;
@@ -36,10 +45,6 @@ Part::Part(const string &path, int index) {
     m_notation = NotationUtils::generate_notation(voice, m_signature);
 
     m_length = NotationUtils::sum_final_length(m_notation);
-
-    /*Json::Value &links = obj["parse"]["links"];
-
-    auto *str_links = new string[links.end() - links.begin()];*/
 }
 
 Voice Part::read_regular_voice(const Json::Value &part) {

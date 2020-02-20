@@ -49,24 +49,54 @@ int main2(int argc, char *argv[]) {
 /////////////////////////////////
 
 
-int main() {
+int main(int argv, char *argc[]) {
+    string part_path;
+    string exercise_path;
+    int index = -1;
+    int tempo = -1;
+
+    for (int argument_index = 1; argument_index < argv; argument_index += 2) {
+        if ("--part" == string(argc[argument_index])) {
+            part_path = argc[argument_index + 1];
+        } else if ("--exercise" == string(argc[argument_index])) {
+            exercise_path = argc[argument_index + 1];
+        } else if ("--index" == string(argc[argument_index])) {
+            index = stoi(argc[argument_index + 1]);
+        } else if ("--tempo" == string(argc[argument_index])) {
+            tempo = stoi(argc[argument_index + 1]);
+        }
+    }
+
+    if ((exercise_path.empty() and part_path.empty()) || (index < 0) || (tempo < 1)) {
+        cout << "Missing arguments: [--part|--exercise] [--index] [--tempo]" << endl;
+        return 1;
+    }
+
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
-
-    // Exercise exercise("../resources/exercises/chester-2-a.json", 0);
-    // const Part &part = exercise.get_part();
-
-    Part part("../resources/play/playing.json", 0);
 
     GroupedNotations notation;
     Paddings distances;
 
-    NotationDisplay::prepare_displayable_notation(part.get_notation(), notation, distances, part.get_signature());
+    const Part *chosen_part;
+    if (!exercise_path.empty()) {
+        Exercise exercise(exercise_path, index);
+        chosen_part = &exercise.get_part();
 
-    // todo: also support exiting through keyboard event and change tempo.
-    NotationDisplay::continuous_display_notation(notation, distances, part.get_signature(), 180);
+        NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
+                                                      chosen_part->get_signature());
 
-    // todo: need to print the time signature next to the clef.
+        NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
+    } else {
+        Part part(part_path, index);
+        chosen_part = &part;
+
+        NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
+                                                      chosen_part->get_signature());
+
+        NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
+    }
+
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
     // todo: add option to enable dotted rests.

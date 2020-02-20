@@ -199,11 +199,10 @@ Notations NotationUtils::connect_notation(const Voice &notation, const Fraction 
     return move(connected_notation);
 }
 
-Voice NotationUtils::convert_notation(const Voice &notation, TimeSignature signature) {
+Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature &signature) {
     Voice generated_notation;
 
-    Fraction offset(0, 1);
-    Fraction bar(signature);
+    Fraction offset;
 
     for (const auto &group : notation) {
         // assumes all the group has the same BasicPlaying and length
@@ -223,11 +222,13 @@ Voice NotationUtils::convert_notation(const Voice &notation, TimeSignature signa
                 // Add ModDot if possible.
                 bool dot = false;
                 if (!generated_notation.empty()) {
-                    auto note = generated_notation[generated_notation.size() - 1][0];
+                    const auto &note = generated_notation[generated_notation.size() - 1][0];
+                    const auto &modifiers = note.get_modifiers();
+
                     if ((note.get_playing() == BasePlay) &&
-                        (find(note.get_modifiers().begin(), note.get_modifiers().end(), ModDot) ==
-                         note.get_modifiers().end()) && (note.get_length() / fraction == Fraction(2, 1)) &&
-                        ((offset % bar) + note.get_length() < bar)) {
+                        (find(modifiers.begin(), modifiers.end(), ModDot) == modifiers.end()) &&
+                        (note.get_length() / fraction == Fraction(2, 1)) &&
+                        ((offset % signature) + note.get_length() < signature)) {
                         dot = true;
                     }
                 }

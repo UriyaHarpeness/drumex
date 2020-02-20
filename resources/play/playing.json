@@ -50,6 +50,56 @@
           "bbbbbbbbb"
         ]
       }
+    },
+    {
+      "Time Signature": [
+        12,
+        8
+      ],
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": [
+            "Snare",
+            [
+              1,
+              8
+            ],
+            []
+          ],
+          "b": [
+            "Bass",
+            [
+              1,
+              8
+            ],
+            []
+          ],
+          "c": [
+            "HiHat",
+            [
+              1,
+              8
+            ],
+            [
+              "Open"
+            ]
+          ],
+          ".": [
+            "Rest",
+            [
+              1,
+              8
+            ],
+            []
+          ]
+        },
+        "Use": [
+          "c..c..c..c..",
+          "s..s..s..s..",
+          "bbbbbbbbbbbb"
+        ]
+      }
     }
   ]
 }

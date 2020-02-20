@@ -1,8 +1,7 @@
 #include "Fraction.h"
 
 
-Fraction::Fraction() : m_value({0, 1}) {
-}
+Fraction::Fraction() : m_value({0, 1}) {}
 
 Fraction::Fraction(int a, int b, bool do_simplify) : m_value({a, b}) {
     if (do_simplify) simplify(*this);

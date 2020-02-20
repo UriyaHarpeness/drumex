@@ -14,7 +14,7 @@ class Display {
 public:
     static const int height = 600;
 
-    static const int width = 800;
+    static const int width = 900;
 
     static const int line_height = 5;
 

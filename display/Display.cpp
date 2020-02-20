@@ -3,22 +3,23 @@
 Display::Display() {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600,
+    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                                 SDL_WINDOW_SHOWN);
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
 
-    m_music_font = TTF_OpenFont("../Drumex.ttf", 39);
-    m_text_font = TTF_OpenFont("../WallingtonRegular-PYK7.ttf", 39);
+    m_music_font = TTF_OpenFont("Drumex.ttf", 39);
+    m_text_font = TTF_OpenFont("WallingtonRegular-PYK7.ttf", 39);
 }
 
 Display::~Display() {
     // todo: there has been major improvement in code memory efficiency after calling SDL's destructors wherever needed, may help to look for more leaks.
     SDL_DestroyRenderer(m_renderer);
     SDL_DestroyWindow(m_window);
-    free(m_screen);
     TTF_CloseFont(m_music_font);
     TTF_CloseFont(m_text_font);
+    TTF_Quit();
+    SDL_Quit();
 }
 
 void Display::clear_screen() {
@@ -101,8 +102,10 @@ void Display::draw_rect_c(int x, int y, int h, int w, int gray_scale = 0) {
 }
 
 void Display::draw_base(int x, int y, uint8_t a, uint8_t b) {
-    draw_text("===================", x, y);
+    draw_text("=====================", x, y);
     draw_text(SymClef, x + 10, y - 9);
+    draw_text_c(to_string(a), x + 40, y + 1);
+    draw_text_c(to_string(b), x + 40, y + 21);
 }
 
 void Display::draw_image(const string &path, int x, int y, int h, int w) {

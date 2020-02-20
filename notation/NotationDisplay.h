@@ -17,11 +17,11 @@ using namespace std;
 namespace NotationDisplay {
     const int connector_height = 7;
 
-    const int displaying_init_x = 50;
+    const int displaying_init_x = 80;
 
     const int displaying_init_y = 100;
 
-    const int staff_lines_spacing = 100;
+    const int staff_lines_spacing = 120;
 
     const int max_lines_displayed = 4;
 
@@ -52,8 +52,9 @@ namespace NotationDisplay {
     pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                     const Fraction &bar, const Fraction &location);
 
-    void continuous_display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
-                                     int tempo);
+    void
+    continuous_display_notation(const GroupedNotations &notation, const Paddings &distances, const TimeSignature &signature,
+                                int tempo);
 
     void
     prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation, Paddings &distances,

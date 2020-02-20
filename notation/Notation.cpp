@@ -158,7 +158,7 @@ void Notation::draw_flags(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_tail(int x, int staff_y, int tail_length) const {
-    int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
+    int distance = (m_symbol == SymCymbal) ? 1 : 0;
     if (m_line <= direction_line) {
         m_display->draw_rect(x + 13, staff_y + ((m_line - tail_length + 4) * line_height) - staff_to_0,
                              (tail_length + 2 - distance) * line_height - distance, 1);

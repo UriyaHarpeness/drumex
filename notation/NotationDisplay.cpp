@@ -115,7 +115,6 @@ void NotationDisplay::draw_individual_notes(int &x, int staff_y, const Paddings 
 
 void NotationDisplay::display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
                                        const int played_line) {
-    //d.draw_base(3, 16);
     /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             s[0] = (char) (i * 16 + j);
@@ -156,7 +155,7 @@ void NotationDisplay::display_notation(const GroupedNotations &notation, const P
                 }
 
                 if (lines >= played_line) {
-                    Notation::m_display->draw_base(edge_padding, off_y, 3, 4);
+                    Notation::m_display->draw_base(edge_padding, off_y, bar.get_value().first, bar.get_value().second);
                 }
             }
 
@@ -233,18 +232,21 @@ NotationDisplay::get_note_location(const GroupedNotations &notation, const Paddi
 }
 
 void NotationDisplay::continuous_display_notation(const GroupedNotations &notation, const Paddings &distances,
-                                                  const Fraction &bar, int tempo) {
+                                                  const TimeSignature &signature, int tempo) {
     vector<Fraction> locations;
     for (const auto &i : distances) {
         locations.push_back(i.first);
     }
+    SDL_Event event;
+    bool quit = false;
 
-    Metronome m(move(locations), tempo, {1, bar.get_value().second});
-    while (true) {
+    Metronome m(move(locations), tempo, signature);
+
+    while (!quit) {
         // todo: be responsive to SDL events, to avoid the annoying pop-up.
         cout << *m.get_current_location() << endl;
 
-        auto note_location = get_note_location(notation, distances, bar, *m.get_current_location());
+        auto note_location = get_note_location(notation, distances, signature, *m.get_current_location());
 
         const int played_line = (note_location.first.second - displaying_init_y) / staff_lines_spacing;
 
@@ -255,9 +257,32 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
                                        20, Notation::line_height * 16,
                                        get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64, 128);
 
-        display_notation(notation, distances, bar, played_line);
+        display_notation(notation, distances, signature, played_line);
 
         Notation::m_display->present();
+
+        // Interactive SDL communication part.
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                quit = true;
+                cout << "Exiting" << endl;
+                break;
+            }
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    quit = true;
+                    cout << "Exiting" << endl;
+                    break;
+                } else if (event.key.keysym.sym == SDLK_UP) {
+                    m.increase_tempo(20);
+                    cout << "Increasing Tempo to " << m.get_tempo() << endl;
+                } else if (event.key.keysym.sym == SDLK_DOWN) {
+                    m.increase_tempo(-20);
+                    cout << "Decreasing Tempo to " << m.get_tempo() << endl;
+                }
+            }
+        }
+
         m.poll();
     }
 }

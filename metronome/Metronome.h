@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../ext.h"
-#include "../notation/Fraction.h"
+#include "../time_signature/TimeSignature.h"
 
 #include <chrono>
 #include <functional>
@@ -15,11 +14,15 @@ using namespace std;
 
 class Metronome {
 public:
-    Metronome(vector<Fraction> locations, int tempo, const Fraction &beat);
+    Metronome(vector<Fraction> locations, int tempo, const TimeSignature &signature);
 
     void poll();
 
-    [[nodiscard]] const vector<Fraction>::iterator get_current_location() const { return m_current_location; }
+    void increase_tempo(int change);
+
+    [[nodiscard]] int get_tempo() const { return m_tempo; }
+
+    [[nodiscard]] vector<Fraction>::iterator get_current_location() const { return m_current_location; }
 
 private:
     chrono::system_clock::time_point get_next_beat_time();
