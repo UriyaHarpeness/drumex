@@ -1,9 +1,11 @@
 #include "Part.h"
 
+#include <utility>
 
-Part::Part(Notations notation, const TimeSignature &signature, const Fraction &length) : m_notation(move(notation)),
-                                                                                         m_signature(signature),
-                                                                                         m_length(length) {}
+
+Part::Part(Notations notation, TimeSignature signature, const Fraction &length) : m_notation(move(notation)),
+                                                                                  m_signature(move(signature)),
+                                                                                  m_length(length) {}
 
 Part::Part(const string &path, int index) {
     Json::Reader reader;

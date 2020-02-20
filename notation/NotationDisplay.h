@@ -57,7 +57,7 @@ namespace NotationDisplay {
 
     void
     prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation, Paddings &distances,
-                                 const Fraction &bar);
+                                 const TimeSignature &bar);
 
     Padding get_distance(const Fraction &length, Padding padding);
 };

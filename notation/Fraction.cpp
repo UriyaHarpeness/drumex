@@ -4,11 +4,8 @@
 Fraction::Fraction() : m_value({0, 1}) {
 }
 
-Fraction::Fraction(int a, int b) : m_value({a, b}) {
-    simplify(*this);
-}
-
-Fraction::Fraction(TimeSignature signature) : m_value(signature) {
+Fraction::Fraction(int a, int b, bool do_simplify) : m_value({a, b}) {
+    if (do_simplify) simplify(*this);
 }
 
 Fraction::Fraction(const Fraction &other) = default;
@@ -87,6 +84,10 @@ Fraction Fraction::operator/(const Fraction &other) const {
     result.m_value.second *= second.m_value.first;
     simplify(result);
     return result;
+}
+
+Fraction Fraction::operator/(const int other) const {
+    return *this / Fraction(other, 1);
 }
 
 Fraction Fraction::operator*(const Fraction &other) const {

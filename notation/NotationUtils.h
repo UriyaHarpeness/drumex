@@ -5,6 +5,7 @@
 #include "../Enums.h"
 #include "../display/Display.h"
 #include "../metronome/Metronome.h"
+#include "../time_signature/TimeSignature.h"
 
 #include <map>
 #include <numeric>
@@ -29,7 +30,7 @@ namespace NotationUtils {
 
     vector<Fraction> split_fraction(Fraction fraction);
 
-    vector<Fraction> split_fraction(TimeSignature signature, Fraction offset, Fraction fraction);
+    vector<Fraction> split_fraction(const TimeSignature& signature, Fraction offset, Fraction fraction);
 
     Notations split_notation(const Voice &notation, const Fraction &bar);
 

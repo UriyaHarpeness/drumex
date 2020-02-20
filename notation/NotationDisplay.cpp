@@ -133,6 +133,7 @@ void NotationDisplay::display_notation(const GroupedNotations &notation, const P
     int off_x, off_y, edge_padding = 20, lines;
     Fraction offset;
 
+    // todo: add the notation end double line.
     // todo: skip right to displayed notes, without calculating the distance all over again.
     for (const auto &voice : notation) {
         lines = -1;
@@ -262,8 +263,8 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
 }
 
 void NotationDisplay::prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation,
-                                                   Paddings &distances, const Fraction &bar) {
-    Fraction beat = {1, bar.get_value().second};
+                                                   Paddings &distances, const TimeSignature &bar) {
+    Fraction beat = bar.get_beat();
 
     Notations splitted_notation = NotationUtils::split_notation(generated_notation[0], bar);
 

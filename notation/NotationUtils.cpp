@@ -96,12 +96,11 @@ vector<Fraction> NotationUtils::split_fraction(Fraction fraction) {
     return move(fractions);
 }
 
-vector<Fraction> NotationUtils::split_fraction(TimeSignature signature, Fraction offset, Fraction fraction) {
+vector<Fraction> NotationUtils::split_fraction(const TimeSignature &signature, Fraction offset, Fraction fraction) {
     vector<Fraction> fractions;
     vector<Fraction> tmp;
 
-    Fraction bar(signature.first, signature.second);
-    Fraction beat(1, signature.second);
+    Fraction beat = signature.get_beat();
     Fraction fill;
 
     // If it's offset in a beat, first filling the beat is needed before stretching over it.
@@ -115,7 +114,7 @@ vector<Fraction> NotationUtils::split_fraction(TimeSignature signature, Fraction
     }
 
     while (fraction) {
-        fill = (fraction <= (bar - (offset % bar))) ? fraction : (bar - (offset % bar));
+        fill = (fraction <= (signature - (offset % signature))) ? fraction : (signature - (offset % signature));
 
         tmp = split_fraction(fill);
         fractions.insert(fractions.end(), tmp.begin(), tmp.end());

@@ -15,11 +15,7 @@ class Fraction {
 public:
     Fraction();
 
-    Fraction(int a, int b);
-
-    // use at some other places.
-    // Note that it does not optimize the value, in contrast to other constructors and after other methods.
-    explicit Fraction(TimeSignature signature);
+    Fraction(int a, int b, bool do_simplify = true);
 
     Fraction(const Fraction &other);
 
@@ -36,6 +32,8 @@ public:
     void operator-=(const Fraction &other);
 
     Fraction operator/(const Fraction &other) const;
+
+    Fraction operator/(const int other) const;
 
     Fraction operator*(const Fraction &other) const;
 
@@ -63,7 +61,7 @@ public:
 
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 
-private:
+protected:
     static void equalize_denominators(Fraction &first, Fraction &second);
 
     static void simplify(Fraction &fraction);

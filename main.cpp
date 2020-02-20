@@ -53,19 +53,18 @@ int main() {
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    Exercise exercise("../resources/exercises/chester-2-a.json", 0);
-    const Part &part = exercise.get_part();
+    // Exercise exercise("../resources/exercises/chester-2-a.json", 0);
+    // const Part &part = exercise.get_part();
 
-    // Part part("../resources/play/playing.json", 0);
+    Part part("../resources/play/playing.json", 0);
 
     GroupedNotations notation;
     Paddings distances;
-    Fraction bar(part.get_signature());
 
-    NotationDisplay::prepare_displayable_notation(part.get_notation(), notation, distances, bar);
+    NotationDisplay::prepare_displayable_notation(part.get_notation(), notation, distances, part.get_signature());
 
     // todo: also support exiting through keyboard event and change tempo.
-    NotationDisplay::continuous_display_notation(notation, distances, bar, 180);
+    NotationDisplay::continuous_display_notation(notation, distances, part.get_signature(), 180);
 
     // todo: need to print the time signature next to the clef.
     // todo: maybe limit the note length to single beat optionally.

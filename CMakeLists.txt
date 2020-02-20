@@ -26,7 +26,7 @@ add_executable(drumex main.cpp
         reader/Exercise.cpp
         reader/Exercise.h
         location/Location.cpp
-        location/Location.h)
+        location/Location.h time_signature/TimeSignature.cpp time_signature/TimeSignature.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)
