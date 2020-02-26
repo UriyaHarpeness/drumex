@@ -21,6 +21,8 @@ public:
 
     Part(const string &path, int index);
 
+    static Notation json_to_note(const Json::Value &note_json);
+
     static Voice read_regular_voice(const Json::Value &part);
 
     static Voice read_custom_voice(const Json::Value &part);

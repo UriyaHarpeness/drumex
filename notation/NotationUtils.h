@@ -40,9 +40,9 @@ namespace NotationUtils {
 
     Voice convert_notation(const Voice &notation, const TimeSignature &signature);
 
-    Voice generate_voice_notation(const Voice &raw_voice_notation, TimeSignature signature);
+    Voice generate_voice_notation(const Voice &raw_voice_notation, const TimeSignature &signature);
 
-    Notations generate_notation(const Voice &raw_notation, TimeSignature signature);
+    Notations generate_notation(const Voice &raw_notation, const TimeSignature &signature);
 
     void stretch_notation(Notations &notation, const Fraction &old_length, Fraction new_length);
 

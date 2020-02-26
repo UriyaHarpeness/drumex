@@ -61,7 +61,7 @@ Voice location::location_to_notation(map<Fraction, Group> &locations) {
     // add dots to get to the exact needed length.
     auto location = locations.begin();
     if (location->first) {
-        voice.push_back({{BaseRest, UnboundUp, location->first, {}}});
+        voice.push_back({{BaseRest, UnboundUp, location->first, {}, {}}});
     }
     auto end = locations.end();
     end--;

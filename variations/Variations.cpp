@@ -97,7 +97,7 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
                              (play < global_offset + note.get_length()) &&
                              (play_count > 0); play_count--, play += distance) {
                             new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
+                                                           note.get_length() - distance, note.get_modifiers(), {}}};
                         }
                         play_count = 0;
                     } else if (note.get_length() == distance) {
@@ -120,7 +120,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
 
     // overriding is not possible.
     // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually aplit notation may just be that.
+    // may be solvable with some conversion function, actually split notation may just be that.
 
     // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
 
@@ -156,7 +156,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
                              (play < global_offset + note.get_length()) &&
                              (play_count > 0); play_count--, play += distance) {
                             new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
+                                                           note.get_length() - distance, note.get_modifiers(), {}}};
                         }
                         play_count = 0;
                     } else if (note.get_length() == distance) {
@@ -169,7 +169,8 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
                 }
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
+                                                       part.get_signature());
     }
 }
 
@@ -202,7 +203,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
                     // to the mapping.
                     // also, think about the overlapping, and rounding the trespassing notes to the beginning.
                     new_group.push_back(
-                            {BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
+                            {BasePlay, destination_instrument, note.get_length(), note.get_modifiers(), {}});
                 }
             }
             if (!new_group.empty()) {
@@ -210,7 +211,8 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
                 new_group.clear();
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
+                                                       part.get_signature());
     }
 }
 

@@ -92,9 +92,9 @@ Notation::Notation(const Notation &other) = default;
 Notation::~Notation() = default;
 
 Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &length,
-                   const vector<Modifier> &modifiers) : m_line(instrument_to_line.at(instrument)), m_length(length),
-                                                        m_instrument(instrument), m_playing(playing),
-                                                        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
+                   const vector<Modifier> &modifiers, const Fraction &ratio) :
+        m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
+        m_modifiers(modifiers), m_ratio(ratio), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
 
     if (m_playing == BasePlay) {

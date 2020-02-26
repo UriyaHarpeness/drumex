@@ -47,19 +47,30 @@ Part::Part(const string &path, int index) {
     m_length = NotationUtils::sum_final_length(m_notation);
 }
 
+Notation Part::json_to_note(const Json::Value &note_json) {
+    vector<Modifier> modifiers;
+    Instrument inst = instrument_names.at(note_json[0].asString());
+    Fraction length = {note_json[1][0].asInt(), note_json[1][1].asInt()};
+    if (!note_json[2].empty()) {
+        for (const auto &modifier : note_json[2]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
+    Fraction ratio;
+    if (!note_json[3].empty()) {
+        ratio = {note_json[3][0].asInt(), note_json[3][1].asInt()};
+    }
+
+    return {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers, ratio};
+}
+
 Voice Part::read_regular_voice(const Json::Value &part) {
     Voice voice;
     Group group;
     vector<Modifier> modifiers;
     for (const auto &raw_group : part) {
         for (const auto &note : raw_group) {
-            Instrument inst = instrument_names.at(note[0].asString());
-            Fraction length = {note[1][0].asInt(), note[1][1].asInt()};
-            for (const auto &modifier : note[2]) {
-                modifiers.push_back(modifier_names.at(modifier.asString()));
-            }
-            group.push_back(
-                    {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers});
+            group.push_back(json_to_note(note));
             modifiers.clear();
         }
         voice.push_back(move(group));
@@ -75,15 +86,8 @@ Voice Part::read_custom_voice(const Json::Value &part) {
 
     for (const string &name : part["Definitions"].getMemberNames()) {
         const Json::Value &note = part["Definitions"][name];
-        Instrument inst = instrument_names.at(note[0].asString());
-        Fraction length = {note[1][0].asInt(), note[1][1].asInt()};
-        for (const auto &modifier : note[2]) {
-            modifiers.push_back(modifier_names.at(modifier.asString()));
-        }
 
-        definitions.insert(pair<char, Notation>(name[0], {(inst == Unbound) ? BaseRest : BasePlay,
-                                                          (inst == Unbound) ? UnboundUp : inst, length,
-                                                          modifiers}));
+        definitions.insert(pair<char, Notation>(name[0], json_to_note(note)));
         modifiers.clear();
     }
 
