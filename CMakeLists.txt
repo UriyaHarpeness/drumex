@@ -27,7 +27,15 @@ add_executable(drumex main.cpp
         location/Location.cpp
         location/Location.h
         time_signature/TimeSignature.cpp
-        time_signature/TimeSignature.h)
+        time_signature/TimeSignature.h
+        notation_container/NotationContainer.cpp
+        notation_container/NotationContainer.h
+        notation_container/VoiceContainer.cpp
+        notation_container/VoiceContainer.h
+        notation_container/BarContainer.cpp
+        notation_container/BarContainer.h
+        notation_container/RhythmContainer.cpp
+        notation_container/RhythmContainer.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

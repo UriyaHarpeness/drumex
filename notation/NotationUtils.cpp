@@ -58,7 +58,9 @@ Voice NotationUtils::merge_notation(const Voice &notation) {
 
     auto group = notation.begin();
     for (group++; group != notation.end(); group++) {
-        if ((*group)[0].get_playing() == BasePlay) {
+        // todo: each group here is reuired to have the same ratio, it this correct?
+        if (((*group)[0].get_playing() == BasePlay) ||
+            (merged_notation[merged_notation.size() - 1][0].get_ratio()) == (*group)[0].get_ratio()) {
             merged_notation.push_back(*group);
         } else {
             for (auto &single : merged_notation[merged_notation.size() - 1]) {

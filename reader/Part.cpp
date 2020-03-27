@@ -29,22 +29,26 @@ Part::Part(const string &path, int index) {
     m_signature = {part["Time Signature"][0].asUInt(), part["Time Signature"][1].asUInt()};
 
     // currently supported types are only "Regular" and "Custom", maybe will need to expand.
-    Voice voice;
     if (part["Type"].asString() == "Regular") {
-        voice = read_regular_voice(part["Part"]);
+        m_location = read_regular_voice(part["Part"]);
     } else if (part["Type"].asString() == "Custom") {
-        voice = read_custom_voice(part["Part"]);
+        m_location = read_custom_voice(part["Part"]);
     } else {
         // todo: add more understandable exceptions throughout the code.
         throw runtime_error("Unknown Part Type");
     }
 
+    /*
+     return move(location::location_to_notation(merged_location));
+     return move(merge_voices(voices));
+     */
+
     // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in
     // one voice may be easier to modify, but first regenerate the correct spacing of stuff.
     // this needs to happen on the Exercise part since he modifies the pure notation.
-    m_notation = NotationUtils::generate_notation(voice, m_signature);
+    // m_notation = NotationUtils::generate_notation(voice, m_signature);
 
-    m_length = NotationUtils::sum_final_length(m_notation);
+    m_length = prev(m_location.end())->first;
 }
 
 Notation Part::json_to_note(const Json::Value &note_json) {
@@ -64,7 +68,7 @@ Notation Part::json_to_note(const Json::Value &note_json) {
     return {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers, ratio};
 }
 
-Voice Part::read_regular_voice(const Json::Value &part) {
+Locations Part::read_regular_voice(const Json::Value &part) {
     Voice voice;
     Group group;
     vector<Modifier> modifiers;
@@ -76,10 +80,10 @@ Voice Part::read_regular_voice(const Json::Value &part) {
         voice.push_back(move(group));
         group.clear();
     }
-    return move(voice);
+    return move(location::notation_to_location(voice));
 }
 
-Voice Part::read_custom_voice(const Json::Value &part) {
+Locations Part::read_custom_voice(const Json::Value &part) {
     // maybe make group of notes...
     map<char, Notation> definitions;
     vector<Modifier> modifiers;
@@ -112,7 +116,7 @@ Voice Part::read_custom_voice(const Json::Value &part) {
         voice.clear();
     }
 
-    return move(merge_voices(voices));
+    return voices_to_location(voices);
 }
 
 int Part::get_parts_number(const string &path) {
@@ -125,22 +129,20 @@ int Part::get_parts_number(const string &path) {
     return obj["Parts"].size();
 }
 
-Voice Part::merge_voices(const Notations &notations) {
-    vector<map<Fraction, Group>> locations;
+Locations Part::voices_to_location(const Notations &notations) {
+    vector<Locations> locations;
 
     for (const auto &notation : notations) {
         locations.push_back(location::notation_to_location(notation));
     }
 
-    map<Fraction, Group> merged_location = location::merge_locations(locations);
-
-    return move(location::location_to_notation(merged_location));
+    return move(location::merge_locations(locations));
 }
 
 Part Part::merge_parts(vector<Part> parts) {
     Notations notation;
     Voice voice;
-    GroupedNotations notations;
+    vector<Locations> locations;
     vector<Fraction> lengths;
     Fraction length;
 
@@ -151,18 +153,15 @@ Part Part::merge_parts(vector<Part> parts) {
     Fraction merged_length = NotationUtils::merge_lengths(lengths);
 
     for (auto &part : parts) {
-        NotationUtils::stretch_notation(part.get_mutable_notation(), part.get_length(), merged_length);
-        notations.push_back(part.get_notation());
+        location::stretch_locations(part.get_mutable_location(), merged_length);
+        locations.push_back(part.get_location());
     }
 
-    Notations voices;
+    Locations merged_locations = location::merge_locations(locations);
+    vector<Locations> location_voices = location::split_voices_locations(merged_locations);
 
-    for (const auto &separate_notation : notations) {
-        voices.push_back(separate_notation[0]);
-        voices.push_back(separate_notation[1]);
-    }
-
-    voice = merge_voices(voices);
+    VoiceContainer up(location_voices[0], parts[0].get_signature(), UnboundUp);
+    VoiceContainer down(location_voices[1], parts[0].get_signature(), UnboundDown);
 
     notation = NotationUtils::generate_notation(voice, parts[0].get_signature());
 
