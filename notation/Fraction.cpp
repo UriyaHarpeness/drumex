@@ -7,6 +7,10 @@ Fraction::Fraction(int a, int b, bool do_simplify) : m_value({a, b}) {
     if (do_simplify) simplify(*this);
 }
 
+Fraction::Fraction(int a) : m_value({a, 1}) {
+    simplify(*this);
+}
+
 Fraction::Fraction(const Fraction &other) = default;
 
 bool Fraction::operator==(const Fraction &other) const {

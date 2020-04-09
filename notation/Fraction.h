@@ -17,6 +17,8 @@ public:
 
     Fraction(int a, int b, bool do_simplify = true);
 
+    Fraction(int a);
+
     Fraction(const Fraction &other);
 
     bool operator==(const Fraction &other) const;

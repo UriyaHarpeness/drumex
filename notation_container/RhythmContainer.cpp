@@ -2,8 +2,11 @@
 
 set<int> RhythmContainer::primes;
 
-RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature &signature,
-                                 Instrument rests_location) {
+RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
+                                 const Fraction &offset, const Fraction &ratio) : m_locations(locations),
+                                                                                  m_offset(offset), m_ratio(ratio) {
+    // todo: probably rename from signature to scope
+
     /**
      * There is only one main rhythm.
      * The prioritized is the normal meter, that matches the time signature, a division of 2 probably.
@@ -17,49 +20,61 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
      * 2.   Split by most occurring rhythm's beat
      * 3.   Repeat the steps 1 and 2 until each part (sub-beat) contains only the same rhythm.
      * 4.   Join close parts with the same rhythm and optimize.
+     * 5.   * Maybe join separate parts with the same rhythm with only the basic rhythm between them.
      */
 
-    int most_occurring_rhythm = get_most_occurring_rhythm(locations);
-    Fraction beat = get_beat_from_most_occurring_rhythm(most_occurring_rhythm, signature);
+    cout << "-------------------- starting rhythm container --------------------" << endl;
 
-    cout << "most_occurring_rhythm: " << most_occurring_rhythm << ", beat: " << beat << endl;
+    auto most_occurring = get_most_occurring_rhythm(locations);
+    int most_occurring_rhythm = most_occurring.first;
+    bool same_rhythm = most_occurring.second;
+    Fraction beat = get_beat_from_most_occurring_rhythm(most_occurring_rhythm, scope);
+
+    // If no notes start at the beginning of the scope.
+    if (m_locations.find({}) == m_locations.end()) {
+        m_locations.insert({{},
+                            {}});
+    }
+    m_locations.insert({scope, {}});
+
+    cout << "most_occurring_rhythm: " << most_occurring_rhythm << ", beat: " << beat << ", same: "
+         << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio << endl;
 
     // Now split according to the most occurring rhythm.
+    Fraction next = beat;
     Locations rhythm_location;
-    for (const auto &location : locations) {
-        // Just a sample for now.
-        rhythm_location.insert(location);
-        if ((!static_cast<bool>(location.first)) ||
-            (location.first.get_value().second % 2 == 0) ||
-            (is_power_of_2((double) location.first.get_value().second / most_occurring_rhythm))) {
-            cout << "fitting " << location.first.get_value().second << endl;
+    vector<RhythmContainer> rhythm_containers;
 
-            for (const auto &it : rhythm_location) {
-                cout << it.first << endl;
+    // Split rhythm further.
+    if (!same_rhythm) {
+        for (const auto &location : m_locations) {
+            // Just a sample for now.
+
+            if (location.first >= next) {
+                // todo: need to fill the missing beats, the loop may leave beats without notes and processing.
+                rhythm_containers.emplace_back(move(rhythm_location), (TimeSignature) {1, 1}, rests_location,
+                                               offset + (next - beat), ratio / most_occurring_rhythm);
+                rhythm_location.clear();
+                if (next == scope) {
+                    break;
+                }
+                next += beat;
+                while (next <= location.first) {
+                    rhythm_containers.emplace_back((Locations) {}, (TimeSignature) {1, 1}, rests_location,
+                                                   offset + (next - beat), ratio / most_occurring_rhythm);
+                    if (next == scope) {
+                        break;
+                    }
+                    next += beat;
+                }
             }
-            rhythm_location.clear();
-        } else {
-            cout << "not " << location.first.get_value().second << endl;
+
+            // The location is relative to the offset and the beat, need to think how this will be represented.
+            rhythm_location.insert({(location.first - (next - beat)) / beat, location.second});
         }
     }
 
-    if (locations.empty()) {
-        m_locations[{}].insert({{},
-                                {Notation(BaseRest, rests_location, signature, {}, {})}});
-        return;
-    }
-
-    m_locations = move(location::get_ratios(locations));
-
-    // If no ratio starts at the beginning of the bar and the regular notes do not exist
-    if ((locations.find({}) == locations.end()) && (m_locations.find({}) == m_locations.end())) {
-        cout << "ok" << endl;
-    }
-    for (const auto &it : m_locations) {
-        for (const auto &y : it.second) {
-            cout << y.first << endl;
-        }
-    }
+    // todo: next step is joining the same rhythm containers, and after that - re-evaluate the notes with the new locations.
 
     /*
      * 1---2---3---4---5---6---7---
@@ -73,6 +88,8 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
      * 5 0-------0-------0-------0-------0-------
      * 4 0----0----0----0----0----0----0----0----
      */
+
+    cout << "===================== ending rhythm container =====================" << endl;
 }
 
 void RhythmContainer::find_primes() {
@@ -112,10 +129,21 @@ set<int> RhythmContainer::get_prime_factors(int value) {
     return move(primes_factors);
 }
 
-int RhythmContainer::get_most_occurring_rhythm(const Locations &locations) {
+pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &locations) {
+    /*
+     * Return the most occurring rhythm and if all the notes are in the same rhythm group.
+     *
+     * Order of return:
+     * 1.   Most occurring division.
+     * 2.   Lowest number divisor.
+     *
+     * The rhythms are counted for every location by finding the prime factors, and for each location - the rhythm is
+     * the lowest prime factor that isn't 2, and if there are no prime factors (0/1) or the only factor is 2, 2 is the
+     * rhythm.
+     */
     map<int, int> prime_factors_counter;
     for (const auto &it : locations) {
-        cout << "denominator: " << it.first.get_value().second << endl;
+        cout << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
         auto prime_factors = get_prime_factors(it.first.get_value().second);
         if ((prime_factors.size() > 1) && (prime_factors.find(2) != prime_factors.end())) {
             prime_factors.erase(2);
@@ -134,7 +162,7 @@ int RhythmContainer::get_most_occurring_rhythm(const Locations &locations) {
     }
 
     // Choose the most occurring rhythm.
-    return *prev(prime_factors_by_count.end())->second.begin();
+    return {*prev(prime_factors_by_count.end())->second.begin(), prime_factors_by_count.size() == 1};
 }
 
 Fraction

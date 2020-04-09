@@ -2,6 +2,9 @@
 
 TimeSignature::TimeSignature() = default;
 
+TimeSignature::TimeSignature(const Fraction &other) : Fraction(other.get_value().first, other.get_value().second,
+                                                               false) {}
+
 TimeSignature::TimeSignature(unsigned int a, unsigned int b) : Fraction(static_cast<int>(a), static_cast<int>(b),
                                                                         false) {}
 
