@@ -111,7 +111,7 @@ private:
 
     pair<int, int> m_symbol_value;
 
-    int m_line;
+    int m_line{};
 
     Fraction m_length;
 
@@ -119,9 +119,9 @@ private:
 
     BasicPlaying m_playing;
 
-    vector<Modifier> m_modifiers;
+    vector<Modifier> m_modifiers{};
 
     Fraction m_ratio;
 
-    Padding m_padding;
+    Padding m_padding{};
 };

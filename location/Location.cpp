@@ -27,6 +27,17 @@ Locations location::notation_to_location(const Voice &voice) {
     return move(locations);
 }
 
+void location::clear_location(Locations &locations) {
+    // locations.erase(std::remove_if(locations.begin(), locations.end(), [](auto &x) { return x.second.empty(); }),
+    //                locations.end());
+    // Without removing the last location.
+    for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+        if (it->second.empty()) {
+            locations.erase(it--);
+        }
+    }
+}
+
 Locations location::merge_locations(const vector<Locations> &locations) {
     Locations merged_locations;
     Group group;

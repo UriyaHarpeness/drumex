@@ -1,17 +1,20 @@
 #pragma once
 
-#include "NotationContainer.h"
+#include "../location/Location.h"
 #include "../time_signature/TimeSignature.h"
 
 #include <set>
 
 using namespace std;
 
-class RhythmContainer : public NotationContainer {
+class RhythmContainer {
 public:
     RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
-                    const Fraction &offset,
-                    const Fraction& ratio);
+                    const Fraction &offset, const Fraction &ratio);
+
+    void optimize();
+
+    void extend(const RhythmContainer &container);
 
     static void find_primes();
 
@@ -28,7 +31,11 @@ public:
 private:
     Locations m_locations;
 
+    vector<RhythmContainer> m_rhythms_containers;
+
     Fraction m_offset;
 
     Fraction m_ratio;
+
+    int m_most_occurring_rhythm;
 };
