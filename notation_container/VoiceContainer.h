@@ -1,13 +1,14 @@
 #pragma once
 
-#include "NotationContainer.h"
 #include "BarContainer.h"
 #include "../time_signature/TimeSignature.h"
 
 using namespace std;
 
-class VoiceContainer : public NotationContainer {
+class VoiceContainer {
 public:
+    VoiceContainer() = default;
+
     VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location);
 
 private:

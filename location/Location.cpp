@@ -20,7 +20,7 @@ Locations location::notation_to_location(const Voice &voice) {
                 note.reset_length(note.get_length() + group[0].get_length());
             }
         }
-        notes_offset += group[0].get_full_length();
+        notes_offset += group[0].get_length();
     }
     locations[notes_offset] = {};
 
@@ -28,12 +28,23 @@ Locations location::notation_to_location(const Voice &voice) {
 }
 
 void location::clear_location(Locations &locations) {
+    // todo: need to remove rests as well as join their lengths by up or down voice.
     // locations.erase(std::remove_if(locations.begin(), locations.end(), [](auto &x) { return x.second.empty(); }),
     //                locations.end());
     // Without removing the last location.
     for (auto it = locations.begin(); it != prev(locations.end()); it++) {
         if (it->second.empty()) {
             locations.erase(it--);
+        }
+    }
+}
+
+void location::optimize_location(Locations &locations) {
+    location::clear_location(locations);
+
+    for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+        for (auto &note : it->second) {
+            note.reset_length(next(it)->first - it->first);
         }
     }
 }
@@ -77,24 +88,6 @@ void location::stretch_locations(Locations &locations, const Fraction &final_len
     locations.insert({final_length, {}});
 }
 
-map<Fraction, Locations> location::get_ratios(const Locations &locations) {
-    Voice voice;
-    Group group;
-
-    map<Fraction, Locations> ratio_locations;
-
-    // todo: think what to do with notes with value below minimum supported fraction on different lines.
-    // add dots to get to the exact needed length.
-    for (const auto &location : locations) {
-        group = location.second;
-        for (const auto &note : group) {
-            ratio_locations[note.get_ratio()][location.first] = group;
-        }
-    }
-
-    return ratio_locations;
-}
-
 vector<Locations> location::split_voices_locations(const Locations &locations) {
     vector<Locations> split_locations = {{},
                                          {}};
@@ -122,15 +115,16 @@ vector<Locations> location::split_voices_locations(const Locations &locations) {
     return move(split_locations);
 }
 
-Voice location::location_to_notation(Locations &locations) {
+Voice location::location_to_notation(Locations &locations, const Fraction &ratio) {
     Voice voice;
     Group group;
 
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
     // add dots to get to the exact needed length.
     auto location = locations.begin();
+    auto prev_note = locations.begin();
     if (location->first) {
-        voice.push_back({{BaseRest, UnboundUp, location->first, {}, {}}});
+        voice.push_back({{BaseRest, UnboundUp, location->first * ratio, {}}});
     }
     auto end = locations.end();
     end--;
@@ -138,20 +132,22 @@ Voice location::location_to_notation(Locations &locations) {
         if (location->second.empty()) {
             for (auto &note : voice[voice.size() - 1]) {
                 // length should be without ModDots at this point.
-                note.reset_length(note.get_rounded_length() + location->first);
+                note.reset_length((next(location)->first - prev_note->first) * ratio);
             }
+            continue;
         }
+
         group = location->second;
+        prev_note = location;
 
         for (auto &note : group) {
             cout << next(location)->first - location->first << endl;
-            note.reset_length(next(location)->first - location->first);
+            note.reset_length((next(location)->first - location->first) * ratio);
         }
+
         voice.push_back(move(group));
         group.clear();
     }
-
-    auto t = get_ratios(locations);
 
     return move(voice);
 }

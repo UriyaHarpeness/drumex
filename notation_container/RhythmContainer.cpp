@@ -3,8 +3,8 @@
 set<int> RhythmContainer::primes;
 
 RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
-                                 const Fraction &offset, const Fraction &ratio) : m_locations(locations),
-                                                                                  m_offset(offset), m_ratio(ratio) {
+                                 const Fraction &offset, const Fraction &ratio) :
+        m_locations(locations), m_offset(offset), m_ratio(ratio), m_length(scope * ratio) {
     /**
      * There is only one main rhythm.
      * The prioritized is the normal meter, that matches the time signature, a division of 2 probably.
@@ -26,20 +26,20 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     auto most_occurring = get_most_occurring_rhythm(locations);
     m_most_occurring_rhythm = most_occurring.first;
     bool same_rhythm = most_occurring.second;
-    Fraction beat = get_beat_from_most_occurring_rhythm(m_most_occurring_rhythm, scope);
+    m_beat = get_beat_from_most_occurring_rhythm(m_most_occurring_rhythm, scope, ratio);
 
     // If no notes start at the beginning of the scope.
     if (m_locations.find({}) == m_locations.end()) {
         m_locations.insert({{},
                             {}});
     }
-    m_locations.insert({scope * ratio, {}});
+    m_locations.insert({scope, {}});
 
-    cout << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", beat: " << beat << ", same: "
+    cout << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", beat: " << m_beat << ", same: "
          << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio << endl;
 
     // Now split according to the most occurring rhythm.
-    Fraction next_beat = beat;
+    Fraction next_beat = m_beat;
     Locations rhythm_location;
 
     // Split rhythm further.
@@ -49,25 +49,25 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
 
             if (location.first >= next_beat) {
                 // todo: need to fill the missing beats, the loop may leave beats without notes and processing.
-                m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {1, 1}, rests_location,
-                                                  offset + (next_beat - beat), ratio / m_most_occurring_rhythm);
+                m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {4, 4}, rests_location,
+                                                  offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
                 rhythm_location.clear();
                 if (next_beat == scope) {
                     break;
                 }
-                next_beat += beat;
+                next_beat += m_beat;
                 while (next_beat <= location.first) {
-                    m_rhythms_containers.emplace_back((Locations) {}, (TimeSignature) {1, 1}, rests_location,
-                                                      offset + (next_beat - beat), ratio / m_most_occurring_rhythm);
+                    m_rhythms_containers.emplace_back((Locations) {}, (TimeSignature) {4, 4}, rests_location,
+                                                      offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
                     if (next_beat == scope) {
                         break;
                     }
-                    next_beat += beat;
+                    next_beat += m_beat;
                 }
             }
 
             // The location is relative to the offset and the beat, need to think how this will be represented.
-            rhythm_location.insert({(location.first - (next_beat - beat)) / beat, move(location.second)});
+            rhythm_location.insert({(location.first - (next_beat - m_beat)) / m_beat, move(location.second)});
         }
     }
 
@@ -96,10 +96,23 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     cout << "===================== ending rhythm container =====================" << endl;
 }
 
-void RhythmContainer::optimize() {
-    location::clear_location(m_locations);
-
+void RhythmContainer::notationize() {
+    // What is the meaning of time signature at this point?
     if (m_rhythms_containers.empty()) {
+        // Locations does not contain rests at this point.
+        m_notations = location::location_to_notation(m_locations, m_ratio);
+
+        m_notations = NotationUtils::convert_notation(m_notations, m_length, m_beat,
+                                                      (m_most_occurring_rhythm == 2) ? m_ratio : m_ratio /
+                                                                                                 m_most_occurring_rhythm);
+        return;
+    }
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.notationize(); });
+}
+
+void RhythmContainer::optimize() {
+    if (m_rhythms_containers.empty()) {
+        location::optimize_location(m_locations);
         return;
     }
 
@@ -121,10 +134,12 @@ void RhythmContainer::optimize() {
 
 void RhythmContainer::extend(const RhythmContainer &container) {
     // todo: later make sure that multiple layers polyrhythm extension works as expected.
+    m_length += container.m_length;
     m_locations.erase(prev(m_locations.end()));
     for (const auto &location : container.m_locations) {
-        m_locations.insert({location.first + (container.m_offset - m_offset), location.second});
+        m_locations.insert({location.first + ((container.m_offset - m_offset) / m_ratio), location.second});
     }
+    location::optimize_location(m_locations);
     auto new_start = m_rhythms_containers.end();
     m_rhythms_containers.insert(m_rhythms_containers.begin(), container.m_rhythms_containers.begin(),
                                 container.m_rhythms_containers.end());
@@ -203,13 +218,10 @@ pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &loca
     return {*prev(prime_factors_by_count.end())->second.begin(), prime_factors_by_count.size() == 1};
 }
 
-Fraction
-RhythmContainer::get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature) {
-    if (is_power_of_2(most_occurring_rhythm)) {
-        return signature.get_beat();
-    } else {
-        return signature / most_occurring_rhythm;
-    }
+Fraction RhythmContainer::get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
+                                                              const Fraction &ratio) {
+    return (((ratio == Fraction(1, 1)) && (most_occurring_rhythm == 2)) ? signature.get_beat() :
+            ratio / ((most_occurring_rhythm == 2) ? 4 : most_occurring_rhythm));
 }
 
 bool RhythmContainer::is_power_of_2(double value) {

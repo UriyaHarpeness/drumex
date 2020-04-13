@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <jsoncpp/json/json.h>
+#include <utility>
 
 
 using namespace std;
@@ -18,9 +19,11 @@ class Part {
 public:
     Part() = default;
 
-    Part(Notations notation, TimeSignature signature, const Fraction &length);
+    Part(Locations locations, TimeSignature signature, const Fraction &length);
 
     Part(const string &path, int index);
+
+    void notationize();
 
     static Notation json_to_note(const Json::Value &note_json);
 
@@ -52,6 +55,10 @@ private:
     TimeSignature m_signature;
 
     Notations m_notation;
+
+    VoiceContainer m_up;
+
+    VoiceContainer m_down;
 
     Locations m_location;
 

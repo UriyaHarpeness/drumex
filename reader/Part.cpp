@@ -1,11 +1,9 @@
 #include "Part.h"
 
-#include <utility>
 
-
-Part::Part(Notations notation, TimeSignature signature, const Fraction &length) : m_notation(move(notation)),
-                                                                                  m_signature(move(signature)),
-                                                                                  m_length(length) {}
+Part::Part(Locations locations, TimeSignature signature, const Fraction &length) : m_location(move(locations)),
+                                                                                   m_signature(move(signature)),
+                                                                                   m_length(length) {}
 
 Part::Part(const string &path, int index) {
     Json::Reader reader;
@@ -48,7 +46,17 @@ Part::Part(const string &path, int index) {
     // this needs to happen on the Exercise part since he modifies the pure notation.
     // m_notation = NotationUtils::generate_notation(voice, m_signature);
 
+    location::optimize_location(m_location);
     m_length = prev(m_location.end())->first;
+}
+
+void Part::notationize() {
+    vector<Locations> location_voices = location::split_voices_locations(m_location);
+    location::optimize_location(location_voices[0]);
+    location::optimize_location(location_voices[1]);
+
+    m_up = VoiceContainer(location_voices[0], m_signature, UnboundUp);
+    m_down = VoiceContainer(location_voices[1], m_signature, UnboundDown);
 }
 
 Notation Part::json_to_note(const Json::Value &note_json) {
@@ -60,12 +68,8 @@ Notation Part::json_to_note(const Json::Value &note_json) {
             modifiers.push_back(modifier_names.at(modifier.asString()));
         }
     }
-    Fraction ratio;
-    if (!note_json[3].empty()) {
-        ratio = {note_json[3][0].asInt(), note_json[3][1].asInt()};
-    }
 
-    return {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers, ratio};
+    return {(inst == Unbound) ? BaseRest : BasePlay, (inst == Unbound) ? UnboundUp : inst, length, modifiers};
 }
 
 Locations Part::read_regular_voice(const Json::Value &part) {
@@ -158,14 +162,10 @@ Part Part::merge_parts(vector<Part> parts) {
     }
 
     Locations merged_locations = location::merge_locations(locations);
-    vector<Locations> location_voices = location::split_voices_locations(merged_locations);
 
-    VoiceContainer up(location_voices[0], parts[0].get_signature(), UnboundUp);
-    VoiceContainer down(location_voices[1], parts[0].get_signature(), UnboundDown);
-
-    notation = NotationUtils::generate_notation(voice, parts[0].get_signature());
+    // notation = NotationUtils::generate_notation(voice, parts[0].get_signature());
 
     // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
     // todo: solve this in some better way.
-    return move(Part(notation, parts[0].get_signature(), length));
+    return move(Part(move(merged_locations), parts[0].get_signature(), length));
 }

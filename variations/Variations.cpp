@@ -97,7 +97,7 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
                              (play < global_offset + note.get_length()) &&
                              (play_count > 0); play_count--, play += distance) {
                             new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers(), {}}};
+                                                           note.get_length() - distance, note.get_modifiers()}};
                         }
                         play_count = 0;
                     } else if (note.get_length() == distance) {
@@ -156,7 +156,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
                              (play < global_offset + note.get_length()) &&
                              (play_count > 0); play_count--, play += distance) {
                             new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers(), {}}};
+                                                           note.get_length() - distance, note.get_modifiers()}};
                         }
                         play_count = 0;
                     } else if (note.get_length() == distance) {
@@ -199,8 +199,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
                 // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
                 // to the mapping.
                 // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                new_group.push_back(
-                        {BasePlay, destination_instrument, note.get_length(), note.get_modifiers(), note.get_ratio()});
+                new_group.push_back({BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
             }
         }
         if (!new_group.empty()) {

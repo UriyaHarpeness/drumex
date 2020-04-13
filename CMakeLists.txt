@@ -28,8 +28,6 @@ add_executable(drumex main.cpp
         location/Location.h
         time_signature/TimeSignature.cpp
         time_signature/TimeSignature.h
-        notation_container/NotationContainer.cpp
-        notation_container/NotationContainer.h
         notation_container/VoiceContainer.cpp
         notation_container/VoiceContainer.h
         notation_container/BarContainer.cpp

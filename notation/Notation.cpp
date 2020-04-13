@@ -92,11 +92,15 @@ Notation::Notation(const Notation &other) = default;
 Notation::~Notation() = default;
 
 Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &length,
-                   const vector<Modifier> &modifiers, const Fraction &ratio) :
+                   const vector<Modifier> &modifiers) :
         m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
-        m_modifiers(modifiers), m_ratio(ratio), m_padding(create_padding(modifiers)) {
+        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
 
+    initialize_with_length();
+}
+
+void Notation::initialize_with_length() {
     if (m_playing == BasePlay) {
         // todo: no more than whole note support for now.
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
@@ -105,10 +109,10 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &
             m_symbol = SymCymbal;
             m_symbol_value = make_pair(3, 0);
         } else {
-            if (Fraction(1, 1) == m_length) {
+            if (Fraction(1, 1) == get_simple_length()) {
                 m_symbol = SymWholeNote;
                 m_symbol_value = make_pair(0, 0);
-            } else if (Fraction(1, 2) == m_length) {
+            } else if (Fraction(1, 2) == get_simple_length()) {
                 m_symbol = SymHalfNote;
                 m_symbol_value = make_pair(3, 0);
             } else {
@@ -233,6 +237,8 @@ Fraction Notation::get_length() const {
 
 void Notation::reset_length(const Fraction &length) {
     m_length = length;
+    initialize_with_length();
+
     auto location = find(m_modifiers.begin(), m_modifiers.end(), ModDot);
     if (location != m_modifiers.end()) {
         m_modifiers.erase(location);

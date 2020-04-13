@@ -46,10 +46,11 @@ public:
 
     Notation(const Notation &other);
 
-    Notation(BasicPlaying playing, Instrument instrument, const Fraction &length, const vector<Modifier> &modifiers,
-             const Fraction &ratio);
+    Notation(BasicPlaying playing, Instrument instrument, const Fraction &length, const vector<Modifier> &modifiers);
 
     ~Notation();
+
+    void initialize_with_length();
 
     void draw_modifiers(int x, int staff_y, int tail_length = 7) const;
 
@@ -87,12 +88,9 @@ public:
      */
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
-    /**
-     * Get the full length, takes into account the basic length, the ratio, and dots.
-     *
-     * @return  The full length.
-     */
-    [[nodiscard]] inline Fraction get_full_length() const { return m_ratio ? get_length() * m_ratio : get_length(); }
+    [[nodiscard]] inline Fraction get_simple_length() const {
+        return Fraction(m_length.get_value().first, pow(2, (int) log2(m_length.get_value().second)));
+    }
 
     inline void set_rounded_length(const Fraction &length) { m_length = length; }
 
@@ -101,8 +99,6 @@ public:
     [[nodiscard]] inline vector<Modifier> get_modifiers() const { return m_modifiers; }
 
     inline void add_modifier(Modifier modifier) { m_modifiers.push_back(modifier); }
-
-    [[nodiscard]] inline const Fraction &get_ratio() const { return m_ratio; }
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
 
@@ -120,8 +116,6 @@ private:
     BasicPlaying m_playing;
 
     vector<Modifier> m_modifiers{};
-
-    Fraction m_ratio;
 
     Padding m_padding{};
 };

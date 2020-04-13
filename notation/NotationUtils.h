@@ -28,9 +28,9 @@ namespace NotationUtils {
 
     Fraction merge_lengths(const vector<Fraction> &lengths);
 
-    vector<Fraction> split_fraction(Fraction fraction);
+    vector<Fraction> split_fraction(Fraction fraction, const Fraction &ratio);
 
-    vector<Fraction> split_fraction(const TimeSignature &signature, Fraction offset, Fraction fraction);
+    vector<Fraction> split_fraction(const Fraction &beat, Fraction offset, Fraction fraction, const Fraction &ratio);
 
     Notations split_notation(const Voice &notation, const Fraction &bar);
 
@@ -38,7 +38,7 @@ namespace NotationUtils {
 
     Notations connect_notation(const Voice &notation, const Fraction &beat);
 
-    Voice convert_notation(const Voice &notation, const TimeSignature &signature);
+    Voice convert_notation(const Voice &notation, const Fraction &length, const Fraction &beat, const Fraction &ratio);
 
     Voice generate_voice_notation(const Voice &raw_voice_notation, const TimeSignature &signature);
 

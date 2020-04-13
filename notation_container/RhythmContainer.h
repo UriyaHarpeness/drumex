@@ -2,6 +2,7 @@
 
 #include "../location/Location.h"
 #include "../time_signature/TimeSignature.h"
+#include "../notation/NotationUtils.h"
 
 #include <set>
 
@@ -11,6 +12,8 @@ class RhythmContainer {
 public:
     RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
                     const Fraction &offset, const Fraction &ratio);
+
+    void notationize();
 
     void optimize();
 
@@ -22,7 +25,8 @@ public:
 
     static pair<int, bool> get_most_occurring_rhythm(const Locations &locations);
 
-    static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature);
+    static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
+                                                        const Fraction &ratio);
 
     static bool is_power_of_2(double value);
 
@@ -37,5 +41,11 @@ private:
 
     Fraction m_ratio;
 
+    Fraction m_length;
+
+    Fraction m_beat;
+
     int m_most_occurring_rhythm;
+
+    Voice m_notations;
 };

@@ -13,10 +13,10 @@ Notations NotationUtils::split_voices(const Voice &notation) {
         for (const auto &note : group) {
             if (note.get_line() > Notation::direction_line) {
                 voice_two_group.push_back(note);
-                voice_one_group.push_back({BaseRest, UnboundUp, note.get_length(), {}, note.get_ratio()});
+                voice_one_group.push_back({BaseRest, UnboundUp, note.get_length(), {}});
             } else {
                 voice_one_group.push_back(note);
-                voice_two_group.push_back({BaseRest, UnboundDown, note.get_length(), {}, note.get_ratio()});
+                voice_two_group.push_back({BaseRest, UnboundDown, note.get_length(), {}});
             }
         }
         assert(!voice_one_group.empty());
@@ -58,9 +58,7 @@ Voice NotationUtils::merge_notation(const Voice &notation) {
 
     auto group = notation.begin();
     for (group++; group != notation.end(); group++) {
-        // todo: each group here is reuired to have the same ratio, it this correct?
-        if (((*group)[0].get_playing() == BasePlay) ||
-            (merged_notation[merged_notation.size() - 1][0].get_ratio()) == (*group)[0].get_ratio()) {
+        if ((*group)[0].get_playing() == BasePlay) {
             merged_notation.push_back(*group);
         } else {
             for (auto &single : merged_notation[merged_notation.size() - 1]) {
@@ -83,14 +81,15 @@ Fraction NotationUtils::merge_lengths(const vector<Fraction> &lengths) {
     return merged_length;
 }
 
-vector<Fraction> NotationUtils::split_fraction(Fraction fraction) {
+vector<Fraction> NotationUtils::split_fraction(Fraction fraction, const Fraction &ratio) {
     vector<Fraction> fractions;
     Fraction tmp;
 
+    fraction = fraction / ratio;
     while (fraction) {
-        tmp = Fraction(1, pow(2, -(int) fraction));
+        tmp = Fraction::FloatingFraction(1, pow(2, -static_cast<int>(fraction)));
         if (tmp <= fraction) {
-            fractions.push_back(tmp);
+            fractions.push_back(tmp * ratio);
             fraction -= tmp;
         }
     }
@@ -98,32 +97,26 @@ vector<Fraction> NotationUtils::split_fraction(Fraction fraction) {
     return move(fractions);
 }
 
-vector<Fraction> NotationUtils::split_fraction(const TimeSignature &signature, Fraction offset, Fraction fraction) {
+vector<Fraction>
+NotationUtils::split_fraction(const Fraction &beat, Fraction offset, Fraction fraction, const Fraction &ratio) {
     vector<Fraction> fractions;
     vector<Fraction> tmp;
 
-    Fraction beat = signature.get_beat();
     Fraction fill;
 
     // If it's offset in a beat, first filling the beat is needed before stretching over it.
     if (static_cast<bool>(offset % beat)) {
-        fill = (fraction <= (beat - (offset % beat))) ? fraction : (beat - (offset % beat));
-        tmp = split_fraction(fill);
+        fill = min(fraction, beat - (offset % beat));
+        tmp = split_fraction(fill, ratio);
         fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
         offset += fill;
         fraction -= fill;
     }
 
-    while (fraction) {
-        fill = (fraction <= (signature - (offset % signature))) ? fraction : (signature - (offset % signature));
-
-        tmp = split_fraction(fill);
-        fractions.insert(fractions.end(), tmp.begin(), tmp.end());
-
-        offset += fill;
-        fraction -= fill;
-    }
+    // After using the BarContainer, the note will never overlaps the bar.
+    tmp = split_fraction(fraction, ratio);
+    fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
     return move(fractions);
 }
@@ -201,7 +194,8 @@ Notations NotationUtils::connect_notation(const Voice &notation, const Fraction 
     return move(connected_notation);
 }
 
-Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature &signature) {
+Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &length, const Fraction &beat,
+                                      const Fraction &ratio) {
     Voice generated_notation;
 
     Fraction offset;
@@ -209,13 +203,13 @@ Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature
     for (const auto &group : notation) {
         // assumes all the group has the same BasicPlaying and length
         // todo: need to think if possible or enable a group that contains note with different ratio (logically isn't rational, it should be splitted beteen voices).
-        auto fractions = split_fraction(signature, offset, group[0].get_rounded_length());
+        auto fractions = split_fraction(beat, offset, group[0].get_rounded_length(), ratio);
         BasicPlaying playing = group[0].get_playing();
         for (const auto &fraction : fractions) {
             if (playing == BasePlay) {
                 Group tmp;
                 for (const auto &note : group) {
-                    tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers(), note.get_ratio());
+                    tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers());
                 }
                 generated_notation.push_back(move(tmp));
                 tmp.clear();
@@ -231,8 +225,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature
                     if ((note.get_playing() == BasePlay) &&
                         (find(modifiers.begin(), modifiers.end(), ModDot) == modifiers.end()) &&
                         (note.get_length() / fraction == Fraction(2, 1)) &&
-                        ((offset % signature) + note.get_length() < signature) &&
-                        (note.get_ratio() == group[0].get_ratio())) {
+                        ((offset % length) + note.get_length() < length)) {
                         dot = true;
                     }
                 }
@@ -243,7 +236,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature
                 } else {
                     generated_notation.push_back(
                             {{BaseRest, (group[0].get_line() > Notation::direction_line) ? UnboundDown
-                                                                                         : UnboundUp, fraction, {}, group[0].get_ratio()}});
+                                                                                         : UnboundUp, fraction, {}}});
                 }
             }
             playing = BaseRest;
@@ -269,7 +262,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const TimeSignature
 Voice NotationUtils::generate_voice_notation(const Voice &raw_voice_notation, const TimeSignature &signature) {
     Voice merged_stuff = merge_notation(raw_voice_notation);
 
-    return move(convert_notation(merged_stuff, signature));
+    return merged_stuff; // move(convert_notation(merged_stuff, signature));
 }
 
 Notations NotationUtils::generate_notation(const Voice &raw_notation, const TimeSignature &signature) {

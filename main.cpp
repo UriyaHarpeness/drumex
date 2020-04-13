@@ -78,10 +78,11 @@ int main(int argv, char *argc[]) {
     GroupedNotations notation;
     Paddings distances;
 
-    const Part *chosen_part;
+    Part *chosen_part;
     if (!exercise_path.empty()) {
         Exercise exercise(exercise_path, index);
         chosen_part = &exercise.get_part();
+        chosen_part->notationize();
 
         NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
                                                       chosen_part->get_signature());
@@ -90,6 +91,7 @@ int main(int argv, char *argc[]) {
     } else {
         Part part(part_path, index);
         chosen_part = &part;
+        chosen_part->notationize();
 
         NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
                                                       chosen_part->get_signature());

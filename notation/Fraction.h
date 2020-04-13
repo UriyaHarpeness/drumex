@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <ctgmath>
+#include <cassert>
 
 
 using namespace std;
@@ -16,6 +17,8 @@ public:
     Fraction();
 
     Fraction(int a, int b, bool do_simplify = true);
+
+    static Fraction FloatingFraction(int a, double b, bool do_simplify = true);
 
     Fraction(int a);
 

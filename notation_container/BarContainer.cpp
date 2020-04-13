@@ -4,4 +4,5 @@ BarContainer::BarContainer(const Locations &locations, const TimeSignature &sign
                            const Fraction &offset) : m_rhythm_container(locations, signature, rests_location, offset,
                                                                         {1, 1}) {
     m_rhythm_container.optimize();
+    m_rhythm_container.notationize();
 }
