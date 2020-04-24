@@ -13,9 +13,11 @@ public:
     RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
                     const Fraction &offset, const Fraction &ratio);
 
+    void optimize();
+
     void notationize();
 
-    void optimize();
+    void beam();
 
     void extend(const RhythmContainer &container);
 
@@ -28,7 +30,16 @@ public:
     static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
                                                         const Fraction &ratio);
 
+
     static bool is_power_of_2(double value);
+
+    [[nodiscard]] inline vector<RhythmContainer> &get_mutable_rhythms() { return m_rhythms_containers; };
+
+    [[nodiscard]] inline const Voice &get_notations() const { return m_notations; };
+
+    [[nodiscard]] inline const BeamedVoice &get_beamed_notations() const { return m_beamed_notations; };
+
+    [[nodiscard]] inline const Fraction &get_offset() const { return m_offset; };
 
     static set<int> primes;
 
@@ -48,4 +59,6 @@ private:
     int m_most_occurring_rhythm;
 
     Voice m_notations;
+
+    BeamedVoice m_beamed_notations;
 };

@@ -122,8 +122,8 @@ void Notation::initialize_with_length() {
         }
     } else {
         // Before generating the standardized notation, this case may be possible.
-        if (rests_to_music_symbols.find(static_cast<int>(m_length)) != rests_to_music_symbols.end()) {
-            m_symbol = rests_to_music_symbols.at(static_cast<int>(m_length));
+        if (rests_to_music_symbols.find(static_cast<int>(get_simple_length())) != rests_to_music_symbols.end()) {
+            m_symbol = rests_to_music_symbols.at(static_cast<int>(get_simple_length()));
             m_symbol_value = music_symbols_to_values.at(m_symbol);
         }
     }

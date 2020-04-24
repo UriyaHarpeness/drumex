@@ -5,4 +5,5 @@ BarContainer::BarContainer(const Locations &locations, const TimeSignature &sign
                                                                         {1, 1}) {
     m_rhythm_container.optimize();
     m_rhythm_container.notationize();
+    m_rhythm_container.beam();
 }

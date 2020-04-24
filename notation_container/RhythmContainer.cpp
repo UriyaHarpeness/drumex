@@ -15,7 +15,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     /**
      * Actions:
      * 1.   Find most occurring rhythm.
-     * 2.   Split by most occurring rhythm's beat
+     * 2.   Split by most occurring rhythm's beat.
      * 3.   Repeat the steps 1 and 2 until each part (sub-beat) contains only the same rhythm.
      * 4.   Join close parts with the same rhythm and optimize.
      * 5.   * Maybe join separate parts with the same rhythm with only the basic rhythm between them.
@@ -47,8 +47,8 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
         for (const auto &location : m_locations) {
             // Just a sample for now.
 
+            // todo: need to fill the missing beats, the loop may leave beats without notes and processing.
             if (location.first >= next_beat) {
-                // todo: need to fill the missing beats, the loop may leave beats without notes and processing.
                 m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {4, 4}, rests_location,
                                                   offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
                 rhythm_location.clear();
@@ -57,8 +57,9 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
                 }
                 next_beat += m_beat;
                 while (next_beat <= location.first) {
-                    m_rhythms_containers.emplace_back((Locations) {}, (TimeSignature) {4, 4}, rests_location,
+                    m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {4, 4}, rests_location,
                                                       offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
+                    rhythm_location.clear();
                     if (next_beat == scope) {
                         break;
                     }
@@ -96,20 +97,6 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     cout << "===================== ending rhythm container =====================" << endl;
 }
 
-void RhythmContainer::notationize() {
-    // What is the meaning of time signature at this point?
-    if (m_rhythms_containers.empty()) {
-        // Locations does not contain rests at this point.
-        m_notations = location::location_to_notation(m_locations, m_ratio);
-
-        m_notations = NotationUtils::convert_notation(m_notations, m_length, m_beat,
-                                                      (m_most_occurring_rhythm == 2) ? m_ratio : m_ratio /
-                                                                                                 m_most_occurring_rhythm);
-        return;
-    }
-    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.notationize(); });
-}
-
 void RhythmContainer::optimize() {
     if (m_rhythms_containers.empty()) {
         location::optimize_location(m_locations);
@@ -130,6 +117,70 @@ void RhythmContainer::optimize() {
         }
     }
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.optimize(); });
+}
+
+void RhythmContainer::notationize() {
+    // What is the meaning of time signature at this point?
+    if (m_rhythms_containers.empty()) {
+        // Locations does not contain rests at this point.
+        m_notations = location::location_to_notation(m_locations, m_ratio);
+
+        m_notations = NotationUtils::convert_notation(m_notations, m_length, m_beat,
+                                                      (m_most_occurring_rhythm == 2) ? m_ratio : m_ratio /
+                                                                                                 m_most_occurring_rhythm);
+        return;
+    }
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.notationize(); });
+}
+
+void RhythmContainer::beam() {
+    /**
+     * Beaming rules:
+     * 1. Beaming occurs only between 2 or more played notes, and includes the rests between them.
+     * 2. Only notes with simple length of under 1/4 can be beamed (meaning 1/5, 1/7 are not beamed, 1/8, 1/9 are beamed).
+     * 3. Notes that are beamed together needs to be in one of the following cases:
+     *    1. When not under polyrhythm (natural beat), the beamed notes are all in the same beat.
+     *    2. When under a polyrhythm, all notes can beamed together, no matter the total length.
+     */
+    if (m_rhythms_containers.empty()) {
+        Fraction beam_limit, offset;
+        if (m_ratio == Fraction(1, 1)) {
+            beam_limit = m_beat;
+        } else {
+            beam_limit = m_length;
+        }
+
+        auto notation_it = m_notations.begin(), notation_end = m_notations.begin();
+        int remaining_plays;
+        Voice beamed;
+
+        while (notation_it != m_notations.end()) {
+            remaining_plays = NotationUtils::count_remaining_plays(offset, offset + beam_limit, notation_end);
+            while ((notation_it != notation_end) && ((*notation_it)[0].get_playing() == BaseRest)) {
+                m_beamed_notations.push_back({*notation_it});
+                notation_it++;
+            }
+            if (remaining_plays > 0) {
+                while (remaining_plays > 0) {
+                    remaining_plays -= ((*notation_it)[0].get_playing() == BasePlay) ? 1 : 0;
+                    beamed.push_back(*notation_it);
+                    notation_it++;
+                }
+                m_beamed_notations.push_back(move(beamed));
+                beamed.clear();
+            }
+            while (notation_it != notation_end) {
+                m_beamed_notations.push_back({*notation_it});
+                notation_it++;
+            }
+            offset += beam_limit;
+        }
+
+        cout << m_notations.size() << " - " << m_beamed_notations.size() << endl;
+
+        return;
+    }
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.beam(); });
 }
 
 void RhythmContainer::extend(const RhythmContainer &container) {
@@ -212,6 +263,12 @@ pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &loca
     }
     if (prime_factors_by_count.empty()) {
         prime_factors_by_count[1] = {2};
+    } else if ((prime_factors_by_count.size() == 2) &&
+               (prime_factors_by_count.begin()->second.size() == 1) &&
+               (*prime_factors_by_count.begin()->second.begin() == 2)) {
+        // If the rhythms for example can all be divided by 2 and 5, and 5 is the most occurring - act like they all
+        // divide only by 5, because 2 can always be noted.
+        prime_factors_by_count.erase(prime_factors_by_count.begin());
     }
 
     // Choose the most occurring rhythm.

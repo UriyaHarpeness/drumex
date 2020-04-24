@@ -6,6 +6,7 @@
 #include "../Enums.h"
 #include "../display/Display.h"
 #include "../metronome/Metronome.h"
+#include "../notation_container/VoiceContainer.h"
 
 #include <map>
 #include <numeric>
@@ -52,13 +53,12 @@ namespace NotationDisplay {
     pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                     const Fraction &bar, const Fraction &location);
 
-    void
-    continuous_display_notation(const GroupedNotations &notation, const Paddings &distances, const TimeSignature &signature,
-                                int tempo);
+    void continuous_display_notation(const GroupedNotations &notation, const Paddings &distances,
+                                     const TimeSignature &signature, int tempo);
 
     void
-    prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation, Paddings &distances,
-                                 const TimeSignature &bar);
+    prepare_displayable_notation(const VoiceContainer &up, const VoiceContainer &down, GroupedNotations &notation,
+                                 Paddings &distances, const TimeSignature &bar);
 
     Padding get_distance(const Fraction &length, Padding padding);
 };

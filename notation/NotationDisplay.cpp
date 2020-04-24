@@ -287,37 +287,31 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
     }
 }
 
-void NotationDisplay::prepare_displayable_notation(const Notations &generated_notation, GroupedNotations &notation,
-                                                   Paddings &distances, const TimeSignature &bar) {
-    Fraction beat = bar.get_beat();
+void NotationDisplay::prepare_displayable_notation(const VoiceContainer &up, const VoiceContainer &down,
+                                                   GroupedNotations &notation, Paddings &distances,
+                                                   const TimeSignature &bar) {
+    // Asserts two voices are same offset, when using one voice don't use this.
+    assert(up.get_bars().size() == down.get_bars().size());
 
-    Notations splitted_notation = NotationUtils::split_notation(generated_notation[0], bar);
+    VoiceContainer up_copy = up;
+    RhythmContainer *rhythm;
+
+    for (VoiceContainerIterator voice_iterator(up_copy); voice_iterator; voice_iterator++) {
+        rhythm = *voice_iterator;
+        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+             << rhythm->get_beamed_notations().size() << endl;
+    }
+
+    Fraction beat = bar.get_beat();
 
     Notations voice_notation;
     Notations small_connected_notation;
-
-    for (const Voice &small_notation : splitted_notation) {
-        small_connected_notation = NotationUtils::connect_notation(small_notation, beat);
-        voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
-    }
-    notation.push_back(move(voice_notation));
-    voice_notation.clear();
-    splitted_notation = NotationUtils::split_notation(generated_notation[1], bar);
-
-    for (const Voice &small_notation : splitted_notation) {
-        small_connected_notation = NotationUtils::connect_notation(small_notation, beat);
-        voice_notation.insert(voice_notation.end(), small_connected_notation.begin(), small_connected_notation.end());
-    }
-    notation.push_back(move(voice_notation));
-    voice_notation.clear();
-
-    // Asserts two voices are same offset, when using one voice don't use this.
-    assert(NotationUtils::sum_length(notation[0]) == NotationUtils::sum_length(notation[1]));
+    Notations splitted_notation;
 
     Paddings merged_padding;
 
     Fraction notes_offset;
-    for (const auto &notes : generated_notation[0]) {
+    for (const auto &notes : splitted_notation[0]) {
         NotationUtils::insert_padding(merged_padding, notes_offset, NotationUtils::merge_padding(notes));
         notes_offset += notes[0].get_length();
     }
@@ -325,7 +319,7 @@ void NotationDisplay::prepare_displayable_notation(const Notations &generated_no
     NotationUtils::insert_padding(merged_padding, notes_offset + bar, {0, 0});
 
     notes_offset = {0, 1};
-    for (const auto &notes : generated_notation[1]) {
+    for (const auto &notes : splitted_notation[1]) {
         NotationUtils::insert_padding(merged_padding, notes_offset, NotationUtils::merge_padding(notes));
         notes_offset += notes[0].get_length();
     }

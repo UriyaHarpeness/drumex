@@ -2,7 +2,11 @@
 * https://en.wikipedia.org/wiki/Time_signature
 * https://en.wikipedia.org/wiki/List_of_musical_symbols
 * https://en.wikipedia.org/wiki/Stem_(music)
+* https://en.wikipedia.org/wiki/Tuplet
 * https://www.mymusictheory.com/m/learn-music-theory/for-students/grade-3/273-8-adding-rests-a-beaming-notes-in-groups
+* https://web.archive.org/web/20080407014159/http://www.mpa.org/music_notation/standard_practice.pdf
+* https://musescore.org/en (Used MuseScore 3 for reference in obscure cases)
+* https://www.steveweissmusic.com/product/1494/general-drumset-methods - Joel Rothman's Mini-Monster Book of Rock Drumming
 
 ## General Info
 

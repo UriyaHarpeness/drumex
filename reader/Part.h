@@ -39,6 +39,10 @@ public:
 
     [[nodiscard]] inline const Notations &get_notation() const { return m_notation; };
 
+    [[nodiscard]] inline const VoiceContainer &get_up() const { return m_up; };
+
+    [[nodiscard]] inline const VoiceContainer &get_down() const { return m_down; };
+
     [[nodiscard]] inline Notations &get_mutable_notation() { return m_notation; };
 
     inline void set_location(Locations location) { m_location = location; };

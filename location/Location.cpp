@@ -72,6 +72,9 @@ Locations location::merge_locations(const vector<Locations> &locations) {
         }
     }
 
+    // The lengths of the different locations need to be the same.
+    merged_locations.insert((*prev(locations[0].end())));
+
     return merged_locations;
 }
 

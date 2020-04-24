@@ -84,8 +84,8 @@ int main(int argv, char *argc[]) {
         chosen_part = &exercise.get_part();
         chosen_part->notationize();
 
-        NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
-                                                      chosen_part->get_signature());
+        NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), notation,
+                                                      distances, chosen_part->get_signature());
 
         NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
     } else {
@@ -93,8 +93,8 @@ int main(int argv, char *argc[]) {
         chosen_part = &part;
         chosen_part->notationize();
 
-        NotationDisplay::prepare_displayable_notation(chosen_part->get_notation(), notation, distances,
-                                                      chosen_part->get_signature());
+        NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), notation,
+                                                      distances, chosen_part->get_signature());
 
         NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
     }
@@ -103,6 +103,14 @@ int main(int argv, char *argc[]) {
     // todo: add support for buzz roll and maybe even open roll.
     // todo: add option to enable dotted rests.
     // todo: must support polyrhythm later.
+
+    /**
+     * todo:
+     * Refer to MuseScore to see the nice practice of trying to split into the measure even in polyrhythm.
+     * See that a poly of 9 over 3/4, is written as 9:6 in MuseScore, need to see what's the best way to notate it.
+     * The polyrhythm selection is still isn't perfect, for example, for 1/9 2/9 3/9 4/9, it will divide to 1/3 and
+     *  again to 1/3, instead of just starting with 1/9.
+     */
 
     return 0;
 

@@ -145,15 +145,15 @@ Notations NotationUtils::split_notation(const Voice &notation, const Fraction &b
     return move(splitted_notation);
 }
 
-int NotationUtils::count_remaining_plays(Fraction offset, const Fraction &beat, Voice::const_iterator notation_it) {
+int NotationUtils::count_remaining_plays(Fraction start, const Fraction &end, Voice::iterator &notation_it) {
     int count = 0;
 
-    // warning; optional segfault, iterates through the iterator without knowing there it ends, the callet should be
+    // warning; optional segfault, iterates through the iterator without knowing there it ends, the caller should be
     // aware.
-    while (offset < beat) {
-        notation_it++;
-        offset += (*notation_it)[0].get_length();
+    while (start < end) {
         count += (*notation_it)[0].get_playing() == BasePlay ? 1 : 0;
+        start += (*notation_it)[0].get_length();
+        notation_it++;
     }
 
     return count;
@@ -177,9 +177,9 @@ Notations NotationUtils::connect_notation(const Voice &notation, const Fraction 
             connecting = true;
         }
         part_notation.push_back(group);
-        if ((((group_it + 1 == notation.end()) ? 0 : count_remaining_plays(length_sum, beat, group_it))) == 0) {
-            connecting = false;
-        }
+        //if ((((group_it + 1 == notation.end()) ? 0 : count_remaining_plays(length_sum, beat, group_it))) == 0) {
+        //    connecting = false;
+        //}
         if (!connecting) {
             connected_notation.push_back(move(part_notation));
             part_notation.clear();

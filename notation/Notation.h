@@ -17,6 +17,7 @@ typedef array<int, 2> Padding;
 typedef vector<pair<Fraction, Padding>> Paddings;
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;
+typedef vector<Voice> BeamedVoice;
 typedef vector<Voice> Notations;
 typedef vector<Notations> GroupedNotations;
 

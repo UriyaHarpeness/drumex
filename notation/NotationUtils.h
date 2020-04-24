@@ -34,7 +34,7 @@ namespace NotationUtils {
 
     Notations split_notation(const Voice &notation, const Fraction &bar);
 
-    int count_remaining_plays(Fraction offset, const Fraction &beat, Voice::const_iterator notation_it);
+    int count_remaining_plays(Fraction start, const Fraction &end, Voice::iterator &notation_it);
 
     Notations connect_notation(const Voice &notation, const Fraction &beat);
 
