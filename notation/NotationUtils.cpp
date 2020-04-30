@@ -301,7 +301,24 @@ Padding NotationUtils::merge_padding(const Group &notes) {
         padding = Notation::merge_padding(padding, note.get_padding());
     }
 
+    return move(padding);
+}
+
+Paddings NotationUtils::merge_padding(const Paddings &a, const Paddings &b) {
+    Paddings padding = a;
+
+    for (const auto &it : b) {
+        padding[it.first] = Notation::merge_padding(padding[it.first], it.second);
+    }
+
     return padding;
+}
+
+Padding NotationUtils::sum_padding(Padding a, Padding b) {
+    for (size_t i = 0; i < a.size(); i++) {
+        a[i] += b[i];
+    }
+    return a;
 }
 
 Fraction NotationUtils::sum_length(const Voice &notes) {

@@ -50,6 +50,10 @@ namespace NotationUtils {
 
     Padding merge_padding(const Group &notes);
 
+    Paddings merge_padding(const Paddings &a, const Paddings &b);
+
+    Padding sum_padding(Padding a, Padding b);
+
     Fraction sum_length(const Voice &notes);
 
     Fraction sum_length(const Notations &notes);

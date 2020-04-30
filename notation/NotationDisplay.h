@@ -60,5 +60,7 @@ namespace NotationDisplay {
     prepare_displayable_notation(const VoiceContainer &up, const VoiceContainer &down, GroupedNotations &notation,
                                  Paddings &distances, const TimeSignature &bar);
 
+    GlobalLocations create_global_locations(const Paddings &padding);
+
     Padding get_distance(const Fraction &length, Padding padding);
 };

@@ -7,3 +7,7 @@ BarContainer::BarContainer(const Locations &locations, const TimeSignature &sign
     m_rhythm_container.notationize();
     m_rhythm_container.beam();
 }
+
+void BarContainer::prepare_padding(Paddings &padding) {
+    m_rhythm_container.prepare_padding(padding);
+}

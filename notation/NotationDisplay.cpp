@@ -22,8 +22,8 @@ int NotationDisplay::calc_needed_space(const Paddings &distances, const Fraction
     auto position = distances.begin();
     while (position->first <= offset) position++;
 
-    for (distance = 0, length_end = offset + length; position->first <= length_end; distance += (
-            position->second[1] + (position + 1)->second[0]), position++);
+    //for (distance = 0, length_end = offset + length; position->first <= length_end; distance += (
+    //        position->second[1] + (position + 1)->second[0]), position++);
 
     return distance;
 }
@@ -63,8 +63,8 @@ void NotationDisplay::draw_connected_notes(int &x, int staff_y, const Paddings &
     Fraction length_end;
     x += position->second[0];
     for (const auto &group : notations) {
-        for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
-                position->second[1] + (position + 1)->second[0]), position++);
+        //for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
+        //        position->second[1] + (position + 1)->second[0]), position++);
         offset += group[0].get_length();
 
         for (const auto &note : group) {
@@ -108,8 +108,8 @@ void NotationDisplay::draw_individual_notes(int &x, int staff_y, const Paddings 
     for (const auto &note : group) {
         note.display(x, staff_y, true);
     }
-    for (length_end = offset + group[0].get_length();
-         position->first <= length_end; x += (position->second[1] + (position + 1)->second[0]), position++);
+    //for (length_end = offset + group[0].get_length();
+    //     position->first <= length_end; x += (position->second[1] + (position + 1)->second[0]), position++);
     x -= position->second[0];
 }
 
@@ -214,8 +214,8 @@ NotationDisplay::get_note_location(const GroupedNotations &notation, const Paddi
 
         int tmp_x = 0;
         tmp_x += position->second[0];
-        for (distance = 0, length_end = offset + NotationUtils::sum_length(note_groups);
-             position->first <= length_end; distance += (position->second[1] + (position + 1)->second[0]), position++);
+        //for (distance = 0, length_end = offset + NotationUtils::sum_length(note_groups);
+        //     position->first <= length_end; distance += (position->second[1] + (position + 1)->second[0]), position++);
         tmp_x += distance;
         tmp_x -= position->second[0];
 
@@ -293,8 +293,9 @@ void NotationDisplay::prepare_displayable_notation(const VoiceContainer &up, con
     // Asserts two voices are same offset, when using one voice don't use this.
     assert(up.get_bars().size() == down.get_bars().size());
 
-    VoiceContainer up_copy = up;
+    VoiceContainer up_copy = up, down_copy = down;
     RhythmContainer *rhythm;
+    Paddings up_padding, down_padding, merged_padding;
 
     for (VoiceContainerIterator voice_iterator(up_copy); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
@@ -302,39 +303,44 @@ void NotationDisplay::prepare_displayable_notation(const VoiceContainer &up, con
              << rhythm->get_beamed_notations().size() << endl;
     }
 
-    Fraction beat = bar.get_beat();
+    up_copy.prepare_padding(up_padding);
 
-    Notations voice_notation;
-    Notations small_connected_notation;
-    Notations splitted_notation;
-
-    Paddings merged_padding;
-
-    Fraction notes_offset;
-    for (const auto &notes : splitted_notation[0]) {
-        NotationUtils::insert_padding(merged_padding, notes_offset, NotationUtils::merge_padding(notes));
-        notes_offset += notes[0].get_length();
+    for (VoiceContainerIterator voice_iterator(down_copy); voice_iterator; voice_iterator++) {
+        rhythm = *voice_iterator;
+        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+             << rhythm->get_beamed_notations().size() << endl;
     }
-    NotationUtils::insert_padding(merged_padding, notes_offset, {0, 0});
-    NotationUtils::insert_padding(merged_padding, notes_offset + bar, {0, 0});
 
-    notes_offset = {0, 1};
-    for (const auto &notes : splitted_notation[1]) {
-        NotationUtils::insert_padding(merged_padding, notes_offset, NotationUtils::merge_padding(notes));
-        notes_offset += notes[0].get_length();
-    }
-    NotationUtils::insert_padding(merged_padding, notes_offset, {0, 0});
-    NotationUtils::insert_padding(merged_padding, notes_offset + bar, {0, 0});
+    down_copy.prepare_padding(down_padding);
 
-    pair<Fraction, Padding> previous;
-    for (const auto &padding : merged_padding) {
-        if (padding.first) {
-            distances.emplace_back(padding.first, get_distance(padding.first - previous.first, previous.second));
-        } else {
-            distances.emplace_back(padding.first, get_distance({}, previous.second));
-        }
-        previous = padding;
+    merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
+
+    GlobalLocations global_locations = create_global_locations(merged_padding);
+
+    cout << global_locations.size() << endl;
+}
+
+GlobalLocations NotationDisplay::create_global_locations(const Paddings &padding) {
+    GlobalLocations global_locations;
+    int offset = 0;
+
+    for (auto it = padding.begin(); it != prev(padding.end()); it++) {
+        auto distance = get_distance(next(it)->first - it->first, it->second);
+        offset += distance[0];
+        global_locations[it->first] = offset;
+        offset += distance[1];
     }
+    auto it = prev(padding.end());
+    offset += it->second[0];
+    global_locations[it->first] = offset;
+    offset += it->second[1];
+
+    // todo: make sure no duplicate padding.
+    for (const auto &it : global_locations) {
+        cout << it.first << ": " << it.second << endl;
+    }
+
+    return move(global_locations);
 }
 
 Padding NotationDisplay::get_distance(const Fraction &length, Padding padding) {

@@ -19,6 +19,8 @@ public:
 
     void beam();
 
+    void prepare_padding(Paddings &padding, int start_padding = 20, int end_padding = 20);
+
     void extend(const RhythmContainer &container);
 
     static void find_primes();

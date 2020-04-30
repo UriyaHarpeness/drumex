@@ -18,6 +18,10 @@ VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &
     }
 }
 
+void VoiceContainer::prepare_padding(Paddings &padding) {
+    for_each(m_bars.begin(), m_bars.end(), [&padding](BarContainer &n) { n.prepare_padding(padding); });
+}
+
 VoiceContainerIterator::VoiceContainerIterator(VoiceContainer &voice) : m_voice(voice), m_bar_index(0),
                                                                         m_rhythms_index({}), m_rhythms({}) {
     RhythmContainer *rhythm = &m_voice.get_mutable_bars()[m_bar_index].get_mutable_rhythm();

@@ -10,6 +10,8 @@ public:
     BarContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location,
                  const Fraction &offset);
 
+    void prepare_padding(Paddings &padding);
+
     [[nodiscard]] inline RhythmContainer &get_mutable_rhythm() { return m_rhythm_container; };
 
 private:

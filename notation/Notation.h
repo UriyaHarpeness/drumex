@@ -14,7 +14,9 @@ using namespace std;
 class Notation;
 
 typedef array<int, 2> Padding;
-typedef vector<pair<Fraction, Padding>> Paddings;
+typedef map<Fraction, Padding> Paddings;
+typedef map<Fraction, int> GlobalLocations;
+
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;
 typedef vector<Voice> BeamedVoice;

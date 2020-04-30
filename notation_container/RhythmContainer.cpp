@@ -183,6 +183,32 @@ void RhythmContainer::beam() {
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.beam(); });
 }
 
+void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int end_padding) {
+    if (m_rhythms_containers.empty()) {
+        Fraction offset = m_offset;
+
+        for (const auto &it : m_notations) {
+            padding[offset] = NotationUtils::sum_padding(padding[offset], NotationUtils::merge_padding(it));
+            cout << "offset " << offset << endl;
+            offset += it[0].get_length();
+        }
+        // todo: see what is the correct spacing.
+        if (m_most_occurring_rhythm == 2) {
+            start_padding -= 10;
+            end_padding -= 10;
+        }
+        padding[m_offset] = NotationUtils::sum_padding(padding[m_offset], {start_padding, 0});
+        padding[m_offset + m_length] = NotationUtils::sum_padding(padding[m_offset + m_length], {0, end_padding});
+
+        return;
+    }
+    for (int index = 0; index < m_rhythms_containers.size(); index++) {
+        m_rhythms_containers[index].prepare_padding(padding, ((index == 0) ? start_padding : 0) + 10,
+                                                    ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) +
+                                                    10);
+    }
+}
+
 void RhythmContainer::extend(const RhythmContainer &container) {
     // todo: later make sure that multiple layers polyrhythm extension works as expected.
     m_length += container.m_length;
