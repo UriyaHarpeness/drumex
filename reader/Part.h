@@ -39,9 +39,9 @@ public:
 
     [[nodiscard]] inline const Notations &get_notation() const { return m_notation; };
 
-    [[nodiscard]] inline const VoiceContainer &get_up() const { return m_up; };
+    [[nodiscard]] inline VoiceContainer &get_up() { return m_up; };
 
-    [[nodiscard]] inline const VoiceContainer &get_down() const { return m_down; };
+    [[nodiscard]] inline VoiceContainer &get_down() { return m_down; };
 
     [[nodiscard]] inline Notations &get_mutable_notation() { return m_notation; };
 

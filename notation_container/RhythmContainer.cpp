@@ -68,7 +68,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
             }
 
             // The location is relative to the offset and the beat, need to think how this will be represented.
-            rhythm_location.insert({(location.first - (next_beat - m_beat)) / m_beat, move(location.second)});
+            rhythm_location.insert({(location.first - (next_beat - m_beat)) / m_beat, location.second});
         }
     }
 
@@ -183,7 +183,7 @@ void RhythmContainer::beam() {
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.beam(); });
 }
 
-void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int end_padding) {
+void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int end_padding) const {
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
 
@@ -207,6 +207,10 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
                                                     ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) +
                                                     10);
     }
+}
+
+void RhythmContainer::display(const GlobalLocations &global_locations) const {
+
 }
 
 void RhythmContainer::extend(const RhythmContainer &container) {
@@ -236,7 +240,7 @@ void RhythmContainer::find_primes() {
     for (int i = 2; i <= 100; i++) {
         if (numbers[i - 1] != -1) {
             primes.insert(i);
-            for (int j = i; j <= 100; numbers[(j += i) - 1] = -1);
+            for (int j = i * 2; j <= 100; j += i) numbers[j - 1] = -1;
         }
     }
 }

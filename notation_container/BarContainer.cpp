@@ -8,6 +8,10 @@ BarContainer::BarContainer(const Locations &locations, const TimeSignature &sign
     m_rhythm_container.beam();
 }
 
-void BarContainer::prepare_padding(Paddings &padding) {
+void BarContainer::prepare_padding(Paddings &padding) const {
     m_rhythm_container.prepare_padding(padding);
+}
+
+void BarContainer::display(const GlobalLocations &global_locations) const {
+    m_rhythm_container.display(global_locations);
 }

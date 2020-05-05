@@ -7,11 +7,13 @@ using namespace std;
 
 class VoiceContainer {
 public:
-    VoiceContainer() = default;
+    VoiceContainer() : m_bars({}) {};
 
     VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location);
 
-    void prepare_padding(Paddings &padding);
+    void prepare_padding(Paddings &padding) const;
+
+    void display(const GlobalLocations &global_locations, int start_bar, int end_bar) const;
 
     [[nodiscard]] const inline vector<BarContainer> &get_bars() const { return m_bars; };
 

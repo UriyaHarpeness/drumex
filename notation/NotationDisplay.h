@@ -53,12 +53,12 @@ namespace NotationDisplay {
     pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                     const Fraction &bar, const Fraction &location);
 
-    void continuous_display_notation(const GroupedNotations &notation, const Paddings &distances,
-                                     const TimeSignature &signature, int tempo);
+    void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, Paddings *merged_padding,
+                                      GlobalLocations *global_locations);
 
     void
-    prepare_displayable_notation(const VoiceContainer &up, const VoiceContainer &down, GroupedNotations &notation,
-                                 Paddings &distances, const TimeSignature &bar);
+    continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down, const Paddings &merged_padding,
+                                const GlobalLocations &global_locations, const TimeSignature &signature, int tempo);
 
     GlobalLocations create_global_locations(const Paddings &padding);
 

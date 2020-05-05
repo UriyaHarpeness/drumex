@@ -231,10 +231,41 @@ NotationDisplay::get_note_location(const GroupedNotations &notation, const Paddi
     return {{off_x, off_y}, padding};
 }
 
-void NotationDisplay::continuous_display_notation(const GroupedNotations &notation, const Paddings &distances,
+void NotationDisplay::prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, Paddings *merged_padding,
+                                                   GlobalLocations *global_locations) {
+    // Asserts two voices are same offset, when using one voice don't use this.
+    assert(up.get_bars().size() == down.get_bars().size());
+
+    RhythmContainer *rhythm;
+    Paddings up_padding, down_padding;
+
+    for (VoiceContainerIterator voice_iterator(up); voice_iterator; voice_iterator++) {
+        rhythm = *voice_iterator;
+        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+             << rhythm->get_beamed_notations().size() << endl;
+    }
+
+    up.prepare_padding(up_padding);
+
+    for (VoiceContainerIterator voice_iterator(down); voice_iterator; voice_iterator++) {
+        rhythm = *voice_iterator;
+        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+             << rhythm->get_beamed_notations().size() << endl;
+    }
+
+    down.prepare_padding(down_padding);
+
+    *merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
+
+    *global_locations = create_global_locations(*merged_padding);
+}
+
+void NotationDisplay::continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,
+                                                  const Paddings &merged_padding,
+                                                  const GlobalLocations &global_locations,
                                                   const TimeSignature &signature, int tempo) {
     vector<Fraction> locations;
-    for (const auto &i : distances) {
+    for (const auto &i : global_locations) {
         locations.push_back(i.first);
     }
     SDL_Event event;
@@ -246,7 +277,8 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
         // todo: be responsive to SDL events, to avoid the annoying pop-up.
         cout << *m.get_current_location() << endl;
 
-        auto note_location = get_note_location(notation, distances, signature, *m.get_current_location());
+        pair<pair<int, int>, Padding> note_location = {{0, 0},
+                                                       {0, 0}};// get_note_location(notation, distances, signature, *m.get_current_location());
 
         const int played_line = (note_location.first.second - displaying_init_y) / staff_lines_spacing;
 
@@ -257,7 +289,7 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
                                        20, Notation::line_height * 16,
                                        get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64, 128);
 
-        display_notation(notation, distances, signature, played_line);
+        // display_notation(notation, distances, signature, played_line);
 
         Notation::m_display->present();
 
@@ -285,39 +317,6 @@ void NotationDisplay::continuous_display_notation(const GroupedNotations &notati
 
         m.poll();
     }
-}
-
-void NotationDisplay::prepare_displayable_notation(const VoiceContainer &up, const VoiceContainer &down,
-                                                   GroupedNotations &notation, Paddings &distances,
-                                                   const TimeSignature &bar) {
-    // Asserts two voices are same offset, when using one voice don't use this.
-    assert(up.get_bars().size() == down.get_bars().size());
-
-    VoiceContainer up_copy = up, down_copy = down;
-    RhythmContainer *rhythm;
-    Paddings up_padding, down_padding, merged_padding;
-
-    for (VoiceContainerIterator voice_iterator(up_copy); voice_iterator; voice_iterator++) {
-        rhythm = *voice_iterator;
-        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-             << rhythm->get_beamed_notations().size() << endl;
-    }
-
-    up_copy.prepare_padding(up_padding);
-
-    for (VoiceContainerIterator voice_iterator(down_copy); voice_iterator; voice_iterator++) {
-        rhythm = *voice_iterator;
-        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-             << rhythm->get_beamed_notations().size() << endl;
-    }
-
-    down_copy.prepare_padding(down_padding);
-
-    merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
-
-    GlobalLocations global_locations = create_global_locations(merged_padding);
-
-    cout << global_locations.size() << endl;
 }
 
 GlobalLocations NotationDisplay::create_global_locations(const Paddings &padding) {

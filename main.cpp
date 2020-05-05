@@ -72,31 +72,32 @@ int main(int argv, char *argc[]) {
         return 1;
     }
 
+    Paddings merged_padding;
+    GlobalLocations global_locations;
+    Part *chosen_part = nullptr;
+    Exercise *exercise = nullptr;
+
+    if (!exercise_path.empty()) {
+        exercise = new Exercise(exercise_path, index);
+        chosen_part = &exercise->get_part();
+    } else {
+        chosen_part = new Part(part_path, index);
+    }
+
+    chosen_part->notationize();
+
+    NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), &merged_padding,
+                                                  &global_locations);
+
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    GroupedNotations notation;
-    Paddings distances;
+    NotationDisplay::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), merged_padding,
+                                                 global_locations, chosen_part->get_signature(), tempo);
 
-    Part *chosen_part;
-    if (!exercise_path.empty()) {
-        Exercise exercise(exercise_path, index);
-        chosen_part = &exercise.get_part();
-        chosen_part->notationize();
-
-        NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), notation,
-                                                      distances, chosen_part->get_signature());
-
-        NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
-    } else {
-        Part part(part_path, index);
-        chosen_part = &part;
-        chosen_part->notationize();
-
-        NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), notation,
-                                                      distances, chosen_part->get_signature());
-
-        NotationDisplay::continuous_display_notation(notation, distances, chosen_part->get_signature(), tempo);
+    delete exercise;
+    if (exercise == nullptr) {
+        delete chosen_part;
     }
 
     // todo: maybe limit the note length to single beat optionally.

@@ -1,12 +1,13 @@
 #include "VoiceContainer.h"
 
-VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location) {
+VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location)
+        : m_bars({}) {
     Locations bar;
     Fraction next = signature;
 
     for (const auto &it : locations) {
         if (it.first >= next) {
-            m_bars.emplace_back(move(bar), signature, rests_location, next - signature);
+            m_bars.push_back({move(bar), signature, rests_location, next - signature});
             bar.clear();
             next += signature;
             while (next <= it.first) {
@@ -18,8 +19,14 @@ VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &
     }
 }
 
-void VoiceContainer::prepare_padding(Paddings &padding) {
-    for_each(m_bars.begin(), m_bars.end(), [&padding](BarContainer &n) { n.prepare_padding(padding); });
+void VoiceContainer::prepare_padding(Paddings &padding) const {
+    for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.prepare_padding(padding); });
+}
+
+void VoiceContainer::display(const GlobalLocations &global_locations, int start_bar, int end_bar) const {
+    for (; start_bar < end_bar; start_bar++) {
+        m_bars[start_bar].display(global_locations);
+    }
 }
 
 VoiceContainerIterator::VoiceContainerIterator(VoiceContainer &voice) : m_voice(voice), m_bar_index(0),
