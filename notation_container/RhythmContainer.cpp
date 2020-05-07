@@ -119,18 +119,19 @@ void RhythmContainer::optimize() {
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.optimize(); });
 }
 
-void RhythmContainer::notationize() {
+void RhythmContainer::notationize(Instrument rests_location) {
     // What is the meaning of time signature at this point?
     if (m_rhythms_containers.empty()) {
         // Locations does not contain rests at this point.
-        m_notations = location::location_to_notation(m_locations, m_ratio);
+        m_notations = location::location_to_notation(m_locations, rests_location, m_ratio);
 
         m_notations = NotationUtils::convert_notation(m_notations, m_length, m_beat,
                                                       (m_most_occurring_rhythm == 2) ? m_ratio : m_ratio /
                                                                                                  m_most_occurring_rhythm);
         return;
     }
-    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.notationize(); });
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
+             [rests_location](RhythmContainer &n) { n.notationize(rests_location); });
 }
 
 void RhythmContainer::beam() {
@@ -193,6 +194,7 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
             offset += it[0].get_length();
         }
         // todo: see what is the correct spacing.
+        // todo: handle this 20 + 10 - 10 stuff more correctly.
         if (m_most_occurring_rhythm == 2) {
             start_padding -= 10;
             end_padding -= 10;
@@ -209,8 +211,46 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
     }
 }
 
-void RhythmContainer::display(const GlobalLocations &global_locations) const {
+void RhythmContainer::display(const GlobalLocations &global_locations, const int y, int start_padding,
+                              int end_padding) const {
+    cout << "displaying " << m_offset << endl;
+    if (m_rhythms_containers.empty()) {
+        // todo: see what is the correct spacing.
+        if (m_most_occurring_rhythm == 2) {
+            start_padding -= 10;
+            end_padding -= 10;
+        }
+    }
 
+    auto start_location = global_locations.at(m_offset);
+    auto end_location = prev(global_locations.find(m_offset + m_length))->second;
+    cout << y << " " << start_location.first - start_location.second[0] + start_padding
+         << " " << end_location.first + end_location.second[1] - end_padding << endl;
+
+    Notation::m_display->draw_rect(start_location.first - start_location.second[0] + start_padding, y, 3, 3);
+
+    if (m_rhythms_containers.empty()) {
+        Fraction offset = m_offset;
+        for (const auto &it : m_beamed_notations) {
+            if (it.size() == 1) {
+                // NotationDisplay::draw_individual_notes(y, global_locations, offset, it[0]);
+                // todo: extract this somewhere.
+                for (const auto &note : it[0]) {
+                    note.display(global_locations.at(offset).first, y, true);
+                }
+            } else {
+                cout << "no connected yet" << endl;
+            }
+            for (const auto &i : it) {
+                offset += i[0].get_length();
+            }
+        }
+    } else {
+        for (int index = 0; index < m_rhythms_containers.size(); index++) {
+            m_rhythms_containers[index].display(global_locations, y, ((index == 0) ? start_padding : 0) + 10,
+                                                ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) + 10);
+        }
+    }
 }
 
 void RhythmContainer::extend(const RhythmContainer &container) {

@@ -97,24 +97,16 @@ void NotationDisplay::draw_connected_notes(int &x, int staff_y, const Paddings &
     x -= position->second[0];
 }
 
-void NotationDisplay::draw_individual_notes(int &x, int staff_y, const Paddings &distances, const Fraction &offset,
-                                            const Group &group) {
-    // Assumes all note are in the same direction.
-    Fraction length_end;
-    auto position = distances.begin();
-    while (position->first <= offset) position++;
-
-    x += position->second[0];
+void NotationDisplay::draw_individual_notes(const int staff_y, const GlobalLocations &global_locations,
+                                            const Fraction &offset, const Group &group) {
     for (const auto &note : group) {
-        note.display(x, staff_y, true);
+        note.display(global_locations.at(offset).first, staff_y, true);
     }
-    //for (length_end = offset + group[0].get_length();
-    //     position->first <= length_end; x += (position->second[1] + (position + 1)->second[0]), position++);
-    x -= position->second[0];
 }
 
-void NotationDisplay::display_notation(const GroupedNotations &notation, const Paddings &distances, const Fraction &bar,
-                                       const int played_line) {
+void NotationDisplay::display_notation(const VoiceContainer &up, const VoiceContainer &down,
+                                       const Fraction &current_location, const vector<int> &bar_splits,
+                                       const GlobalLocations &global_locations) {
     /*for (int i = 0; i < 16; i++) {
         for (int j = 0; j < 16; j++) {
             s[0] = (char) (i * 16 + j);
@@ -129,7 +121,27 @@ void NotationDisplay::display_notation(const GroupedNotations &notation, const P
         }
     }*/
 
-    int off_x, off_y, edge_padding = 20, lines;
+    // todo: check the selected lines and bars are correct.
+    int current_line = distance(bar_splits.begin(), upper_bound(bar_splits.begin(), bar_splits.end(),
+                                                                (int) static_cast<double>(current_location /
+                                                                                          up.get_signature())));
+    int start_line = min(current_line, ((int) bar_splits.size() < 3) ? 0 : (int) bar_splits.size() - 4);
+    int end_line = min(start_line + 4, (int) bar_splits.size());
+    cout << "current: " << current_line << ", start: " << start_line << ", end: " << end_line << endl;
+
+    int start_bar = (start_line == 0) ? 0 : bar_splits[start_line - 1];
+    int end_bar = (int) ((end_line < bar_splits.size()) ? bar_splits[end_line] : up.get_bars().size());
+    cout << "start bar: " << start_bar << ", end bar: " << end_bar << endl;
+
+    for (int i = start_line; i <= end_line; i++) {
+        Notation::m_display->draw_base(20, displaying_init_y + (i * staff_lines_spacing),
+                                       up.get_signature().get_value().first, up.get_signature().get_value().second);
+    }
+
+    up.display(global_locations, bar_splits, displaying_init_y, staff_lines_spacing, start_bar, end_bar);
+    down.display(global_locations, bar_splits, displaying_init_y, staff_lines_spacing, start_bar, end_bar);
+
+    /*int off_x, off_y, edge_padding = 20, lines;
     Fraction offset;
 
     // todo: add the notation end double line.
@@ -181,7 +193,7 @@ void NotationDisplay::display_notation(const GroupedNotations &notation, const P
             }
             // printing numbers works great.
         }
-    }
+    }*/
 }
 
 pair<pair<int, int>, Padding>
@@ -232,7 +244,7 @@ NotationDisplay::get_note_location(const GroupedNotations &notation, const Paddi
 }
 
 void NotationDisplay::prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, Paddings *merged_padding,
-                                                   GlobalLocations *global_locations) {
+                                                   GlobalLocations *global_locations, vector<int> &bars_split) {
     // Asserts two voices are same offset, when using one voice don't use this.
     assert(up.get_bars().size() == down.get_bars().size());
 
@@ -257,13 +269,13 @@ void NotationDisplay::prepare_displayable_notation(VoiceContainer &up, VoiceCont
 
     *merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
 
-    *global_locations = create_global_locations(*merged_padding);
+    *global_locations = create_global_locations(*merged_padding, bars_split, up.get_signature());
 }
 
 void NotationDisplay::continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,
                                                   const Paddings &merged_padding,
                                                   const GlobalLocations &global_locations,
-                                                  const TimeSignature &signature, int tempo) {
+                                                  const vector<int> &bar_splits, int tempo) {
     vector<Fraction> locations;
     for (const auto &i : global_locations) {
         locations.push_back(i.first);
@@ -271,7 +283,7 @@ void NotationDisplay::continuous_display_notation(const VoiceContainer &up, cons
     SDL_Event event;
     bool quit = false;
 
-    Metronome m(move(locations), tempo, signature);
+    Metronome m(move(locations), tempo, up.get_signature());
 
     while (!quit) {
         // todo: be responsive to SDL events, to avoid the annoying pop-up.
@@ -289,7 +301,7 @@ void NotationDisplay::continuous_display_notation(const VoiceContainer &up, cons
                                        20, Notation::line_height * 16,
                                        get<0>(note_location.second) + get<1>(note_location.second), 255, 64, 64, 128);
 
-        // display_notation(notation, distances, signature, played_line);
+        display_notation(up, down, *m.get_current_location(), bar_splits, global_locations);
 
         Notation::m_display->present();
 
@@ -319,24 +331,41 @@ void NotationDisplay::continuous_display_notation(const VoiceContainer &up, cons
     }
 }
 
-GlobalLocations NotationDisplay::create_global_locations(const Paddings &padding) {
+GlobalLocations NotationDisplay::create_global_locations(const Paddings &padding, vector<int> &bars_split,
+                                                         const TimeSignature &signature) {
+    // Also creates bars splitting.
     GlobalLocations global_locations;
-    int offset = 0;
+    int offset = displaying_init_x, bar_offset = 0;
 
     for (auto it = padding.begin(); it != prev(padding.end()); it++) {
+        if (it->first && !static_cast<bool>(it->first % signature)) {
+            if (offset > displaying_max_x) {
+                // Move this bar and the next to another line.
+                bars_split.push_back(static_cast<double>(it->first / signature) - 1);
+                offset = displaying_init_x;
+                for (auto i = padding.find(it->first - signature); i != padding.find(it->first); i++) {
+                    auto second_distance = get_distance(next(it)->first - it->first, it->second);
+                    global_locations[i->first].second = second_distance;
+                    offset += second_distance[0];
+                    global_locations[i->first].first = offset;
+                    offset += second_distance[1];
+                }
+            }
+            bar_offset = offset;
+        }
+
         auto distance = get_distance(next(it)->first - it->first, it->second);
+        global_locations[it->first].second = distance;
         offset += distance[0];
-        global_locations[it->first] = offset;
+        global_locations[it->first].first = offset;
         offset += distance[1];
     }
-    auto it = prev(padding.end());
-    offset += it->second[0];
-    global_locations[it->first] = offset;
-    offset += it->second[1];
+    global_locations[prev(padding.end())->first].first = offset;
+    global_locations[prev(padding.end())->first].second = {0, 0};
 
     // todo: make sure no duplicate padding.
     for (const auto &it : global_locations) {
-        cout << it.first << ": " << it.second << endl;
+        cout << it.first << ": " << it.second.first << " " << it.second.second[0] << " " << it.second.second[1] << endl;
     }
 
     return move(global_locations);

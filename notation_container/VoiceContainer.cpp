@@ -1,13 +1,13 @@
 #include "VoiceContainer.h"
 
 VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location)
-        : m_bars({}) {
+        : m_signature(signature) {
     Locations bar;
     Fraction next = signature;
 
     for (const auto &it : locations) {
         if (it.first >= next) {
-            m_bars.push_back({move(bar), signature, rests_location, next - signature});
+            m_bars.emplace_back(move(bar), signature, rests_location, next - signature);
             bar.clear();
             next += signature;
             while (next <= it.first) {
@@ -23,9 +23,15 @@ void VoiceContainer::prepare_padding(Paddings &padding) const {
     for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.prepare_padding(padding); });
 }
 
-void VoiceContainer::display(const GlobalLocations &global_locations, int start_bar, int end_bar) const {
+void
+VoiceContainer::display(const GlobalLocations &global_locations, const vector<int> &bar_splits, const int initial_y,
+                        const int y_spacing, int start_bar, int end_bar) const {
+    int current_y = initial_y;
     for (; start_bar < end_bar; start_bar++) {
-        m_bars[start_bar].display(global_locations);
+        if (find(bar_splits.begin(), bar_splits.end(), start_bar) != bar_splits.end()) {
+            current_y += y_spacing;
+        }
+        m_bars[start_bar].display(global_locations, current_y);
     }
 }
 

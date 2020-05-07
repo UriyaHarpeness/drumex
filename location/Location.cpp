@@ -118,7 +118,7 @@ vector<Locations> location::split_voices_locations(const Locations &locations) {
     return move(split_locations);
 }
 
-Voice location::location_to_notation(Locations &locations, const Fraction &ratio) {
+Voice location::location_to_notation(Locations &locations, Instrument rests_location, const Fraction &ratio) {
     Voice voice;
     Group group;
 
@@ -127,7 +127,7 @@ Voice location::location_to_notation(Locations &locations, const Fraction &ratio
     auto location = locations.begin();
     auto prev_note = locations.begin();
     if (location->first) {
-        voice.push_back({{BaseRest, UnboundUp, location->first * ratio, {}}});
+        voice.push_back({{BaseRest, rests_location, location->first * ratio, {}}});
     }
     auto end = locations.end();
     end--;

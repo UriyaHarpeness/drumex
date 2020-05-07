@@ -16,9 +16,12 @@
 using namespace std;
 
 namespace NotationDisplay {
+    // todo: maybe extract all of these configurations somewhere, and avoid passing to external functions.
     const int connector_height = 7;
 
     const int displaying_init_x = 80;
+
+    const int displaying_max_x = Display::width - 20;
 
     const int displaying_init_y = 100;
 
@@ -35,32 +38,28 @@ namespace NotationDisplay {
     void draw_connected_notes(int &x, int staff_y, const Paddings &distances, Fraction offset, const Voice &notations);
 
     void
-    draw_individual_notes(int &x, int staff_y, const Paddings &distances, const Fraction &offset, const Group &group);
+    draw_individual_notes(const int staff_y, const GlobalLocations &global_locations, const Fraction &offset,
+                          const Group &group);
 
     /**
      * Display the notation.
-     *
-     * @param notation  The notation do display, its type is complicated and here's why, it's a vector:
-     *                  1.  of single notes.
-     *                  2.  of grouped notes (played at the same time with same length).
-     *                  3.  of connected notes (notes that are beamed tigether).
-     *                  4.  of voices.
-     * @param signature The time signature.
      */
-    void display_notation(const vector<vector<vector<vector<Notation>>>> &notation, const Paddings &distances,
-                          const Fraction &bar, int played_line);
+    void display_notation(const VoiceContainer &up, const VoiceContainer &down,
+                          const Fraction &current_location, const vector<int> &bar_splits,
+                          const GlobalLocations &global_locations);
 
     pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
                                                     const Fraction &bar, const Fraction &location);
 
     void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, Paddings *merged_padding,
-                                      GlobalLocations *global_locations);
+                                      GlobalLocations *global_locations, vector<int> &bars_split);
 
     void
     continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down, const Paddings &merged_padding,
-                                const GlobalLocations &global_locations, const TimeSignature &signature, int tempo);
+                                const GlobalLocations &global_locations, const vector<int> &bar_splits, int tempo);
 
-    GlobalLocations create_global_locations(const Paddings &padding);
+    GlobalLocations
+    create_global_locations(const Paddings &padding, vector<int> &bars_split, const TimeSignature &signature);
 
     Padding get_distance(const Fraction &length, Padding padding);
 };

@@ -15,13 +15,14 @@ public:
 
     void optimize();
 
-    void notationize();
+    void notationize(Instrument rests_location);
 
     void beam();
 
     void prepare_padding(Paddings &padding, int start_padding = 20, int end_padding = 20) const;
 
-    void display(const GlobalLocations &global_locations) const;
+    void
+    display(const GlobalLocations &global_locations, const int y, int start_padding = 20, int end_padding = 20) const;
 
     void extend(const RhythmContainer &container);
 

@@ -15,7 +15,8 @@ class Notation;
 
 typedef array<int, 2> Padding;
 typedef map<Fraction, Padding> Paddings;
-typedef map<Fraction, int> GlobalLocations;
+// A mapping of absolute offset to the location and its padding.
+typedef map<Fraction, pair<int, Padding>> GlobalLocations;
 
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;

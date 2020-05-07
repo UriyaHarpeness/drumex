@@ -12,7 +12,7 @@ public:
 
     void prepare_padding(Paddings &padding) const;
 
-    void display(const GlobalLocations &global_locations) const;
+    void display(const GlobalLocations &global_locations, const int y) const;
 
     [[nodiscard]] inline RhythmContainer &get_mutable_rhythm() { return m_rhythm_container; };
 

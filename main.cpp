@@ -74,6 +74,7 @@ int main(int argv, char *argc[]) {
 
     Paddings merged_padding;
     GlobalLocations global_locations;
+    vector<int> bars_split;
     Part *chosen_part = nullptr;
     Exercise *exercise = nullptr;
 
@@ -87,13 +88,13 @@ int main(int argv, char *argc[]) {
     chosen_part->notationize();
 
     NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), &merged_padding,
-                                                  &global_locations);
+                                                  &global_locations, bars_split);
 
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
     NotationDisplay::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), merged_padding,
-                                                 global_locations, chosen_part->get_signature(), tempo);
+                                                 global_locations, bars_split, tempo);
 
     delete exercise;
     if (exercise == nullptr) {
