@@ -34,7 +34,9 @@ namespace NotationUtils {
 
     Notations split_notation(const Voice &notation, const Fraction &bar);
 
-    int count_remaining_plays(Fraction start, const Fraction &end, Voice::iterator &notation_it);
+    int count_remaining_plays(const Voice::iterator &start, const Voice::iterator &end);
+
+    void find_first_non_beamable(Fraction start, const Fraction &end, Voice::iterator &notation_it);
 
     Notations connect_notation(const Voice &notation, const Fraction &beat);
 

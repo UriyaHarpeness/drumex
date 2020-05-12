@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Enums.h"
+#include "DisplayConfigurations.h"
 
 #include <iostream>
 #include <map>
@@ -12,12 +13,6 @@ using namespace std;
 
 class Display {
 public:
-    static const int height = 600;
-
-    static const int width = 900;
-
-    static const int line_height = 5;
-
     Display();
 
     ~Display();

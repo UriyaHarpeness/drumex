@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Fraction.h"
+#include "../Translations.h"
 #include "../Enums.h"
 #include "../display/Display.h"
+#include "../display/DisplayConfigurations.h"
 
 #include <map>
 #include <numeric>
@@ -12,11 +14,6 @@
 using namespace std;
 
 class Notation;
-
-typedef array<int, 2> Padding;
-typedef map<Fraction, Padding> Paddings;
-// A mapping of absolute offset to the location and its padding.
-typedef map<Fraction, pair<int, Padding>> GlobalLocations;
 
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;
@@ -37,14 +34,6 @@ public:
     static const map<Modifier, MusicSymbols> modifier_to_symbol;
 
     static const map<Modifier, array<int, 3>> modifier_to_position;
-
-    static const int minimal_distance = 14;
-
-    static const int line_height = 5;
-
-    static const int staff_to_0 = 2 * line_height;
-
-    static const int direction_line = 2;
 
     static shared_ptr<Display> m_display;
 
@@ -105,6 +94,8 @@ public:
     inline void add_modifier(Modifier modifier) { m_modifiers.push_back(modifier); }
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
+
+    friend ostream &operator<<(ostream &os, const Notation &notation);
 
 private:
     MusicSymbols m_symbol;

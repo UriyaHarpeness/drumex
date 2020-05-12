@@ -60,6 +60,8 @@ public:
 
     explicit operator int() const;
 
+    int ceil_int() const;
+
     explicit operator double() const;
 
     [[nodiscard]] inline pair<int, int> get_value() const { return m_value; };

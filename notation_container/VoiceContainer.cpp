@@ -23,15 +23,14 @@ void VoiceContainer::prepare_padding(Paddings &padding) const {
     for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.prepare_padding(padding); });
 }
 
-void
-VoiceContainer::display(const GlobalLocations &global_locations, const vector<int> &bar_splits, const int initial_y,
-                        const int y_spacing, int start_bar, int end_bar) const {
-    int current_y = initial_y;
-    for (; start_bar < end_bar; start_bar++) {
-        if (find(bar_splits.begin(), bar_splits.end(), start_bar) != bar_splits.end()) {
-            current_y += y_spacing;
+void VoiceContainer::display(const DisplayVariables &display_variables) const {
+    int current_y = DisplayConstants::displaying_init_y;
+    for (int bar_index = display_variables.start_bar; bar_index < display_variables.end_bar; bar_index++) {
+        if (find(display_variables.bars_split.begin(), display_variables.bars_split.end(), bar_index) !=
+            display_variables.bars_split.end()) {
+            current_y += DisplayConstants::staff_lines_spacing;
         }
-        m_bars[start_bar].display(global_locations, current_y);
+        m_bars[bar_index].display(display_variables.global_locations, current_y);
     }
 }
 

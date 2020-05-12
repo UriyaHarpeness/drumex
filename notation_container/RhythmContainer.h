@@ -3,6 +3,7 @@
 #include "../location/Location.h"
 #include "../time_signature/TimeSignature.h"
 #include "../notation/NotationUtils.h"
+#include "../notation/NotationDisplay.h"
 
 #include <set>
 

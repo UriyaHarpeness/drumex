@@ -185,6 +185,10 @@ Fraction::operator int() const {
     return floor(log2((double) m_value.first / m_value.second));
 }
 
+int Fraction::ceil_int() const {
+    return ceil(log2((double) m_value.first / m_value.second));
+}
+
 Fraction::operator double() const {
     return (double) m_value.first / m_value.second;
 }

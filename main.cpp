@@ -3,7 +3,7 @@
 #include "display/Display.h"
 #include "notation/Notation.h"
 #include "notation/NotationUtils.h"
-#include "notation/NotationDisplay.h"
+#include "notation/NotationDisplayUtils.h"
 #include "reader/Part.h"
 #include "reader/Exercise.h"
 
@@ -72,9 +72,7 @@ int main(int argv, char *argc[]) {
         return 1;
     }
 
-    Paddings merged_padding;
-    GlobalLocations global_locations;
-    vector<int> bars_split;
+    DisplayVariables display_variables;
     Part *chosen_part = nullptr;
     Exercise *exercise = nullptr;
 
@@ -87,14 +85,14 @@ int main(int argv, char *argc[]) {
 
     chosen_part->notationize();
 
-    NotationDisplay::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(), &merged_padding,
-                                                  &global_locations, bars_split);
+    NotationDisplayUtils::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(),
+                                                       display_variables);
 
     shared_ptr<Display> d(new Display());
     Notation::m_display = d;
 
-    NotationDisplay::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), merged_padding,
-                                                 global_locations, bars_split, tempo);
+    NotationDisplayUtils::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), display_variables,
+                                                      tempo);
 
     delete exercise;
     if (exercise == nullptr) {
@@ -112,6 +110,7 @@ int main(int argv, char *argc[]) {
      * See that a poly of 9 over 3/4, is written as 9:6 in MuseScore, need to see what's the best way to notate it.
      * The polyrhythm selection is still isn't perfect, for example, for 1/9 2/9 3/9 4/9, it will divide to 1/3 and
      *  again to 1/3, instead of just starting with 1/9.
+     * Cymbal whole and half note head is like a bold but hollow X by MuseScore, need to add the head.
      */
 
     return 0;

@@ -13,8 +13,7 @@ public:
 
     void prepare_padding(Paddings &padding) const;
 
-    void display(const GlobalLocations &global_locations, const vector<int> &bar_splits, const int initial_y,
-                 const int y_spacing, int start_bar, int end_bar) const;
+    void display(const DisplayVariables &display_variables) const;
 
     [[nodiscard]] inline const vector<BarContainer> &get_bars() const { return m_bars; };
 

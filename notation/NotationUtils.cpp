@@ -11,7 +11,7 @@ Notations NotationUtils::split_voices(const Voice &notation) {
 
     for (const auto &group : notation) {
         for (const auto &note : group) {
-            if (note.get_line() > Notation::direction_line) {
+            if (note.get_line() > DisplayConstants::direction_line) {
                 voice_two_group.push_back(note);
                 voice_one_group.push_back({BaseRest, UnboundUp, note.get_length(), {}});
             } else {
@@ -145,18 +145,29 @@ Notations NotationUtils::split_notation(const Voice &notation, const Fraction &b
     return move(splitted_notation);
 }
 
-int NotationUtils::count_remaining_plays(Fraction start, const Fraction &end, Voice::iterator &notation_it) {
+int NotationUtils::count_remaining_plays(const Voice::iterator &start, const Voice::iterator &end) {
     int count = 0;
 
-    // warning; optional segfault, iterates through the iterator without knowing there it ends, the caller should be
-    // aware.
-    while (start < end) {
-        count += (*notation_it)[0].get_playing() == BasePlay ? 1 : 0;
-        start += (*notation_it)[0].get_length();
-        notation_it++;
+    for (auto it = start; it != end; it++) {
+        cout << (*it)[0] << endl;
+        count += (*it)[0].get_playing() == BasePlay ? 1 : 0;
     }
 
     return count;
+}
+
+void NotationUtils::find_first_non_beamable(Fraction start, const Fraction &end, Voice::iterator &notation_it) {
+    // warning; optional segfault, iterates through the iterator without knowing there it ends, the caller should be
+    // aware.
+    cout << start << " - " << end << endl;
+    while (start < end) {
+        if ((*notation_it)[0].get_simple_length() >= Fraction(1, 4)) {
+            break;
+        }
+        start += (*notation_it)[0].get_length();
+        notation_it++;
+        cout << start << " = " << end << endl;
+    }
 }
 
 Notations NotationUtils::connect_notation(const Voice &notation, const Fraction &beat) {
@@ -235,8 +246,8 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
                     }
                 } else {
                     generated_notation.push_back(
-                            {{BaseRest, (group[0].get_line() > Notation::direction_line) ? UnboundDown
-                                                                                         : UnboundUp, fraction, {}}});
+                            {{BaseRest, (group[0].get_line() > DisplayConstants::direction_line) ? UnboundDown
+                                                                                                 : UnboundUp, fraction, {}}});
                 }
             }
             playing = BaseRest;

@@ -152,29 +152,63 @@ void RhythmContainer::beam() {
         }
 
         auto notation_it = m_notations.begin(), notation_end = m_notations.begin();
+        auto first_non_beamable = m_notations.begin(), prev_non_beamable = m_notations.begin();
         int remaining_plays;
         Voice beamed;
+        Fraction current_beam = beam_limit;
 
-        while (notation_it != m_notations.end()) {
-            remaining_plays = NotationUtils::count_remaining_plays(offset, offset + beam_limit, notation_end);
-            while ((notation_it != notation_end) && ((*notation_it)[0].get_playing() == BaseRest)) {
-                m_beamed_notations.push_back({*notation_it});
-                notation_it++;
-            }
-            if (remaining_plays > 0) {
-                while (remaining_plays > 0) {
-                    remaining_plays -= ((*notation_it)[0].get_playing() == BasePlay) ? 1 : 0;
-                    beamed.push_back(*notation_it);
+        while (current_beam != m_length) {
+            while (offset < current_beam) {
+                NotationUtils::find_first_non_beamable(offset, current_beam, first_non_beamable);
+
+                remaining_plays = NotationUtils::count_remaining_plays(prev_non_beamable, first_non_beamable);
+
+            cout << "g " << (*prev_non_beamable)[0].get_length() << " " << (*first_non_beamable)[0].get_length()
+                     << endl;
+
+                prev_non_beamable = first_non_beamable;
+                cout << "f " << remaining_plays << " " << offset << " " << current_beam << endl;
+
+                cout << "see 1 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
+                     << " " << offset << endl;
+
+                while ((notation_it != first_non_beamable) && ((*notation_it)[0].get_playing() == BaseRest)) {
+                    m_beamed_notations.push_back({*notation_it});
+                    offset += (*notation_it)[0].get_length();
                     notation_it++;
                 }
-                m_beamed_notations.push_back(move(beamed));
-                beamed.clear();
+                cout << "see 2 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
+                     << " " << offset << endl;
+                cout << "a " << remaining_plays << endl;
+                if (remaining_plays > 0) {
+                    while (remaining_plays > 0) {
+                        remaining_plays -= ((*notation_it)[0].get_playing() == BasePlay) ? 1 : 0;
+                        beamed.push_back(*notation_it);
+                        offset += (*notation_it)[0].get_length();
+                        notation_it++;
+                    }
+                    m_beamed_notations.push_back(move(beamed));
+                    beamed.clear();
+                }
+                cout << "see 3 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
+                     << " " << offset << endl;
+                while (notation_it != first_non_beamable) {
+                    m_beamed_notations.push_back({*notation_it});
+                    offset += (*notation_it)[0].get_length();
+                    notation_it++;
+                    cout << "see 4 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
+                         << " " << offset << endl;
+                }
+                if (offset < current_beam) {
+                    m_beamed_notations.push_back({*notation_it});
+                    offset += (*notation_it)[0].get_length();
+                    notation_it++;
+                    first_non_beamable++;
+                }
             }
-            while (notation_it != notation_end) {
-                m_beamed_notations.push_back({*notation_it});
-                notation_it++;
+            while (current_beam <= offset) {
+                current_beam += beam_limit;
             }
-            offset += beam_limit;
         }
 
         cout << m_notations.size() << " - " << m_beamed_notations.size() << endl;
@@ -233,12 +267,9 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
         Fraction offset = m_offset;
         for (const auto &it : m_beamed_notations) {
             if (it.size() == 1) {
-                // NotationDisplay::draw_individual_notes(y, global_locations, offset, it[0]);
-                // todo: extract this somewhere.
-                for (const auto &note : it[0]) {
-                    note.display(global_locations.at(offset).first, y, true);
-                }
+                NotationDisplay::draw_individual_notes(y, global_locations, offset, it[0]);
             } else {
+                NotationDisplay::draw_connected_notes(y, global_locations, offset, it);
                 cout << "no connected yet" << endl;
             }
             for (const auto &i : it) {

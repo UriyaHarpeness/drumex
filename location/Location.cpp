@@ -98,7 +98,7 @@ vector<Locations> location::split_voices_locations(const Locations &locations) {
     Group down;
     for (const auto &location : locations) {
         for (const auto &note : location.second) {
-            if (Notation::direction_line > note.get_line()) {
+            if (DisplayConstants::direction_line > note.get_line()) {
                 up.push_back(note);
             } else {
                 down.push_back(note);
