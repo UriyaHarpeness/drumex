@@ -94,9 +94,10 @@ int main(int argv, char *argc[]) {
     NotationDisplayUtils::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), display_variables,
                                                       tempo);
 
-    delete exercise;
     if (exercise == nullptr) {
         delete chosen_part;
+    } else {
+        delete exercise;
     }
 
     // todo: maybe limit the note length to single beat optionally.
@@ -154,7 +155,7 @@ int main(int argv, char *argc[]) {
 
     vector<vector<vector<Notation>>> notation = Notation::generate_notation(stuff, sig);
 
-    // sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+    // sudo apt-get install gcc g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
     // libasound2-dev possibly, if will use sound.
 
     gamelogic(notation, sig);*/

@@ -53,8 +53,6 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
     for (const auto &group : notations) {
         //for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
         //        position->second[1] + (position + 1)->second[0]), position++);
-        offset += group[0].get_length();
-
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);
@@ -65,9 +63,11 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
             }
             if (&note == &(group[0])) {
                 if (&group < &(notations[notations.size() - 2])) {
+                    distance = next(global_locations.find(offset))->second.first - global_locations.at(offset).first;
                     draw_connectors(global_locations.at(offset).first, staff_y, group[0].get_line(), distance, beams,
                                     tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
+                    distance = next(global_locations.find(offset))->second.first - global_locations.at(offset).first;
                     if (group[0].get_rounded_length() > DisplayConstants::minimal_supported_fraction) {
                         last_distance = DisplayConstants::minimal_distance;
                     } else {
@@ -77,10 +77,12 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
                                     distance - last_distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
                     // beam note size, or half if must smaller...
+                    distance = global_locations.at(offset).first - prev(global_locations.find(offset))->second.first;
                     draw_connectors(global_locations.at(offset).first - last_distance, staff_y, group[0].get_line(),
                                     last_distance, beams, tail_length);
                 }
             }
+            offset += group[0].get_length();
         }
     }
 }

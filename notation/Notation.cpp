@@ -151,7 +151,7 @@ void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
 void Notation::draw_flags(int x, int staff_y, int tail_length) const {
     int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
 
-    for (int i = 0; i < (-(int) m_length) - 2; i++) {
+    for (int i = 0; i < (-static_cast<int>(get_simple_length())) - 2; i++) {
         if (m_line <= DisplayConstants::direction_line) {
             m_display->draw_text(SymUpFlag, x + 13,
                                  staff_y + ((m_line - tail_length + (i * 2)) * DisplayConstants::line_height) -
@@ -210,7 +210,7 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_ledgers(x, staff_y);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
         if (flags) {
-            tail_length = max(tail_length, (((-(int) m_length) - 2) * 2) + 3);
+            tail_length = max(tail_length, (((-static_cast<int>(m_length)) - 2) * 2) + 3);
             draw_flags(x, staff_y, tail_length);
         }
         draw_tail(x, staff_y, tail_length);

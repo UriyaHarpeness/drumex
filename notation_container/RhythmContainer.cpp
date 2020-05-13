@@ -157,16 +157,15 @@ void RhythmContainer::beam() {
         Voice beamed;
         Fraction current_beam = beam_limit;
 
-        while (current_beam != m_length) {
+        while (offset < m_length) {
             while (offset < current_beam) {
                 NotationUtils::find_first_non_beamable(offset, current_beam, first_non_beamable);
 
                 remaining_plays = NotationUtils::count_remaining_plays(prev_non_beamable, first_non_beamable);
 
-            cout << "g " << (*prev_non_beamable)[0].get_length() << " " << (*first_non_beamable)[0].get_length()
-                     << endl;
+                //cout << "g " << (*prev_non_beamable)[0].get_length() << " " << (*first_non_beamable)[0].get_length()
+                //     << endl;
 
-                prev_non_beamable = first_non_beamable;
                 cout << "f " << remaining_plays << " " << offset << " " << current_beam << endl;
 
                 cout << "see 1 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
@@ -205,6 +204,7 @@ void RhythmContainer::beam() {
                     notation_it++;
                     first_non_beamable++;
                 }
+                prev_non_beamable = first_non_beamable;
             }
             while (current_beam <= offset) {
                 current_beam += beam_limit;
@@ -247,7 +247,7 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
 
 void RhythmContainer::display(const GlobalLocations &global_locations, const int y, int start_padding,
                               int end_padding) const {
-    cout << "displaying " << m_offset << endl;
+    // cout << "displaying " << m_offset << endl;
     if (m_rhythms_containers.empty()) {
         // todo: see what is the correct spacing.
         if (m_most_occurring_rhythm == 2) {
@@ -258,10 +258,13 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
 
     auto start_location = global_locations.at(m_offset);
     auto end_location = prev(global_locations.find(m_offset + m_length))->second;
-    cout << y << " " << start_location.first - start_location.second[0] + start_padding
-         << " " << end_location.first + end_location.second[1] - end_padding << endl;
+    // cout << y << " " << start_location.first - start_location.second[0] + start_padding
+    //      << " " << end_location.first + end_location.second[1] - end_padding << endl;
 
-    Notation::m_display->draw_rect(start_location.first - start_location.second[0] + start_padding, y, 3, 3);
+    Notation::m_display->draw_rect(start_location.first - start_location.second[0] + start_padding - 6, y, 10, 2, 0,
+                                   255, 0, 255);
+    Notation::m_display->draw_rect(end_location.first + end_location.second[1] - end_padding + 4, y, 10, 2, 255, 0, 0,
+                                   255);
 
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
@@ -270,7 +273,6 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
                 NotationDisplay::draw_individual_notes(y, global_locations, offset, it[0]);
             } else {
                 NotationDisplay::draw_connected_notes(y, global_locations, offset, it);
-                cout << "no connected yet" << endl;
             }
             for (const auto &i : it) {
                 offset += i[0].get_length();

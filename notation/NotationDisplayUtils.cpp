@@ -22,7 +22,7 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
                                                           (int) static_cast<double>(current_location /
                                                                                     up.get_signature())));
     display_variables.start_line = min(display_variables.current_line, ((int) display_variables.bars_split.size() <
-                                                                        DisplayConstants::max_lines_displayed - 1) ? 0 :
+                                                                        DisplayConstants::max_lines_displayed) ? 0 :
                                                                        (int) display_variables.bars_split.size() -
                                                                        DisplayConstants::max_lines_displayed);
     display_variables.end_line = min(display_variables.start_line + DisplayConstants::max_lines_displayed,
@@ -208,7 +208,7 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
 
     while (!quit) {
         // todo: be responsive to SDL events, to avoid the annoying pop-up.
-        cout << *m.get_current_location() << endl;
+        cout << "current location: " << *m.get_current_location() << endl;
 
         get_display_scope(up, down, *m.get_current_location(), display_variables);
 
@@ -266,30 +266,31 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
                                                               const TimeSignature &signature) {
     // Also creates bars splitting.
     GlobalLocations global_locations;
-    int offset = DisplayConstants::displaying_init_x, bar_offset = 0;
+    int offset = DisplayConstants::displaying_init_x;
 
-    for (auto it = padding.begin(); it != prev(padding.end()); it++) {
+    for (auto it = padding.begin(); it != padding.end(); it++) {
         if (it->first && !static_cast<bool>(it->first % signature)) {
             if (offset > DisplayConstants::displaying_max_x) {
                 // Move this bar and the next to another line.
                 bars_split.push_back(static_cast<double>(it->first / signature) - 1);
                 offset = DisplayConstants::displaying_init_x;
                 for (auto i = padding.find(it->first - signature); i != padding.find(it->first); i++) {
-                    auto second_distance = get_distance(next(it)->first - it->first, it->second);
+                    auto second_distance = get_distance(next(i)->first - i->first, i->second);
                     global_locations[i->first].second = second_distance;
                     offset += second_distance[0];
                     global_locations[i->first].first = offset;
                     offset += second_distance[1];
                 }
             }
-            bar_offset = offset;
         }
 
-        auto distance = get_distance(next(it)->first - it->first, it->second);
-        global_locations[it->first].second = distance;
-        offset += distance[0];
-        global_locations[it->first].first = offset;
-        offset += distance[1];
+        if (it != prev(padding.end())) {
+            auto distance = get_distance(next(it)->first - it->first, it->second);
+            global_locations[it->first].second = distance;
+            offset += distance[0];
+            global_locations[it->first].first = offset;
+            offset += distance[1];
+        }
     }
     global_locations[prev(padding.end())->first].first = offset;
     global_locations[prev(padding.end())->first].second = {0, 0};

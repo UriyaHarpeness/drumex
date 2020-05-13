@@ -24,7 +24,7 @@ namespace DisplayConstants {
 
     const int displaying_init_x = 80;
 
-    const int displaying_max_x = window_width - 20;
+    const int displaying_max_x = window_width - 80;
 
     const int displaying_init_y = 100;
 

@@ -1,10 +1,9 @@
 #include "Metronome.h"
 
-
 Metronome::Metronome(vector<Fraction> locations, int tempo, const TimeSignature &signature) :
         m_tempo(tempo), m_beat({1, signature.get_value().second}), m_locations(move(locations)),
         m_start(chrono::system_clock::now()), m_current_location(m_locations.begin()) {
-    m_locations.erase(m_locations.end() - 2, m_locations.end());
+    m_locations.erase(m_locations.end() - 1, m_locations.end());
 }
 
 void Metronome::poll() {

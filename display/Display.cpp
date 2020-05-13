@@ -3,7 +3,8 @@
 Display::Display() {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DisplayConstants::window_width,
+    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                DisplayConstants::window_width,
                                 DisplayConstants::window_height, SDL_WINDOW_SHOWN);
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
@@ -89,7 +90,7 @@ void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
     SDL_RenderFillRect(m_renderer, &sdl_rect);
 }
 
-void Display::draw_rect(int x, int y, int h, int w, int r, int b, int g, int a) {
+void Display::draw_rect(int x, int y, int h, int w, int r, int g, int b, int a) {
     SDL_Rect sdl_rect{x, y, w, h};
     SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
     SDL_RenderFillRect(m_renderer, &sdl_rect);
