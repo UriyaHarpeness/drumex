@@ -109,7 +109,6 @@ void RhythmContainer::optimize() {
     m_rhythms_containers.push_back(*prev_container);
     for (auto container = next(rhythm_containers.begin()); container != rhythm_containers.end(); container++) {
         if (prev_container->m_most_occurring_rhythm == container->m_most_occurring_rhythm) {
-            cout << "same" << endl;
             m_rhythms_containers[m_rhythms_containers.size() - 1].extend(*container);
         } else {
             prev_container = container;
@@ -163,22 +162,12 @@ void RhythmContainer::beam() {
 
                 remaining_plays = NotationUtils::count_remaining_plays(prev_non_beamable, first_non_beamable);
 
-                //cout << "g " << (*prev_non_beamable)[0].get_length() << " " << (*first_non_beamable)[0].get_length()
-                //     << endl;
-
-                cout << "f " << remaining_plays << " " << offset << " " << current_beam << endl;
-
-                cout << "see 1 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
-                     << " " << offset << endl;
-
                 while ((notation_it != first_non_beamable) && ((*notation_it)[0].get_playing() == BaseRest)) {
                     m_beamed_notations.push_back({*notation_it});
                     offset += (*notation_it)[0].get_length();
                     notation_it++;
                 }
-                cout << "see 2 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
-                     << " " << offset << endl;
-                cout << "a " << remaining_plays << endl;
+
                 if (remaining_plays > 0) {
                     while (remaining_plays > 0) {
                         remaining_plays -= ((*notation_it)[0].get_playing() == BasePlay) ? 1 : 0;
@@ -189,14 +178,11 @@ void RhythmContainer::beam() {
                     m_beamed_notations.push_back(move(beamed));
                     beamed.clear();
                 }
-                cout << "see 3 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
-                     << " " << offset << endl;
+
                 while (notation_it != first_non_beamable) {
                     m_beamed_notations.push_back({*notation_it});
                     offset += (*notation_it)[0].get_length();
                     notation_it++;
-                    cout << "see 4 " << (notation_it == m_notations.end()) << " " << (notation_it == first_non_beamable)
-                         << " " << offset << endl;
                 }
                 if (offset < current_beam) {
                     m_beamed_notations.push_back({*notation_it});
@@ -224,7 +210,6 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
 
         for (const auto &it : m_notations) {
             padding[offset] = NotationUtils::sum_padding(padding[offset], NotationUtils::merge_padding(it));
-            cout << "offset " << offset << endl;
             offset += it[0].get_length();
         }
         // todo: see what is the correct spacing.
@@ -233,8 +218,10 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
             start_padding -= 10;
             end_padding -= 10;
         }
+
         padding[m_offset] = NotationUtils::sum_padding(padding[m_offset], {start_padding, 0});
-        padding[m_offset + m_length] = NotationUtils::sum_padding(padding[m_offset + m_length], {0, end_padding});
+        auto last_padding = prev(padding.find(m_offset + m_length));
+        last_padding->second = NotationUtils::sum_padding(last_padding->second, {0, end_padding});
 
         return;
     }
@@ -247,7 +234,6 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
 
 void RhythmContainer::display(const GlobalLocations &global_locations, const int y, int start_padding,
                               int end_padding) const {
-    // cout << "displaying " << m_offset << endl;
     if (m_rhythms_containers.empty()) {
         // todo: see what is the correct spacing.
         if (m_most_occurring_rhythm == 2) {
@@ -258,8 +244,6 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
 
     auto start_location = global_locations.at(m_offset);
     auto end_location = prev(global_locations.find(m_offset + m_length))->second;
-    // cout << y << " " << start_location.first - start_location.second[0] + start_padding
-    //      << " " << end_location.first + end_location.second[1] - end_padding << endl;
 
     Notation::m_display->draw_rect(start_location.first - start_location.second[0] + start_padding - 6, y, 10, 2, 0,
                                    255, 0, 255);

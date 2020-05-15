@@ -1,17 +1,5 @@
 #include "NotationDisplayUtils.h"
 
-int NotationDisplayUtils::calc_needed_space(const Paddings &distances, const Fraction &offset, const Fraction &length) {
-    int distance;
-    Fraction length_end;
-    auto position = distances.begin();
-    while (position->first <= offset) position++;
-
-    //for (distance = 0, length_end = offset + length; position->first <= length_end; distance += (
-    //        position->second[1] + (position + 1)->second[0]), position++);
-
-    return distance;
-}
-
 void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const VoiceContainer &down,
                                              const Fraction &current_location, DisplayVariables &display_variables) {
     // todo: check the selected lines and bars are correct.
@@ -61,108 +49,7 @@ void NotationDisplayUtils::display_notation(const VoiceContainer &up, const Voic
     }*/
     up.display(display_variables);
     down.display(display_variables);
-
-    /*int off_x, off_y, edge_padding = 20, lines;
-    Fraction offset;
-
     // todo: add the notation end double line.
-    // todo: skip right to displayed notes, without calculating the distance all over again.
-    for (const auto &voice : notation) {
-        lines = -1;
-        offset = {0, 1};
-        off_x = Display::width;
-        off_y = displaying_init_y;
-        for (const Voice &note_groups : voice) {
-            // Move to the next line to avoid displaying over the staff.
-            if (!static_cast<bool>(offset % bar) &&
-                (off_x + calc_needed_space(distances, offset, bar) > Display::width - edge_padding)) {
-                off_x = displaying_init_x;
-                off_y += staff_lines_spacing;
-                lines++;
-                if (lines >= (played_line + max_lines_displayed)) {
-                    // Display up to 4 lines.
-                    break;
-                }
-                if ((lines % max_lines_displayed) == 0) {
-                    off_y = displaying_init_y;
-                }
-
-                if (lines >= played_line) {
-                    Notation::m_display->draw_base(edge_padding, off_y, bar.get_value().first, bar.get_value().second);
-                }
-            }
-
-            if (lines < played_line) {
-                off_x += calc_needed_space(distances, offset, NotationUtils::sum_length(note_groups));
-            } else {
-                if (note_groups.size() > 1) {
-                    draw_connected_notes(off_x, off_y, distances, offset, note_groups);
-                } else {
-                    draw_individual_notes(off_x, off_y, distances, offset, note_groups[0]);
-                }
-            }
-
-            // The notes do not stretch over bars, so summing the offset will not miss bars.
-            offset += NotationUtils::sum_length(note_groups);
-
-            if (!static_cast<bool>(offset % bar)) {
-                off_x += 10;
-                if (lines >= played_line) {
-                    Notation::m_display->draw_text(SymBarLine, off_x, off_y);
-                }
-                off_x += 10;
-            }
-            // printing numbers works great.
-        }
-    }*/
-}
-
-pair<pair<int, int>, Padding>
-NotationDisplayUtils::get_note_location(const GroupedNotations &notation, const Paddings &distances,
-                                        const Fraction &bar,
-                                        const Fraction &location) {
-    // todo: optimize this function.
-    int off_x = DisplayConstants::displaying_init_x, off_y = DisplayConstants::displaying_init_y, edge_padding = 20;
-    Padding padding;
-    Fraction offset;
-
-    for (const Voice &note_groups : notation[0]) {
-        // Move to the next line to avoid displaying over the staff.
-        if (!static_cast<bool>(offset % bar) &&
-            (off_x + calc_needed_space(distances, offset, bar) > DisplayConstants::window_width - edge_padding)) {
-            off_x = DisplayConstants::displaying_init_x;
-            off_y += DisplayConstants::staff_lines_spacing;
-        }
-
-        int distance;
-        Fraction length_end;
-        auto position = distances.begin();
-        while (position->first <= offset) position++;
-
-        if (offset + NotationUtils::sum_length(note_groups) > location) {
-            for (length_end = location;
-                 position->first <= length_end; off_x += (position->second[0] + position->second[1]), position++);
-            padding = (position)->second;
-            break;
-        }
-
-        int tmp_x = 0;
-        tmp_x += position->second[0];
-        //for (distance = 0, length_end = offset + NotationUtils::sum_length(note_groups);
-        //     position->first <= length_end; distance += (position->second[1] + (position + 1)->second[0]), position++);
-        tmp_x += distance;
-        tmp_x -= position->second[0];
-
-        off_x += tmp_x;
-
-        offset += NotationUtils::sum_length(note_groups);
-
-        if (!static_cast<bool>(offset % bar)) {
-            off_x += 20;
-        }
-    }
-
-    return {{off_x, off_y}, padding};
 }
 
 void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down,
@@ -267,6 +154,8 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
     // Also creates bars splitting.
     GlobalLocations global_locations;
     int offset = DisplayConstants::displaying_init_x;
+    Fraction padding_end = Fraction((int) static_cast<double>(prev(padding.end())->first / signature)) * signature;
+    Padding distance, second_distance;
 
     for (auto it = padding.begin(); it != padding.end(); it++) {
         if (it->first && !static_cast<bool>(it->first % signature)) {
@@ -275,7 +164,7 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
                 bars_split.push_back(static_cast<double>(it->first / signature) - 1);
                 offset = DisplayConstants::displaying_init_x;
                 for (auto i = padding.find(it->first - signature); i != padding.find(it->first); i++) {
-                    auto second_distance = get_distance(next(i)->first - i->first, i->second);
+                    second_distance = get_distance(next(i)->first - i->first, i->second);
                     global_locations[i->first].second = second_distance;
                     offset += second_distance[0];
                     global_locations[i->first].first = offset;
@@ -284,17 +173,35 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
             }
         }
 
-        if (it != prev(padding.end())) {
-            auto distance = get_distance(next(it)->first - it->first, it->second);
-            global_locations[it->first].second = distance;
-            offset += distance[0];
-            global_locations[it->first].first = offset;
-            offset += distance[1];
+        if (it == prev(padding.end())) {
+            distance = get_distance(padding_end + signature - it->first, it->second);
+        } else {
+            distance = get_distance(next(it)->first - it->first, it->second);
+        }
+        global_locations[it->first].second = distance;
+        offset += distance[0];
+        global_locations[it->first].first = offset;
+        offset += distance[1];
+    }
+
+    if (offset > DisplayConstants::displaying_max_x) {
+        // Move this bar and the next to another line.
+        bars_split.push_back((int) static_cast<double>(padding_end / signature));
+        offset = DisplayConstants::displaying_init_x;
+        for (auto i = padding.find(padding_end); i != padding.end(); i++) {
+            if (i == prev(padding.end())) {
+                second_distance = get_distance(padding_end + signature - i->first, i->second);
+            } else {
+                second_distance = get_distance(next(i)->first - i->first, i->second);
+            }
+            global_locations[i->first].second = second_distance;
+            offset += second_distance[0];
+            global_locations[i->first].first = offset;
+            offset += second_distance[1];
         }
     }
-    global_locations[prev(padding.end())->first].first = offset;
-    global_locations[prev(padding.end())->first].second = {0, 0};
 
+    global_locations[padding_end + signature] = {offset, {0, 0}};
     // todo: make sure no duplicate padding.
     for (const auto &it : global_locations) {
         cout << it.first << ": " << it.second.first << " " << it.second.second[0] << " " << it.second.second[1] << endl;

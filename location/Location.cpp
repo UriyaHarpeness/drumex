@@ -144,7 +144,6 @@ Voice location::location_to_notation(Locations &locations, Instrument rests_loca
         prev_note = location;
 
         for (auto &note : group) {
-            cout << next(location)->first - location->first << endl;
             note.reset_length((next(location)->first - location->first) * ratio);
         }
 

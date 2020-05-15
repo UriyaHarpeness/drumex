@@ -17,8 +17,6 @@
 using namespace std;
 
 namespace NotationDisplayUtils {
-    int calc_needed_space(const Paddings &distances, const Fraction &offset, const Fraction &length);
-
     void get_display_scope(const VoiceContainer &up, const VoiceContainer &down,
                            const Fraction &current_location, DisplayVariables &display_variables);
 
@@ -27,9 +25,6 @@ namespace NotationDisplayUtils {
      */
     void display_notation(const VoiceContainer &up, const VoiceContainer &down, const Fraction &current_location,
                           DisplayVariables &display_variables);
-
-    pair<pair<int, int>, Padding> get_note_location(const GroupedNotations &notation, const Paddings &distances,
-                                                    const Fraction &bar, const Fraction &location);
 
     void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, DisplayVariables &display_variables);
 

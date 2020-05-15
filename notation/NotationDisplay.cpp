@@ -51,8 +51,6 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
     int line, tail_length, distance, last_distance = 0;
     Fraction length_end;
     for (const auto &group : notations) {
-        //for (distance = 0, length_end = offset + group[0].get_length(); position->first <= length_end; distance += (
-        //        position->second[1] + (position + 1)->second[0]), position++);
         for (const auto &note : group) {
             line = note.get_line();
             tail_length = line_relation + (line - min_height);

@@ -36,15 +36,9 @@ Part::Part(const string &path, int index) {
         throw runtime_error("Unknown Part Type");
     }
 
-    /*
-     return move(location::location_to_notation(merged_location));
-     return move(merge_voices(voices));
-     */
-
     // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in
     // one voice may be easier to modify, but first regenerate the correct spacing of stuff.
     // this needs to happen on the Exercise part since he modifies the pure notation.
-    // m_notation = NotationUtils::generate_notation(voice, m_signature);
 
     location::optimize_location(m_location);
     m_length = prev(m_location.end())->first;
@@ -144,8 +138,6 @@ Locations Part::voices_to_location(const Notations &notations) {
 }
 
 Part Part::merge_parts(vector<Part> parts) {
-    Notations notation;
-    Voice voice;
     vector<Locations> locations;
     vector<Fraction> lengths;
     Fraction length;
@@ -162,8 +154,6 @@ Part Part::merge_parts(vector<Part> parts) {
     }
 
     Locations merged_locations = location::merge_locations(locations);
-
-    // notation = NotationUtils::generate_notation(voice, parts[0].get_signature());
 
     // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
     // todo: solve this in some better way.
