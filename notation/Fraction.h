@@ -75,3 +75,5 @@ protected:
 
     pair<int, int> m_value;
 };
+
+const Fraction OneRatio(1);

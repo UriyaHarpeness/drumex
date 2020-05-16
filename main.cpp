@@ -117,7 +117,6 @@ int main(int argv, char *argc[]) {
     return 0;
 
     /*
-
     vector<vector<Notation>> stuff = {
             {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
             {{BasePlay, HiHatInst,   {1, 8},  {}}},
@@ -147,18 +146,11 @@ int main(int argv, char *argc[]) {
             {{BaseRest, UnboundUp,   {1, 16}, {}}},
             {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
     };
-
-    TimeSignature sig = {4, 4};
+     */
 
     // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
     // between them.
 
-    vector<vector<vector<Notation>>> notation = Notation::generate_notation(stuff, sig);
-
     // sudo apt-get install gcc g++ cmake libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
     // libasound2-dev possibly, if will use sound.
-
-    gamelogic(notation, sig);*/
-
-    return 0;
 }

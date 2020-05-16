@@ -7,7 +7,7 @@ using namespace std;
 
 class BarContainer {
 public:
-    BarContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location,
+    BarContainer(const Locations &locations, const TimeSignature &signature, NotesDirection direction,
                  const Fraction &offset);
 
     void prepare_padding(Paddings &padding) const;

@@ -49,8 +49,8 @@ void Part::notationize() {
     location::optimize_location(location_voices[0]);
     location::optimize_location(location_voices[1]);
 
-    m_up = VoiceContainer(location_voices[0], m_signature, UnboundUp);
-    m_down = VoiceContainer(location_voices[1], m_signature, UnboundDown);
+    m_up = VoiceContainer(location_voices[0], m_signature, NotesUp);
+    m_down = VoiceContainer(location_voices[1], m_signature, NotesDown);
 }
 
 Notation Part::json_to_note(const Json::Value &note_json) {

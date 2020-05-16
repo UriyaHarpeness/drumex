@@ -92,5 +92,3 @@ enum Modifier {
     ModRight,
     ModLeft,
 };
-
-// typedef pair<uint8_t, uint8_t> TimeSignature;

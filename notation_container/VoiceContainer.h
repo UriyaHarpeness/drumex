@@ -7,9 +7,9 @@ using namespace std;
 
 class VoiceContainer {
 public:
-    VoiceContainer() {};
+    VoiceContainer() = default;
 
-    VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location);
+    VoiceContainer(const Locations &locations, const TimeSignature &signature, NotesDirection direction);
 
     void prepare_padding(Paddings &padding) const;
 
@@ -25,6 +25,8 @@ private:
     vector<BarContainer> m_bars;
 
     TimeSignature m_signature;
+
+    NotesDirection m_direction;
 };
 
 

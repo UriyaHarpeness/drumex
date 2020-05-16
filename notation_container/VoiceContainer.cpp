@@ -1,17 +1,17 @@
 #include "VoiceContainer.h"
 
-VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &signature, Instrument rests_location)
-        : m_signature(signature) {
+VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &signature, NotesDirection direction)
+        : m_signature(signature), m_direction(direction) {
     Locations bar;
     Fraction next = signature;
 
     for (const auto &it : locations) {
         if (it.first >= next) {
-            m_bars.emplace_back(move(bar), signature, rests_location, next - signature);
+            m_bars.emplace_back(move(bar), signature, direction, next - signature);
             bar.clear();
             next += signature;
             while (next <= it.first) {
-                m_bars.push_back({{}, signature, rests_location, next - signature});
+                m_bars.push_back({{}, signature, direction, next - signature});
                 next += signature;
             }
         }
@@ -31,6 +31,9 @@ void VoiceContainer::display(const DisplayVariables &display_variables) const {
             current_y += DisplayConstants::staff_lines_spacing;
         }
         m_bars[bar_index].display(display_variables.global_locations, current_y);
+        auto last_bar_note = prev(display_variables.global_locations.find(Fraction(bar_index + 1) * m_signature));
+        Notation::m_display->draw_text(SymBarLine, last_bar_note->second.first + last_bar_note->second.second[1],
+                                       current_y);
     }
 }
 

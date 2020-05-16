@@ -2,9 +2,9 @@
 
 set<int> RhythmContainer::primes;
 
-RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
+RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature &scope, NotesDirection direction,
                                  const Fraction &offset, const Fraction &ratio) :
-        m_locations(locations), m_offset(offset), m_ratio(ratio), m_length(scope * ratio) {
+        m_locations(locations), m_offset(offset), m_ratio(ratio), m_length(scope * ratio), m_direction(direction) {
     /**
      * There is only one main rhythm.
      * The prioritized is the normal meter, that matches the time signature, a division of 2 probably.
@@ -45,26 +45,14 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     // Split rhythm further.
     if (!same_rhythm) {
         for (const auto &location : m_locations) {
-            // Just a sample for now.
-
-            // todo: need to fill the missing beats, the loop may leave beats without notes and processing.
-            if (location.first >= next_beat) {
-                m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {4, 4}, rests_location,
+            while (next_beat <= location.first) {
+                m_rhythms_containers.emplace_back(move(rhythm_location), CommonTime, direction,
                                                   offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
                 rhythm_location.clear();
                 if (next_beat == scope) {
                     break;
                 }
                 next_beat += m_beat;
-                while (next_beat <= location.first) {
-                    m_rhythms_containers.emplace_back(move(rhythm_location), (TimeSignature) {4, 4}, rests_location,
-                                                      offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
-                    rhythm_location.clear();
-                    if (next_beat == scope) {
-                        break;
-                    }
-                    next_beat += m_beat;
-                }
             }
 
             // The location is relative to the offset and the beat, need to think how this will be represented.
@@ -80,19 +68,6 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
 
     // RhythmContainer uses either locations - which means it in the lowest level and holds real notations, or it
     // contains a vector of RhythmContainers - which means it's just holding a polyrhythm.
-
-    /*
-     * 1---2---3---4---5---6---7---
-     * 0------0------0------0------
-     * 0--0--0--0--
-     * 0---0---0---
-     *
-     * 3 1----2----3----
-     * 5 1--2--3--4--5--
-     *
-     * 5 0-------0-------0-------0-------0-------
-     * 4 0----0----0----0----0----0----0----0----
-     */
 
     cout << "===================== ending rhythm container =====================" << endl;
 }
@@ -118,9 +93,11 @@ void RhythmContainer::optimize() {
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.optimize(); });
 }
 
-void RhythmContainer::notationize(Instrument rests_location) {
+void RhythmContainer::notationize() {
     // What is the meaning of time signature at this point?
     if (m_rhythms_containers.empty()) {
+        Instrument rests_location = (m_direction == NotesUp) ? UnboundUp : UnboundDown;
+
         // Locations does not contain rests at this point.
         m_notations = location::location_to_notation(m_locations, rests_location, m_ratio);
 
@@ -129,8 +106,7 @@ void RhythmContainer::notationize(Instrument rests_location) {
                                                                                                  m_most_occurring_rhythm);
         return;
     }
-    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
-             [rests_location](RhythmContainer &n) { n.notationize(rests_location); });
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.notationize(); });
 }
 
 void RhythmContainer::beam() {
@@ -144,7 +120,7 @@ void RhythmContainer::beam() {
      */
     if (m_rhythms_containers.empty()) {
         Fraction beam_limit, offset;
-        if (m_ratio == Fraction(1, 1)) {
+        if (m_ratio == OneRatio) {
             beam_limit = m_beat;
         } else {
             beam_limit = m_length;
@@ -364,10 +340,6 @@ pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &loca
 
 Fraction RhythmContainer::get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
                                                               const Fraction &ratio) {
-    return (((ratio == Fraction(1, 1)) && (most_occurring_rhythm == 2)) ? signature.get_beat() :
+    return (((ratio == OneRatio) && (most_occurring_rhythm == 2)) ? signature.get_beat() :
             ratio / ((most_occurring_rhythm == 2) ? 4 : most_occurring_rhythm));
-}
-
-bool RhythmContainer::is_power_of_2(double value) {
-    return (log2(value) == int(log2(value)));
 }

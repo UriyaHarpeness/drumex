@@ -12,3 +12,5 @@ public:
 
     [[nodiscard]] Fraction get_beat() const;
 };
+
+const TimeSignature CommonTime(4, 4);

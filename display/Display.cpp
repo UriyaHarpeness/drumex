@@ -3,9 +3,9 @@
 Display::Display() {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
+    IMG_Init(IMG_INIT_PNG);
     m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                DisplayConstants::window_width,
-                                DisplayConstants::window_height, SDL_WINDOW_SHOWN);
+                                DisplayConstants::window_width, DisplayConstants::window_height, SDL_WINDOW_SHOWN);
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
 
@@ -19,6 +19,7 @@ Display::~Display() {
     SDL_DestroyWindow(m_window);
     TTF_CloseFont(m_music_font);
     TTF_CloseFont(m_text_font);
+    IMG_Quit();
     TTF_Quit();
     SDL_Quit();
 }
@@ -110,13 +111,15 @@ void Display::draw_base(int x, int y, uint8_t a, uint8_t b) {
 }
 
 void Display::draw_image(const string &path, int x, int y, int h, int w) {
-    SDL_Texture *img = IMG_LoadTexture(m_renderer, path.c_str());
+    SDL_Texture *texture = IMG_LoadTexture(m_renderer, path.c_str());
     //SDL_QueryTexture(img, nullptr, nullptr, &w, &h); // get the width and height of the texture
     // put the location where we want the texture to be drawn into a rectangle
     // I'm also scaling the texture 2x simply by setting the width and height
     SDL_Rect texr = {x, y, w, h};
 
-    SDL_RenderCopy(m_renderer, img, nullptr, &texr);
+    SDL_RenderCopy(m_renderer, texture, nullptr, &texr);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::present() {

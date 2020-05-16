@@ -9,21 +9,25 @@
 
 using namespace std;
 
+enum NotesDirection {
+    NotesUp,
+    NotesDown
+};
+
 class RhythmContainer {
 public:
-    RhythmContainer(const Locations &locations, const TimeSignature &scope, Instrument rests_location,
+    RhythmContainer(const Locations &locations, const TimeSignature &scope, NotesDirection direction,
                     const Fraction &offset, const Fraction &ratio);
 
     void optimize();
 
-    void notationize(Instrument rests_location);
+    void notationize();
 
     void beam();
 
     void prepare_padding(Paddings &padding, int start_padding = 20, int end_padding = 20) const;
 
-    void
-    display(const GlobalLocations &global_locations, const int y, int start_padding = 20, int end_padding = 20) const;
+    void display(const GlobalLocations &global_locations, int y, int start_padding = 20, int end_padding = 20) const;
 
     void extend(const RhythmContainer &container);
 
@@ -36,8 +40,6 @@ public:
     static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
                                                         const Fraction &ratio);
 
-
-    static bool is_power_of_2(double value);
 
     [[nodiscard]] inline vector<RhythmContainer> &get_mutable_rhythms() { return m_rhythms_containers; };
 
@@ -67,4 +69,6 @@ private:
     Voice m_notations;
 
     BeamedVoice m_beamed_notations;
+
+    NotesDirection m_direction;
 };
