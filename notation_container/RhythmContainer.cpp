@@ -94,7 +94,6 @@ void RhythmContainer::optimize() {
 }
 
 void RhythmContainer::notationize() {
-    // What is the meaning of time signature at this point?
     if (m_rhythms_containers.empty()) {
         Instrument rests_location = (m_direction == NotesUp) ? UnboundUp : UnboundDown;
 
@@ -119,6 +118,7 @@ void RhythmContainer::beam() {
      *    2. When under a polyrhythm, all notes can beamed together, no matter the total length.
      */
     if (m_rhythms_containers.empty()) {
+        // todo: optimize / shorten this function.
         Fraction beam_limit, offset;
         if (m_ratio == OneRatio) {
             beam_limit = m_beat;
@@ -173,7 +173,7 @@ void RhythmContainer::beam() {
             }
         }
 
-        cout << m_notations.size() << " - " << m_beamed_notations.size() << endl;
+        cout << "raw: " << m_notations.size() << ", beamed: " << m_beamed_notations.size() << endl;
 
         return;
     }
@@ -190,7 +190,7 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
         }
         // todo: see what is the correct spacing.
         // todo: handle this 20 + 10 - 10 stuff more correctly.
-        if (m_most_occurring_rhythm == 2) {
+        if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
             start_padding -= 10;
             end_padding -= 10;
         }
@@ -212,7 +212,7 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
                               int end_padding) const {
     if (m_rhythms_containers.empty()) {
         // todo: see what is the correct spacing.
-        if (m_most_occurring_rhythm == 2) {
+        if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
             start_padding -= 10;
             end_padding -= 10;
         }
@@ -221,10 +221,23 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
     auto start_location = global_locations.at(m_offset);
     auto end_location = prev(global_locations.find(m_offset + m_length))->second;
 
-    Notation::m_display->draw_rect(start_location.first - start_location.second[0] + start_padding - 6, y, 10, 2, 0,
-                                   255, 0, 255);
-    Notation::m_display->draw_rect(end_location.first + end_location.second[1] - end_padding + 4, y, 10, 2, 255, 0, 0,
-                                   255);
+    if ((m_ratio != OneRatio) || (m_most_occurring_rhythm != 2)) {
+        int start_x = start_location.first - start_location.second[0] + start_padding - 5;
+        int end_x = end_location.first + end_location.second[1] - end_padding + 5;
+        if (m_direction == NotesUp) {
+            int relative_y =
+                    (DisplayConstants::staff_to_0 * 2) + (DisplayConstants::line_height * (m_min_used_line - 4));
+            Notation::m_display->draw_rect(start_x, y + relative_y, 30, 2, 0, 255, 0, 255);
+            Notation::m_display->draw_rect(end_x, y + relative_y, 30, 2, 255, 0, 0, 255);
+            Notation::m_display->draw_rect(start_x, y + relative_y, 2, end_x - start_x, 0, 0, 255, 255);
+        } else {
+            int relative_y =
+                    (DisplayConstants::staff_to_0 * 2) + (DisplayConstants::line_height * (m_max_used_line + 4));
+            Notation::m_display->draw_rect(start_x, y + relative_y - 30, 30, 2, 0, 255, 0, 255);
+            Notation::m_display->draw_rect(end_x, y + relative_y - 30, 30, 2, 255, 0, 0, 255);
+            Notation::m_display->draw_rect(start_x, y + relative_y - 2, 2, end_x - start_x, 0, 0, 255, 255);
+        }
+    }
 
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
@@ -259,6 +272,59 @@ void RhythmContainer::extend(const RhythmContainer &container) {
                                 container.m_rhythms_containers.end());
 }
 
+void RhythmContainer::init_display_scope() {
+    if (m_rhythms_containers.empty()) {
+        int max_line = m_beamed_notations[0][0][0].get_line(), min_line = m_beamed_notations[0][0][0].get_line();
+        int flag_length, beams, max_beams = 0;
+
+        for (const auto &notations : m_beamed_notations) {
+            for (const auto &group : notations) {
+                for (const auto &note : group) {
+                    if (m_direction == NotesUp) {
+                        assert(note.get_line() < DisplayConstants::direction_line);
+                    } else {
+                        assert(note.get_line() >= DisplayConstants::direction_line);
+                    }
+
+                    min_line = min(min_line, note.get_line());
+                    max_line = max(max_line, note.get_line());
+
+                    beams = -2 - static_cast<int>(note.get_simple_length());
+                    max_beams = max(max_beams, beams);
+                }
+            }
+        }
+
+        flag_length = max(abs(abs(max_line - min_line) + max_beams) + DisplayConstants::min_flag_length,
+                          DisplayConstants::default_flag_length);
+
+        if (m_direction == NotesUp) {
+            m_min_used_line = min_line - flag_length;
+            m_max_used_line = max_line;
+        } else {
+            m_min_used_line = min_line;
+            m_max_used_line = max_line + flag_length;
+        };
+    } else {
+        for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
+                 [](RhythmContainer &n) { n.init_display_scope(); });
+
+        m_max_used_line = m_rhythms_containers[0].get_max_used_line();
+        m_min_used_line = m_rhythms_containers[0].get_min_used_line();
+        for (const auto &rhythms_container : m_rhythms_containers) {
+            if (m_direction == NotesUp) {
+                m_max_used_line = max(m_max_used_line, m_rhythms_containers[0].get_max_used_line());
+                m_min_used_line = min(m_min_used_line, m_rhythms_containers[0].get_min_used_line() - 4);
+            } else {
+                m_max_used_line = max(m_max_used_line, m_rhythms_containers[0].get_max_used_line() + 4);
+                m_min_used_line = min(m_min_used_line, m_rhythms_containers[0].get_min_used_line());
+            }
+        }
+    }
+
+    cout << "display scope: " << m_min_used_line << " - " << m_max_used_line << endl;
+}
+
 void RhythmContainer::find_primes() {
     if (!primes.empty()) {
         return;
@@ -283,7 +349,6 @@ set<int> RhythmContainer::get_prime_factors(int value) {
     set<int> primes_factors;
     auto primes_it = primes.begin();
 
-    // what to do with 1? like 0/1 or 1/1?
     while (value > 1) {
         if (value % *primes_it == 0) {
             primes_factors.insert(*primes_it);

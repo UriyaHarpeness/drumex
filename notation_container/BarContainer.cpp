@@ -6,6 +6,7 @@ BarContainer::BarContainer(const Locations &locations, const TimeSignature &sign
     m_rhythm_container.optimize();
     m_rhythm_container.notationize();
     m_rhythm_container.beam();
+    m_rhythm_container.init_display_scope();
 }
 
 void BarContainer::prepare_padding(Paddings &padding) const {

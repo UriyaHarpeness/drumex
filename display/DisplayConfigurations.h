@@ -28,17 +28,23 @@ namespace DisplayConstants {
 
     const int displaying_init_y = 100;
 
-    const int staff_lines_spacing = 120;
+    // todo: change spacing dynamically.
+    const int staff_lines_spacing = 180;
 
-    const int max_lines_displayed = 4;
+    const int max_lines_displayed = 3;
 
     const Fraction minimal_supported_fraction = {1, 16};
 
     const int minimal_distance = 14;
 
+    // todo: this isn't correct, it's supposed to be `4 * line_height`.
     const int staff_to_0 = 2 * line_height;
 
     const int direction_line = 2;
+
+    const int default_flag_length = 7;
+
+    const int min_flag_length = 3;
 }
 
 typedef struct DisplayVariables_s {

@@ -24,16 +24,19 @@ void VoiceContainer::prepare_padding(Paddings &padding) const {
 }
 
 void VoiceContainer::display(const DisplayVariables &display_variables) const {
-    int current_y = DisplayConstants::displaying_init_y;
+    int line = display_variables.start_line % DisplayConstants::max_lines_displayed;
     for (int bar_index = display_variables.start_bar; bar_index < display_variables.end_bar; bar_index++) {
-        if (find(display_variables.bars_split.begin(), display_variables.bars_split.end(), bar_index) !=
-            display_variables.bars_split.end()) {
-            current_y += DisplayConstants::staff_lines_spacing;
+        if ((bar_index != display_variables.start_bar) &&
+            (find(display_variables.bars_split.begin(), display_variables.bars_split.end(), bar_index) !=
+             display_variables.bars_split.end())) {
+            line = (line + 1) % DisplayConstants::max_lines_displayed;
         }
-        m_bars[bar_index].display(display_variables.global_locations, current_y);
+        m_bars[bar_index].display(display_variables.global_locations,
+                                  DisplayConstants::displaying_init_y + (DisplayConstants::staff_lines_spacing * line));
         auto last_bar_note = prev(display_variables.global_locations.find(Fraction(bar_index + 1) * m_signature));
         Notation::m_display->draw_text(SymBarLine, last_bar_note->second.first + last_bar_note->second.second[1],
-                                       current_y);
+                                       DisplayConstants::displaying_init_y +
+                                       (DisplayConstants::staff_lines_spacing * line));
     }
 }
 

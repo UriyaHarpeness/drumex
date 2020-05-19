@@ -31,6 +31,8 @@ public:
 
     void extend(const RhythmContainer &container);
 
+    void init_display_scope();
+
     static void find_primes();
 
     static set<int> get_prime_factors(int value);
@@ -40,7 +42,6 @@ public:
     static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
                                                         const Fraction &ratio);
 
-
     [[nodiscard]] inline vector<RhythmContainer> &get_mutable_rhythms() { return m_rhythms_containers; };
 
     [[nodiscard]] inline const Voice &get_notations() const { return m_notations; };
@@ -48,6 +49,10 @@ public:
     [[nodiscard]] inline const BeamedVoice &get_beamed_notations() const { return m_beamed_notations; };
 
     [[nodiscard]] inline const Fraction &get_offset() const { return m_offset; };
+
+    [[nodiscard]] inline const int &get_max_used_line() const { return m_max_used_line; };
+
+    [[nodiscard]] inline const int &get_min_used_line() const { return m_min_used_line; };
 
     static set<int> primes;
 
@@ -71,4 +76,8 @@ private:
     BeamedVoice m_beamed_notations;
 
     NotesDirection m_direction;
+
+    int m_max_used_line;
+
+    int m_min_used_line;
 };

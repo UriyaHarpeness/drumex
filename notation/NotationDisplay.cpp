@@ -46,14 +46,12 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
 
     int line_relation = max(abs(max_height - DisplayConstants::direction_line - max_beams) -
                             abs(min_height - DisplayConstants::direction_line), 4) + 3;
-    // minimum 1.5 real line difference (1 line from the head end)
+    // Minimum 1.5 real line difference (1 line from the head end).
 
-    int line, tail_length, distance, last_distance = 0;
-    Fraction length_end;
+    int tail_length, distance, last_distance = 0;
     for (const auto &group : notations) {
         for (const auto &note : group) {
-            line = note.get_line();
-            tail_length = line_relation + (line - min_height);
+            tail_length = line_relation + (note.get_line() - min_height);
             note.display(global_locations.at(offset).first, staff_y, false, tail_length);
             if (note.get_playing() != BaseRest) {
                 // Rests in beams keep the previous note beams number.
@@ -66,6 +64,7 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
                                     tail_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
                     distance = next(global_locations.find(offset))->second.first - global_locations.at(offset).first;
+                    // Last beam can be broken if notes have different lengths.
                     if (group[0].get_rounded_length() > DisplayConstants::minimal_supported_fraction) {
                         last_distance = DisplayConstants::minimal_distance;
                     } else {
@@ -74,8 +73,6 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
                     draw_connectors(global_locations.at(offset).first, staff_y, group[0].get_line(),
                                     distance - last_distance, beams, tail_length);
                 } else if (&group == &(notations[notations.size() - 1])) {
-                    // beam note size, or half if must smaller...
-                    distance = global_locations.at(offset).first - prev(global_locations.find(offset))->second.first;
                     draw_connectors(global_locations.at(offset).first - last_distance, staff_y, group[0].get_line(),
                                     last_distance, beams, tail_length);
                 }

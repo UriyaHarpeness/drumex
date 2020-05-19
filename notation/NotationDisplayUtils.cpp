@@ -12,8 +12,8 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
     display_variables.start_line = min(display_variables.current_line, ((int) display_variables.bars_split.size() <
                                                                         DisplayConstants::max_lines_displayed) ? 0 :
                                                                        (int) display_variables.bars_split.size() -
-                                                                       DisplayConstants::max_lines_displayed);
-    display_variables.end_line = min(display_variables.start_line + DisplayConstants::max_lines_displayed,
+                                                                       DisplayConstants::max_lines_displayed + 1);
+    display_variables.end_line = min(display_variables.start_line + DisplayConstants::max_lines_displayed - 1,
                                      (int) display_variables.bars_split.size());
     cout << "current: " << display_variables.current_line << ", start: " << display_variables.start_line << ", end: "
          << display_variables.end_line << endl;
@@ -24,12 +24,6 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
                                        ? display_variables.bars_split[display_variables.end_line]
                                        : up.get_bars().size());
     cout << "start bar: " << display_variables.start_bar << ", end bar: " << display_variables.end_bar << endl;
-
-    for (int i = display_variables.start_line; i <= display_variables.end_line; i++) {
-        Notation::m_display->draw_base(20, DisplayConstants::displaying_init_y +
-                                           (i * DisplayConstants::staff_lines_spacing),
-                                       up.get_signature().get_value().first, up.get_signature().get_value().second);
-    }
 }
 
 void NotationDisplayUtils::display_notation(const VoiceContainer &up, const VoiceContainer &down,
@@ -102,7 +96,8 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
         pair<pair<int, int>, Padding> note_location = {
                 {display_variables.global_locations.at(*m.get_current_location()).first,
                  DisplayConstants::displaying_init_y +
-                 (display_variables.current_line * DisplayConstants::staff_lines_spacing)},
+                 ((display_variables.current_line % DisplayConstants::max_lines_displayed) *
+                  DisplayConstants::staff_lines_spacing)},
                 display_variables.global_locations.at(*m.get_current_location()).second};
 
         Notation::m_display->clear_screen();
@@ -115,7 +110,8 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
 
         for (int i = display_variables.start_line; i <= display_variables.end_line; i++) {
             Notation::m_display->draw_base(20, DisplayConstants::displaying_init_y +
-                                               (i * DisplayConstants::staff_lines_spacing),
+                                               ((i % DisplayConstants::max_lines_displayed) *
+                                                DisplayConstants::staff_lines_spacing),
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
