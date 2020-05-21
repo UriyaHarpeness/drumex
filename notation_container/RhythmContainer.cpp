@@ -243,7 +243,7 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
         Fraction offset = m_offset;
         for (const auto &it : m_beamed_notations) {
             if (it.size() == 1) {
-                NotationDisplay::draw_individual_notes(y, global_locations, offset, it[0]);
+                NotationDisplay::draw_individual_notes(y, global_locations, offset, it);
             } else {
                 NotationDisplay::draw_connected_notes(y, global_locations, offset, it);
             }
@@ -273,51 +273,33 @@ void RhythmContainer::extend(const RhythmContainer &container) {
 }
 
 void RhythmContainer::init_display_scope() {
+    m_min_used_line = DisplayConstants::direction_line;
+    m_max_used_line = DisplayConstants::direction_line;
+
     if (m_rhythms_containers.empty()) {
-        int max_line = m_beamed_notations[0][0][0].get_line(), min_line = m_beamed_notations[0][0][0].get_line();
-        int flag_length, beams, max_beams = 0;
-
         for (const auto &notations : m_beamed_notations) {
-            for (const auto &group : notations) {
-                for (const auto &note : group) {
-                    if (m_direction == NotesUp) {
-                        assert(note.get_line() < DisplayConstants::direction_line);
-                    } else {
-                        assert(note.get_line() >= DisplayConstants::direction_line);
-                    }
-
-                    min_line = min(min_line, note.get_line());
-                    max_line = max(max_line, note.get_line());
-
-                    beams = -2 - static_cast<int>(note.get_simple_length());
-                    max_beams = max(max_beams, beams);
-                }
+            array<int, 2> display_scope = NotationDisplay::get_display_scope(notations);
+            if (m_direction == NotesUp) {
+                assert(display_scope[0] <= DisplayConstants::direction_line);
+                assert(display_scope[1] <= DisplayConstants::direction_line);
+            } else {
+                assert(display_scope[0] > DisplayConstants::direction_line);
+                assert(display_scope[1] > DisplayConstants::direction_line);
             }
+            m_min_used_line = min(m_min_used_line, display_scope[0]);
+            m_max_used_line = max(m_max_used_line, display_scope[1]);
         }
-
-        flag_length = max(abs(abs(max_line - min_line) + max_beams) + DisplayConstants::min_flag_length,
-                          DisplayConstants::default_flag_length);
-
-        if (m_direction == NotesUp) {
-            m_min_used_line = min_line - flag_length;
-            m_max_used_line = max_line;
-        } else {
-            m_min_used_line = min_line;
-            m_max_used_line = max_line + flag_length;
-        };
     } else {
         for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
                  [](RhythmContainer &n) { n.init_display_scope(); });
 
-        m_max_used_line = m_rhythms_containers[0].get_max_used_line();
-        m_min_used_line = m_rhythms_containers[0].get_min_used_line();
         for (const auto &rhythms_container : m_rhythms_containers) {
             if (m_direction == NotesUp) {
-                m_max_used_line = max(m_max_used_line, m_rhythms_containers[0].get_max_used_line());
-                m_min_used_line = min(m_min_used_line, m_rhythms_containers[0].get_min_used_line() - 4);
+                m_max_used_line = max(m_max_used_line, rhythms_container.get_max_used_line());
+                m_min_used_line = min(m_min_used_line, rhythms_container.get_min_used_line() - 4);
             } else {
-                m_max_used_line = max(m_max_used_line, m_rhythms_containers[0].get_max_used_line() + 4);
-                m_min_used_line = min(m_min_used_line, m_rhythms_containers[0].get_min_used_line());
+                m_max_used_line = max(m_max_used_line, rhythms_container.get_max_used_line() + 4);
+                m_min_used_line = min(m_min_used_line, rhythms_container.get_min_used_line());
             }
         }
     }

@@ -179,23 +179,10 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_ledgers(int x, int staff_y) const {
-    if (m_line <= 0) {
-        if (m_line <= -6) {
+    for (const auto &it : DisplayConstants::ledger_lines) {
+        if (!((m_line > 0) ^ (it > 0)) && (abs(m_line) >= abs(it))) {
             m_display->draw_text(SymLedger, x,
-                                 staff_y + 1 + (-6 * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
-            if (m_line <= -8) {
-                m_display->draw_text(SymLedger, x,
-                                     staff_y + 1 + (-8 * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
-            }
-        }
-    } else {
-        if (m_line >= 6) {
-            m_display->draw_text(SymLedger, x,
-                                 staff_y + 1 + (6 * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
-            if (m_line >= 8) {
-                m_display->draw_text(SymLedger, x,
-                                     staff_y + 1 + (8 * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
-            }
+                                 staff_y + 1 + (it * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
         }
     }
 }
@@ -210,7 +197,6 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_ledgers(x, staff_y);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
         if (flags) {
-            tail_length = max(tail_length, (((-static_cast<int>(m_length)) - 2) * 2) + 3);
             draw_flags(x, staff_y, tail_length);
         }
         draw_tail(x, staff_y, tail_length);

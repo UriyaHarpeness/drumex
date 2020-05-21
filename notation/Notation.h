@@ -44,17 +44,17 @@ public:
 
     void initialize_with_length();
 
-    void draw_modifiers(int x, int staff_y, int tail_length = 7) const;
+    void draw_modifiers(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
 
-    void draw_flags(int x, int staff_y, int tail_length = 7) const;
+    void draw_flags(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
 
-    void draw_tail(int x, int staff_y, int tail_length = 7) const;
+    void draw_tail(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
 
     void draw_ledgers(int x, int staff_y) const;
 
     void draw_head(int x, int staff_y) const;
 
-    void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
+    void display(int x, int staff_y, bool flags = true, int tail_length = DisplayConstants::default_stem_length) const;
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 

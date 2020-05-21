@@ -20,8 +20,6 @@ namespace DisplayConstants {
     const int line_height = 5;
 
     // todo: maybe extract all of these configurations somewhere, and avoid passing to external functions.
-    const int connector_height = 7;
-
     const int displaying_init_x = 80;
 
     const int displaying_max_x = window_width - 80;
@@ -42,9 +40,14 @@ namespace DisplayConstants {
 
     const int direction_line = 2;
 
-    const int default_flag_length = 7;
+    const int default_stem_length = 7;
 
-    const int min_flag_length = 3;
+    const int min_stem_length = 3;
+
+    const int connector_height = 7;
+
+    // Ledger lines settings.
+    const array<int, 4> ledger_lines = {-8, -6, 6, 8};
 }
 
 typedef struct DisplayVariables_s {
