@@ -8,6 +8,10 @@ add_executable(drumex main.cpp
         display/Display.h
         display/DisplayConfigurations.h
         Enums.h
+        location/Location.cpp
+        location/Location.h
+        logging/Logger.cpp
+        logging/Logger.h
         metronome/Metronome.cpp
         metronome/Metronome.h
         notation/Fraction.cpp
@@ -34,9 +38,7 @@ add_executable(drumex main.cpp
         time_signature/TimeSignature.h
         Translations.h
         variations/Variations.cpp
-        variations/Variations.h
-        location/Location.cpp
-        location/Location.h)
+        variations/Variations.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

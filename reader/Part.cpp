@@ -17,7 +17,7 @@ Part::Part(const string &path, int index) {
     reader.parse(f, obj);
     f.close();
 
-    cout << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
+    Log(INFO).Get() << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value part = obj["Parts"][index];
 
     if (part.isNull()) {

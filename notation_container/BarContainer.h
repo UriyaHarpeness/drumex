@@ -10,7 +10,9 @@ public:
     BarContainer(const Locations &locations, const TimeSignature &signature, NotesDirection direction,
                  const Fraction &offset);
 
-    void prepare_padding(Paddings &padding) const;
+    void prepare_empty_padding(Paddings &padding) const;
+
+    void fill_padding(Paddings &padding) const;
 
     void display(const GlobalLocations &global_locations, const int y) const;
 

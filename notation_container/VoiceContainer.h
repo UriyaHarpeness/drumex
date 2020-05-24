@@ -11,7 +11,9 @@ public:
 
     VoiceContainer(const Locations &locations, const TimeSignature &signature, NotesDirection direction);
 
-    void prepare_padding(Paddings &padding) const;
+    void prepare_empty_padding(Paddings &padding) const;
+
+    void fill_padding(Paddings &padding) const;
 
     void display(const DisplayVariables &display_variables) const;
 

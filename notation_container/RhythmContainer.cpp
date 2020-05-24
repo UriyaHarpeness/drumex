@@ -21,7 +21,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
      * 5.   * Maybe join separate parts with the same rhythm with only the basic rhythm between them.
      */
 
-    cout << "-------------------- starting rhythm container --------------------" << endl;
+    Log(DEBUG).Get() << "-------------------- starting rhythm container --------------------" << endl;
 
     auto most_occurring = get_most_occurring_rhythm(locations);
     m_most_occurring_rhythm = most_occurring.first;
@@ -35,8 +35,8 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     }
     m_locations.insert({scope, {}});
 
-    cout << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", beat: " << m_beat << ", same: "
-         << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio << endl;
+    Log(DEBUG).Get() << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", beat: " << m_beat << ", same: "
+                     << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio << endl;
 
     // Now split according to the most occurring rhythm.
     Fraction next_beat = m_beat;
@@ -60,16 +60,10 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
         }
     }
 
-    // todo: next step is joining the same rhythm containers, and after that - re-evaluate the notes with the new locations.
-    if (m_rhythms_containers.empty()) {
-        cout << "===================== ending rhythm container =====================" << endl;
-        return;
-    }
-
     // RhythmContainer uses either locations - which means it in the lowest level and holds real notations, or it
     // contains a vector of RhythmContainers - which means it's just holding a polyrhythm.
 
-    cout << "===================== ending rhythm container =====================" << endl;
+    Log(DEBUG).Get() << "===================== ending rhythm container =====================" << endl;
 }
 
 void RhythmContainer::optimize() {
@@ -173,14 +167,28 @@ void RhythmContainer::beam() {
             }
         }
 
-        cout << "raw: " << m_notations.size() << ", beamed: " << m_beamed_notations.size() << endl;
+        Log(DEBUG).Get() << "raw: " << m_notations.size() << ", beamed: " << m_beamed_notations.size() << endl;
 
         return;
     }
     for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(), [](RhythmContainer &n) { n.beam(); });
 }
 
-void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int end_padding) const {
+void RhythmContainer::prepare_empty_padding(Paddings &padding) const {
+    if (m_rhythms_containers.empty()) {
+        Fraction offset = m_offset;
+
+        for (const auto &it : m_notations) {
+            padding[offset] = {};
+            offset += it[0].get_length();
+        }
+        return;
+    }
+    for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
+             [&padding](const RhythmContainer &n) { n.prepare_empty_padding(padding); });
+}
+
+void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end_padding) const {
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
 
@@ -202,9 +210,8 @@ void RhythmContainer::prepare_padding(Paddings &padding, int start_padding, int 
         return;
     }
     for (int index = 0; index < m_rhythms_containers.size(); index++) {
-        m_rhythms_containers[index].prepare_padding(padding, ((index == 0) ? start_padding : 0) + 10,
-                                                    ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) +
-                                                    10);
+        m_rhythms_containers[index].fill_padding(padding, ((index == 0) ? start_padding : 0) + 10,
+                                                 ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) + 10);
     }
 }
 
@@ -304,7 +311,7 @@ void RhythmContainer::init_display_scope() {
         }
     }
 
-    cout << "display scope: " << m_min_used_line << " - " << m_max_used_line << endl;
+    Log(DEBUG).Get() << "display scope: " << m_min_used_line << " - " << m_max_used_line << endl;
 }
 
 void RhythmContainer::find_primes() {
@@ -357,7 +364,7 @@ pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &loca
      */
     map<int, int> prime_factors_counter;
     for (const auto &it : locations) {
-        cout << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
+        Log(DEBUG).Get() << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
         auto prime_factors = get_prime_factors(it.first.get_value().second);
         if ((prime_factors.size() > 1) && (prime_factors.find(2) != prime_factors.end())) {
             prime_factors.erase(2);

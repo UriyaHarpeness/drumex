@@ -68,7 +68,7 @@ int main(int argv, char *argc[]) {
     }
 
     if ((exercise_path.empty() and part_path.empty()) || (index < 0) || (tempo < 1)) {
-        cout << "Missing arguments: [--part|--exercise] [--index] [--tempo]" << endl;
+        Log(ERROR).Get() << "Missing arguments: [--part|--exercise] [--index] [--tempo]" << endl;
         return 1;
     }
 

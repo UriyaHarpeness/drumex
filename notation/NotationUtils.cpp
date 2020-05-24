@@ -82,7 +82,7 @@ int NotationUtils::count_remaining_plays(const Voice::iterator &start, const Voi
 }
 
 void NotationUtils::find_first_non_beamable(Fraction start, const Fraction &end, Voice::iterator &notation_it) {
-    // warning; optional segfault, iterates through the iterator without knowing there it ends, the caller should be
+    // Warning: possible segfault, iterates through the iterator without knowing there it ends, the caller should be
     // aware.
     while (start < end) {
         if ((*notation_it)[0].get_simple_length() >= Fraction(1, 4)) {
@@ -100,8 +100,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
     Fraction offset;
 
     for (const auto &group : notation) {
-        // assumes all the group has the same BasicPlaying and length
-        // todo: need to think if possible or enable a group that contains note with different ratio (logically isn't rational, it should be splitted beteen voices).
+        // Assumes all the group has the same BasicPlaying and length.
         auto fractions = split_fraction(beat, offset, group[0].get_rounded_length(), ratio);
         BasicPlaying playing = group[0].get_playing();
         for (const auto &fraction : fractions) {
@@ -124,7 +123,8 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
                     if ((note.get_playing() == BasePlay) &&
                         (find(modifiers.begin(), modifiers.end(), ModDot) == modifiers.end()) &&
                         (note.get_length() / fraction == Fraction(2, 1)) &&
-                        ((offset % length) + note.get_length() < length)) {
+                        (((offset % beat) + fraction + note.get_length() <= beat) ||
+                         (!static_cast<bool>(offset % beat) && !static_cast<bool>(note.get_length() % beat)))) {
                         dot = true;
                     }
                 }

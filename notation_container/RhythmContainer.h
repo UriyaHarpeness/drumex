@@ -4,6 +4,7 @@
 #include "../time_signature/TimeSignature.h"
 #include "../notation/NotationUtils.h"
 #include "../notation/NotationDisplay.h"
+#include "../logging/Logger.h"
 
 #include <set>
 
@@ -25,7 +26,9 @@ public:
 
     void beam();
 
-    void prepare_padding(Paddings &padding, int start_padding = 20, int end_padding = 20) const;
+    void prepare_empty_padding(Paddings &padding) const;
+
+    void fill_padding(Paddings &padding, int start_padding = 20, int end_padding = 20) const;
 
     void display(const GlobalLocations &global_locations, int y, int start_padding = 20, int end_padding = 20) const;
 

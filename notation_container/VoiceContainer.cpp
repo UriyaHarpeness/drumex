@@ -19,8 +19,12 @@ VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &
     }
 }
 
-void VoiceContainer::prepare_padding(Paddings &padding) const {
-    for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.prepare_padding(padding); });
+void VoiceContainer::prepare_empty_padding(Paddings &padding) const {
+    for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.prepare_empty_padding(padding); });
+}
+
+void VoiceContainer::fill_padding(Paddings &padding) const {
+    for_each(m_bars.begin(), m_bars.end(), [&padding](const BarContainer &n) { n.fill_padding(padding); });
 }
 
 void VoiceContainer::display(const DisplayVariables &display_variables) const {
@@ -93,11 +97,11 @@ VoiceContainerIterator VoiceContainerIterator::operator++(int) {
 }
 
 RhythmContainer *VoiceContainerIterator::operator*() {
-    cout << "* bar: " << m_bar_index << ", indexes: ";
+    Log(DEBUG).Get() << "* bar: " << m_bar_index << ", indexes: ";
     for (auto i : m_rhythms_index) {
-        cout << i << " ";
+        Log(DEBUG).Get() << i << " ";
     }
-    cout << endl;
+    Log(DEBUG).Get() << endl;
 
     return m_rhythms[m_rhythms.size() - 1];
 }

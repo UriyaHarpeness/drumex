@@ -20,6 +20,10 @@ public:
 
     void increase_tempo(int change);
 
+    static void pause(int milliseconds);
+
+    void reset();
+
     [[nodiscard]] int get_tempo() const { return m_tempo; }
 
     [[nodiscard]] vector<Fraction>::iterator get_current_location() const { return m_current_location; }

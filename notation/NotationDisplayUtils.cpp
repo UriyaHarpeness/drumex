@@ -15,15 +15,16 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
                                                                        DisplayConstants::max_lines_displayed + 1);
     display_variables.end_line = min(display_variables.start_line + DisplayConstants::max_lines_displayed - 1,
                                      (int) display_variables.bars_split.size());
-    cout << "current: " << display_variables.current_line << ", start: " << display_variables.start_line << ", end: "
-         << display_variables.end_line << endl;
+    Log(DEBUG).Get() << "current: " << display_variables.current_line << ", start: " << display_variables.start_line
+                     << ", end: " << display_variables.end_line << endl;
 
     display_variables.start_bar = (display_variables.start_line == 0) ? 0 : display_variables.bars_split[
             display_variables.start_line - 1];
     display_variables.end_bar = (int) ((display_variables.end_line < display_variables.bars_split.size())
                                        ? display_variables.bars_split[display_variables.end_line]
                                        : up.get_bars().size());
-    cout << "start bar: " << display_variables.start_bar << ", end bar: " << display_variables.end_bar << endl;
+    Log(DEBUG).Get() << "start bar: " << display_variables.start_bar << ", end bar: " << display_variables.end_bar
+                     << endl;
 }
 
 void NotationDisplayUtils::display_notation(const VoiceContainer &up, const VoiceContainer &down,
@@ -52,23 +53,27 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
     assert(up.get_bars().size() == down.get_bars().size());
 
     RhythmContainer *rhythm;
-    Paddings up_padding, down_padding;
+    Paddings up_padding, down_padding, empty_padding;
 
     for (VoiceContainerIterator voice_iterator(up); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-             << rhythm->get_beamed_notations().size() << endl;
+        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+                         << rhythm->get_beamed_notations().size() << endl;
     }
-
-    up.prepare_padding(up_padding);
 
     for (VoiceContainerIterator voice_iterator(down); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        cout << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-             << rhythm->get_beamed_notations().size() << endl;
+        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+                         << rhythm->get_beamed_notations().size() << endl;
     }
 
-    down.prepare_padding(down_padding);
+    up.prepare_empty_padding(empty_padding);
+    down.prepare_empty_padding(empty_padding);
+
+    up_padding = empty_padding;
+    down_padding = empty_padding;
+    up.fill_padding(up_padding);
+    down.fill_padding(down_padding);
 
     display_variables.merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
 
@@ -83,13 +88,15 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
         locations.push_back(i.first);
     }
     SDL_Event event;
-    bool quit = false;
+    bool quit = false, pause = false;
+    int display_count = 0;
 
     Metronome m(move(locations), tempo, up.get_signature());
 
     while (!quit) {
         // todo: be responsive to SDL events, to avoid the annoying pop-up.
-        cout << "current location: " << *m.get_current_location() << endl;
+        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << *m.get_current_location()
+                         << endl;
 
         get_display_scope(up, down, *m.get_current_location(), display_variables);
 
@@ -120,28 +127,39 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
         Notation::m_display->present();
 
         // Interactive SDL communication part.
-        while (SDL_PollEvent(&event)) {
+        while (!quit && (SDL_PollEvent(&event) || pause)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
-                cout << "Exiting" << endl;
+                Log(INFO).Get() << "Exiting" << endl;
                 break;
             }
             if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     quit = true;
-                    cout << "Exiting" << endl;
+                    Log(INFO).Get() << "Exiting" << endl;
                     break;
+                } else if (event.key.keysym.sym == SDLK_SPACE) {
+                    pause = !pause;
+                    if (pause) {
+                        Log(INFO).Get() << "Pause" << endl;
+                        m.pause(250);
+                    } else {
+                        Log(INFO).Get() << "Continue" << endl;
+                        m.reset();
+                    }
                 } else if (event.key.keysym.sym == SDLK_UP) {
                     m.increase_tempo(20);
-                    cout << "Increasing Tempo to " << m.get_tempo() << endl;
+                    Log(INFO).Get() << "Increasing Tempo to " << m.get_tempo() << endl;
                 } else if (event.key.keysym.sym == SDLK_DOWN) {
                     m.increase_tempo(-20);
-                    cout << "Decreasing Tempo to " << m.get_tempo() << endl;
+                    Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
                 }
             }
         }
 
-        m.poll();
+        if (!quit) {
+            m.poll();
+        }
     }
 }
 
@@ -200,7 +218,8 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
     global_locations[padding_end + signature] = {offset, {0, 0}};
     // todo: make sure no duplicate padding.
     for (const auto &it : global_locations) {
-        cout << it.first << ": " << it.second.first << " " << it.second.second[0] << " " << it.second.second[1] << endl;
+        Log(DEBUG).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
+                         << it.second.second[1] << endl;
     }
 
     return move(global_locations);
