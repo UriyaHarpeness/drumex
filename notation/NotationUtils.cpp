@@ -112,8 +112,6 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
                 generated_notation.push_back(move(tmp));
                 tmp.clear();
             } else {
-                // todo: no modifiers for rests, check for playing.
-
                 // Add ModDot if possible.
                 bool dot = false;
                 if (!generated_notation.empty()) {
@@ -144,8 +142,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
     }
 
 
-    // todo: will not work with 1/3 on 4/4 for example... need to support tuplets and stuff...
-    // plus problematic if a note is as long as several bars, also does not consider other notes that may break the consistency.
+    // todo: problematic if a note is as long as several bars, also does not consider other notes that may break the consistency.
     /*
      * Irrational notes are rounded up for the notes used, for example: 2/3 would contain 2-1/2, 3/7 would contain 3-1/4.
      *

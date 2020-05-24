@@ -10,11 +10,6 @@
 
 using namespace std;
 
-enum NotesDirection {
-    NotesUp,
-    NotesDown
-};
-
 class RhythmContainer {
 public:
     RhythmContainer(const Locations &locations, const TimeSignature &scope, NotesDirection direction,
@@ -28,9 +23,12 @@ public:
 
     void prepare_empty_padding(Paddings &padding) const;
 
-    void fill_padding(Paddings &padding, int start_padding = 20, int end_padding = 20) const;
+    void fill_padding(Paddings &padding, int start_padding = DisplayConstants::polyrhythm_sides_padding * 2,
+                      int end_padding = DisplayConstants::polyrhythm_sides_padding * 2) const;
 
-    void display(const GlobalLocations &global_locations, int y, int start_padding = 20, int end_padding = 20) const;
+    void display(const GlobalLocations &global_locations, int y,
+                 int start_padding = DisplayConstants::polyrhythm_sides_padding * 2,
+                 int end_padding = DisplayConstants::polyrhythm_sides_padding * 2) const;
 
     void extend(const RhythmContainer &container);
 
@@ -40,7 +38,7 @@ public:
 
     static set<int> get_prime_factors(int value);
 
-    static pair<int, bool> get_most_occurring_rhythm(const Locations &locations);
+    static pair<int, bool> calc_most_occurring_rhythm(const Locations &locations);
 
     static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
                                                         const Fraction &ratio);
@@ -56,6 +54,8 @@ public:
     [[nodiscard]] inline const int &get_max_used_line() const { return m_max_used_line; };
 
     [[nodiscard]] inline const int &get_min_used_line() const { return m_min_used_line; };
+
+    [[nodiscard]] inline const int &get_most_occurring_rhythm() const { return m_most_occurring_rhythm; };
 
     static set<int> primes;
 

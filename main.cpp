@@ -103,15 +103,14 @@ int main(int argv, char *argc[]) {
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
     // todo: add option to enable dotted rests.
-    // todo: must support polyrhythm later.
 
     /**
      * todo:
      * Refer to MuseScore to see the nice practice of trying to split into the measure even in polyrhythm.
-     * See that a poly of 9 over 3/4, is written as 9:6 in MuseScore, need to see what's the best way to notate it.
      * The polyrhythm selection is still isn't perfect, for example, for 1/9 2/9 3/9 4/9, it will divide to 1/3 and
      *  again to 1/3, instead of just starting with 1/9.
      * Cymbal whole and half note head is like a bold but hollow X by MuseScore, need to add the head.
+     * Polyrhythm over upper modifiers (like accent) will collide.
      */
 
     return 0;

@@ -23,7 +23,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
 
     Log(DEBUG).Get() << "-------------------- starting rhythm container --------------------" << endl;
 
-    auto most_occurring = get_most_occurring_rhythm(locations);
+    auto most_occurring = calc_most_occurring_rhythm(locations);
     m_most_occurring_rhythm = most_occurring.first;
     bool same_rhythm = most_occurring.second;
     m_beat = get_beat_from_most_occurring_rhythm(m_most_occurring_rhythm, scope, ratio);
@@ -199,8 +199,8 @@ void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end
         // todo: see what is the correct spacing.
         // todo: handle this 20 + 10 - 10 stuff more correctly.
         if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
-            start_padding -= 10;
-            end_padding -= 10;
+            start_padding -= DisplayConstants::polyrhythm_sides_padding;
+            end_padding -= DisplayConstants::polyrhythm_sides_padding;
         }
 
         padding[m_offset] = NotationUtils::sum_padding(padding[m_offset], {start_padding, 0});
@@ -210,8 +210,10 @@ void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end
         return;
     }
     for (int index = 0; index < m_rhythms_containers.size(); index++) {
-        m_rhythms_containers[index].fill_padding(padding, ((index == 0) ? start_padding : 0) + 10,
-                                                 ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) + 10);
+        m_rhythms_containers[index].fill_padding(padding, ((index == 0) ? start_padding : 0) +
+                                                          DisplayConstants::polyrhythm_sides_padding,
+                                                 ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) +
+                                                 DisplayConstants::polyrhythm_sides_padding);
     }
 }
 
@@ -220,30 +222,23 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
     if (m_rhythms_containers.empty()) {
         // todo: see what is the correct spacing.
         if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
-            start_padding -= 10;
-            end_padding -= 10;
+            start_padding -= DisplayConstants::polyrhythm_sides_padding;
+            end_padding -= DisplayConstants::polyrhythm_sides_padding;
         }
     }
 
     auto start_location = global_locations.at(m_offset);
     auto end_location = prev(global_locations.find(m_offset + m_length))->second;
 
-    if ((m_ratio != OneRatio) || (m_most_occurring_rhythm != 2)) {
-        int start_x = start_location.first - start_location.second[0] + start_padding - 5;
-        int end_x = end_location.first + end_location.second[1] - end_padding + 5;
-        if (m_direction == NotesUp) {
-            int relative_y =
-                    (DisplayConstants::staff_to_0 * 2) + (DisplayConstants::line_height * (m_min_used_line - 4));
-            Notation::m_display->draw_rect(start_x, y + relative_y, 30, 2, 0, 255, 0, 255);
-            Notation::m_display->draw_rect(end_x, y + relative_y, 30, 2, 255, 0, 0, 255);
-            Notation::m_display->draw_rect(start_x, y + relative_y, 2, end_x - start_x, 0, 0, 255, 255);
-        } else {
-            int relative_y =
-                    (DisplayConstants::staff_to_0 * 2) + (DisplayConstants::line_height * (m_max_used_line + 4));
-            Notation::m_display->draw_rect(start_x, y + relative_y - 30, 30, 2, 0, 255, 0, 255);
-            Notation::m_display->draw_rect(end_x, y + relative_y - 30, 30, 2, 255, 0, 0, 255);
-            Notation::m_display->draw_rect(start_x, y + relative_y - 2, 2, end_x - start_x, 0, 0, 255, 255);
-        }
+    if (m_most_occurring_rhythm != 2) {
+        int start_x = start_location.first - start_location.second[0] + start_padding -
+                      DisplayConstants::polyrhythm_sides_offset;
+        int end_x =
+                end_location.first + end_location.second[1] - end_padding + DisplayConstants::polyrhythm_sides_offset;
+        int normal_note_count = (int) round(
+                static_cast<double>(m_length / (Fraction(1, m_most_occurring_rhythm) * m_ratio).get_simple_length()));
+        NotationDisplay::draw_polyrhythm(start_x, end_x, y, m_direction, m_min_used_line, m_max_used_line,
+                                         m_most_occurring_rhythm, normal_note_count);
     }
 
     if (m_rhythms_containers.empty()) {
@@ -260,14 +255,15 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
         }
     } else {
         for (int index = 0; index < m_rhythms_containers.size(); index++) {
-            m_rhythms_containers[index].display(global_locations, y, ((index == 0) ? start_padding : 0) + 10,
-                                                ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) + 10);
+            m_rhythms_containers[index].display(global_locations, y, ((index == 0) ? start_padding : 0) +
+                                                                     DisplayConstants::polyrhythm_sides_padding,
+                                                ((index == m_rhythms_containers.size() - 1) ? end_padding : 0) +
+                                                DisplayConstants::polyrhythm_sides_padding);
         }
     }
 }
 
 void RhythmContainer::extend(const RhythmContainer &container) {
-    // todo: later make sure that multiple layers polyrhythm extension works as expected.
     m_length += container.m_length;
     m_locations.erase(prev(m_locations.end()));
     for (const auto &location : container.m_locations) {
@@ -301,11 +297,13 @@ void RhythmContainer::init_display_scope() {
                  [](RhythmContainer &n) { n.init_display_scope(); });
 
         for (const auto &rhythms_container : m_rhythms_containers) {
+            int spacing = (rhythms_container.get_most_occurring_rhythm() == 2 ? 0
+                                                                              : DisplayConstants::polyrhythm_height_line_spacing);
             if (m_direction == NotesUp) {
                 m_max_used_line = max(m_max_used_line, rhythms_container.get_max_used_line());
-                m_min_used_line = min(m_min_used_line, rhythms_container.get_min_used_line() - 4);
+                m_min_used_line = min(m_min_used_line, rhythms_container.get_min_used_line() - spacing);
             } else {
-                m_max_used_line = max(m_max_used_line, rhythms_container.get_max_used_line() + 4);
+                m_max_used_line = max(m_max_used_line, rhythms_container.get_max_used_line() + spacing);
                 m_min_used_line = min(m_min_used_line, rhythms_container.get_min_used_line());
             }
         }
@@ -350,7 +348,7 @@ set<int> RhythmContainer::get_prime_factors(int value) {
     return move(primes_factors);
 }
 
-pair<int, bool> RhythmContainer::get_most_occurring_rhythm(const Locations &locations) {
+pair<int, bool> RhythmContainer::calc_most_occurring_rhythm(const Locations &locations) {
     /*
      * Return the most occurring rhythm and if all the notes are in the same rhythm group.
      *

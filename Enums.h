@@ -26,16 +26,16 @@ enum Instrument {
 };
 
 enum MusicSymbols {
-    SymSmallZero = 0xBC,
-    SymSmallOne = 0xC1,
-    SymSmallTwo = 0xAA,
-    SymSmallThree = 0xA3,
-    SymSmallFour = 0xA2,
-    SymSmallFive = 0xB0,
-    SymSmallSix = 0xA4,
-    SymSmallSeven = 0xA6,
-    SymSmallEight = 0xA5,
-    SymSmallNine = 0xBB,
+    SymSmallZero = 0x80,
+    SymSmallOne = 0x81,
+    SymSmallTwo = 0x82,
+    SymSmallThree = 0x83,
+    SymSmallFour = 0x84,
+    SymSmallFive = 0x85,
+    SymSmallSix = 0x86,
+    SymSmallSeven = 0x87,
+    SymSmallEight = 0x88,
+    SymSmallNine = 0x89,
 
     SymDoubleWholeNote = 'W',
     SymWholeNote = 'w',
@@ -91,4 +91,9 @@ enum Modifier {
     ModChoke,
     ModRight,
     ModLeft,
+};
+
+enum NotesDirection {
+    NotesUp,
+    NotesDown
 };

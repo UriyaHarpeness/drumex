@@ -80,9 +80,7 @@ public:
      */
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
 
-    [[nodiscard]] inline Fraction get_simple_length() const {
-        return Fraction(m_length.get_value().first, pow(2, (int) log2(m_length.get_value().second)));
-    }
+    [[nodiscard]] inline Fraction get_simple_length() const { return m_length.get_simple_length(); }
 
     inline void set_rounded_length(const Fraction &length) { m_length = length; }
 

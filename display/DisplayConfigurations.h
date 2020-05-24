@@ -46,6 +46,14 @@ namespace DisplayConstants {
 
     const int connector_height = 7;
 
+    const int polyrhythm_height_line_spacing = 4;
+
+    const int polyrhythm_height = 30;
+
+    const int polyrhythm_sides_padding = 10;
+
+    const int polyrhythm_sides_offset = 5;
+
     // Ledger lines settings.
     const array<int, 4> ledger_lines = {-8, -6, 6, 8};
 }

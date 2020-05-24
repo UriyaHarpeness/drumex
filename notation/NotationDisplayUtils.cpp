@@ -2,8 +2,6 @@
 
 void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const VoiceContainer &down,
                                              const Fraction &current_location, DisplayVariables &display_variables) {
-    // todo: check the selected lines and bars are correct.
-    // todo: instead of passing tons of parameters, maybe create a struct.
     display_variables.current_line = distance(display_variables.bars_split.begin(),
                                               upper_bound(display_variables.bars_split.begin(),
                                                           display_variables.bars_split.end(),
@@ -94,7 +92,6 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
     Metronome m(move(locations), tempo, up.get_signature());
 
     while (!quit) {
-        // todo: be responsive to SDL events, to avoid the annoying pop-up.
         Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << *m.get_current_location()
                          << endl;
 
@@ -216,7 +213,6 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
     }
 
     global_locations[padding_end + signature] = {offset, {0, 0}};
-    // todo: make sure no duplicate padding.
     for (const auto &it : global_locations) {
         Log(DEBUG).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
                          << it.second.second[1] << endl;

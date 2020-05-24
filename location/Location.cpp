@@ -28,9 +28,6 @@ Locations location::notation_to_location(const Voice &voice) {
 }
 
 void location::clear_location(Locations &locations) {
-    // todo: need to remove rests as well as join their lengths by up or down voice.
-    // locations.erase(std::remove_if(locations.begin(), locations.end(), [](auto &x) { return x.second.empty(); }),
-    //                locations.end());
     // Without removing the last location.
     for (auto it = locations.begin(); it != prev(locations.end()); it++) {
         if (it->second.empty()) {
@@ -129,9 +126,7 @@ Voice location::location_to_notation(Locations &locations, Instrument rests_loca
     if (location->first) {
         voice.push_back({{BaseRest, rests_location, location->first * ratio, {}}});
     }
-    auto end = locations.end();
-    end--;
-    for (; location != end; location++) {
+    for (; location != prev(locations.end()); location++) {
         if (location->second.empty()) {
             for (auto &note : voice[voice.size() - 1]) {
                 // length should be without ModDots at this point.

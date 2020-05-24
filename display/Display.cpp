@@ -65,11 +65,11 @@ void Display::draw_text(MusicSymbols value, int x, int staff_y, int line, int of
     text[0] = value;
     surface = TTF_RenderText_Solid(m_music_font, text, textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
     SDL_Rect rect{x + off_x, staff_y + (line * DisplayConstants::line_height) + off_y, surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 
     SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
 
 void Display::draw_text_c(const string &text, int x, int y) {
@@ -78,11 +78,21 @@ void Display::draw_text_c(const string &text, int x, int y) {
 
     surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
     SDL_Rect rect{x - (surface->w / 2), y - (surface->h / 2), surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 
     SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+}
+
+pair<int, int> Display::get_size(const string &text) {
+    SDL_Surface *surface;
+    SDL_Color textColor = {0, 0, 0, 0};
+
+    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
+    SDL_FreeSurface(surface);
+
+    return {surface->w, surface->h};
 }
 
 void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {

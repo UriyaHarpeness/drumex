@@ -2,7 +2,7 @@
 
 array<int, 2> NotationDisplay::get_display_scope(const Voice &beamed) {
     assert(!beamed.empty());
-    // Assert all notes are of the same voice.
+    // Asserts all notes are of the same voice.
     int min_line = beamed[0][0].get_line(), max_line = beamed[0][0].get_line(), max_beams = 0, beams;
     for (const auto &group : beamed) {
         for (const auto &note : group) {
@@ -13,7 +13,6 @@ array<int, 2> NotationDisplay::get_display_scope(const Voice &beamed) {
             max_beams = max(max_beams, beams);
         }
     }
-    // todo: this should multiply the beams by 2...
     // Minimum 1.5 real line difference (1 line from the head end).
     int flag_length = max(abs(abs(max_line - min_line) + (max_beams * 2)) + DisplayConstants::min_stem_length,
                           DisplayConstants::default_stem_length);
@@ -28,6 +27,41 @@ array<int, 2> NotationDisplay::get_display_scope(const Voice &beamed) {
     }
 
     return {min_line, max_line};
+}
+
+void
+NotationDisplay::draw_polyrhythm(int start_x, int end_x, int y, NotesDirection direction, int min_line, int max_line,
+                                 int poly_a, int poly_b) {
+    string polyrhythm = to_string(poly_a) + ":" + to_string(poly_b);
+    // Converts to small numbers.
+    for (char &i : polyrhythm) {
+        if (('0' <= i) && (i <= '9')) {
+            i += 0x50;
+        }
+    }
+    auto size = Notation::m_display->get_size(polyrhythm);
+
+    if (direction == NotesUp) {
+        int relative_y =
+                (DisplayConstants::staff_to_0 * 2) +
+                (DisplayConstants::line_height * (min_line - DisplayConstants::polyrhythm_height_line_spacing));
+        Notation::m_display->draw_rect(start_x, y + relative_y, DisplayConstants::polyrhythm_height, 1);
+        Notation::m_display->draw_rect(end_x, y + relative_y, DisplayConstants::polyrhythm_height, 1);
+        Notation::m_display->draw_rect(start_x, y + relative_y, 1, end_x - start_x);
+        Notation::m_display->draw_rect_c((start_x + end_x) / 2, y + relative_y, 10, size.first, 222);
+        Notation::m_display->draw_text_c(polyrhythm, (start_x + end_x) / 2, y + relative_y - 5);
+    } else {
+        int relative_y =
+                (DisplayConstants::staff_to_0 * 2) +
+                (DisplayConstants::line_height * (max_line + DisplayConstants::polyrhythm_height_line_spacing));
+        Notation::m_display->draw_rect(start_x, y + relative_y - DisplayConstants::polyrhythm_height,
+                                       DisplayConstants::polyrhythm_height, 1);
+        Notation::m_display->draw_rect(end_x, y + relative_y - DisplayConstants::polyrhythm_height,
+                                       DisplayConstants::polyrhythm_height, 1);
+        Notation::m_display->draw_rect(start_x, y + relative_y - 1, 1, end_x - start_x);
+        Notation::m_display->draw_rect_c((start_x + end_x) / 2, y + relative_y - 1, 10, size.first, 222);
+        Notation::m_display->draw_text_c(polyrhythm, (start_x + end_x) / 2, y + relative_y - 1 - 5);
+    }
 }
 
 void NotationDisplay::draw_connectors(int x, int staff_y, int line, int length, int number, int tail_length) {
