@@ -13,7 +13,7 @@ Exercise::Exercise(const string &path, int index) {
     reader.parse(f, obj);
     f.close();
 
-    cout << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
+    Log(INFO).Get() << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
 
     if (variation.isNull()) {
@@ -35,7 +35,7 @@ Exercise::Exercise(const string &path, int index) {
 
         for (auto &part : parts) {
             for (const auto &single_variation : parts_variation[2]) {
-                cout << "Applying variation: " << single_variation["Name"].asString() << endl;
+                Log(INFO).Get() << "Applying variation: " << single_variation["Name"].asString() << endl;
                 variations::name_to_variation.at(single_variation["Name"].asString())
                         (part, single_variation["Arguments"]);
             }

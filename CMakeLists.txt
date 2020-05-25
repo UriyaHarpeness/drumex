@@ -4,30 +4,41 @@ project(drumex)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(drumex main.cpp
-        Enums.h
-        metronome/Metronome.cpp
-        metronome/Metronome.h
-        variations/Variations.h
-        variations/Variations.cpp
         display/Display.cpp
         display/Display.h
-        notation/Notation.cpp
-        notation/Notation.h
-        notation/NotationUtils.cpp
-        notation/NotationUtils.h
-        notation/NotationDisplay.cpp
-        notation/NotationDisplay.h
-        notation/Fraction.cpp
-        notation/Fraction.h
-        Translations.h
-        reader/Part.cpp
-        reader/Part.h
-        reader/Exercise.cpp
-        reader/Exercise.h
+        display/DisplayConfigurations.h
+        Enums.h
         location/Location.cpp
         location/Location.h
+        logging/Logger.cpp
+        logging/Logger.h
+        metronome/Metronome.cpp
+        metronome/Metronome.h
+        notation/Fraction.cpp
+        notation/Fraction.h
+        notation/Notation.cpp
+        notation/Notation.h
+        notation/NotationDisplay.cpp
+        notation/NotationDisplay.h
+        notation/NotationDisplayUtils.cpp
+        notation/NotationDisplayUtils.h
+        notation/NotationUtils.cpp
+        notation/NotationUtils.h
+        notation_container/BarContainer.cpp
+        notation_container/BarContainer.h
+        notation_container/RhythmContainer.cpp
+        notation_container/RhythmContainer.h
+        notation_container/VoiceContainer.cpp
+        notation_container/VoiceContainer.h
+        reader/Exercise.cpp
+        reader/Exercise.h
+        reader/Part.cpp
+        reader/Part.h
         time_signature/TimeSignature.cpp
-        time_signature/TimeSignature.h)
+        time_signature/TimeSignature.h
+        Translations.h
+        variations/Variations.cpp
+        variations/Variations.h)
 
 target_link_libraries(drumex pthread)
 target_link_libraries(drumex SDL2)

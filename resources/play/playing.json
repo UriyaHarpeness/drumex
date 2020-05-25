@@ -100,6 +100,47 @@
           "bbbbbbbbbbbb"
         ]
       }
+    },
+    {
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": [
+            "Snare",
+            [
+              1,
+              4
+            ],
+            [],
+            [
+              4,
+              3
+            ]
+          ],
+          "b": [
+            "Bass",
+            [
+              1,
+              4
+            ]
+          ],
+          ".": [
+            "Rest",
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        "Use": [
+          "sss",
+          "bb.b"
+        ]
+      }
     }
   ]
 }

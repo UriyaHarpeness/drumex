@@ -3,8 +3,9 @@
 Display::Display() {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
-                                SDL_WINDOW_SHOWN);
+    IMG_Init(IMG_INIT_PNG);
+    m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                DisplayConstants::window_width, DisplayConstants::window_height, SDL_WINDOW_SHOWN);
     m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     m_screen = SDL_GetWindowSurface(m_window);
 
@@ -18,6 +19,7 @@ Display::~Display() {
     SDL_DestroyWindow(m_window);
     TTF_CloseFont(m_music_font);
     TTF_CloseFont(m_text_font);
+    IMG_Quit();
     TTF_Quit();
     SDL_Quit();
 }
@@ -63,11 +65,11 @@ void Display::draw_text(MusicSymbols value, int x, int staff_y, int line, int of
     text[0] = value;
     surface = TTF_RenderText_Solid(m_music_font, text, textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
-    SDL_Rect rect{x + off_x, staff_y + (line * line_height) + off_y, surface->w, surface->h};
+    SDL_Rect rect{x + off_x, staff_y + (line * DisplayConstants::line_height) + off_y, surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 
     SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
 
 void Display::draw_text_c(const string &text, int x, int y) {
@@ -76,11 +78,21 @@ void Display::draw_text_c(const string &text, int x, int y) {
 
     surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
     SDL_Rect rect{x - (surface->w / 2), y - (surface->h / 2), surface->w, surface->h};
     SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
 
     SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+}
+
+pair<int, int> Display::get_size(const string &text) {
+    SDL_Surface *surface;
+    SDL_Color textColor = {0, 0, 0, 0};
+
+    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
+    SDL_FreeSurface(surface);
+
+    return {surface->w, surface->h};
 }
 
 void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
@@ -89,7 +101,7 @@ void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
     SDL_RenderFillRect(m_renderer, &sdl_rect);
 }
 
-void Display::draw_rect(int x, int y, int h, int w, int r, int b, int g, int a) {
+void Display::draw_rect(int x, int y, int h, int w, int r, int g, int b, int a) {
     SDL_Rect sdl_rect{x, y, w, h};
     SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
     SDL_RenderFillRect(m_renderer, &sdl_rect);
@@ -109,13 +121,15 @@ void Display::draw_base(int x, int y, uint8_t a, uint8_t b) {
 }
 
 void Display::draw_image(const string &path, int x, int y, int h, int w) {
-    SDL_Texture *img = IMG_LoadTexture(m_renderer, path.c_str());
+    SDL_Texture *texture = IMG_LoadTexture(m_renderer, path.c_str());
     //SDL_QueryTexture(img, nullptr, nullptr, &w, &h); // get the width and height of the texture
     // put the location where we want the texture to be drawn into a rectangle
     // I'm also scaling the texture 2x simply by setting the width and height
     SDL_Rect texr = {x, y, w, h};
 
-    SDL_RenderCopy(m_renderer, img, nullptr, &texr);
+    SDL_RenderCopy(m_renderer, texture, nullptr, &texr);
+
+    SDL_DestroyTexture(texture);
 }
 
 void Display::present() {

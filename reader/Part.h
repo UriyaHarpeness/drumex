@@ -2,6 +2,7 @@
 
 #include "../notation/Notation.h"
 #include "../notation/NotationUtils.h"
+#include "../notation_container/VoiceContainer.h"
 #include "../Translations.h"
 #include "../location/Location.h"
 
@@ -9,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <jsoncpp/json/json.h>
+#include <utility>
 
 
 using namespace std;
@@ -17,23 +19,35 @@ class Part {
 public:
     Part() = default;
 
-    Part(Notations notation, TimeSignature signature, const Fraction &length);
+    Part(Locations locations, TimeSignature signature, const Fraction &length);
 
     Part(const string &path, int index);
 
-    static Voice read_regular_voice(const Json::Value &part);
+    void notationize();
 
-    static Voice read_custom_voice(const Json::Value &part);
+    static Notation json_to_note(const Json::Value &note_json);
+
+    static Locations read_regular_voice(const Json::Value &part);
+
+    static Locations read_custom_voice(const Json::Value &part);
 
     static int get_parts_number(const string &path);
 
-    static Voice merge_voices(const vector<Voice> &voices);
+    static Locations voices_to_location(const Notations &notations);
 
     static Part merge_parts(vector<Part> parts);
 
-    [[nodiscard]] inline const Notations &get_notation() const { return m_notation; };
+    [[nodiscard]] inline VoiceContainer &get_up() { return m_up; };
+
+    [[nodiscard]] inline VoiceContainer &get_down() { return m_down; };
 
     [[nodiscard]] inline Notations &get_mutable_notation() { return m_notation; };
+
+    inline void set_location(const Locations &location) { m_location = location; };
+
+    [[nodiscard]] inline const Locations &get_location() const { return m_location; };
+
+    [[nodiscard]] inline Locations &get_mutable_location() { return m_location; };
 
     [[nodiscard]] inline TimeSignature get_signature() const { return m_signature; };
 
@@ -43,6 +57,12 @@ private:
     TimeSignature m_signature;
 
     Notations m_notation;
+
+    VoiceContainer m_up;
+
+    VoiceContainer m_down;
+
+    Locations m_location;
 
     Fraction m_length;
 };

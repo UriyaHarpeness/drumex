@@ -15,8 +15,6 @@
 using namespace std;
 
 namespace NotationUtils {
-    Notations split_voices(const Voice &notation);
-
     /**
      * Unify notation where possible, optimize the notation and remove replaceable clutter.
      *
@@ -28,31 +26,21 @@ namespace NotationUtils {
 
     Fraction merge_lengths(const vector<Fraction> &lengths);
 
-    vector<Fraction> split_fraction(Fraction fraction);
+    vector<Fraction> split_fraction(Fraction fraction, const Fraction &ratio);
 
-    vector<Fraction> split_fraction(const TimeSignature &signature, Fraction offset, Fraction fraction);
+    vector<Fraction> split_fraction(const Fraction &beat, Fraction offset, Fraction fraction, const Fraction &ratio);
 
-    Notations split_notation(const Voice &notation, const Fraction &bar);
+    int count_remaining_plays(const Voice::iterator &start, const Voice::iterator &end);
 
-    int count_remaining_plays(Fraction offset, const Fraction &beat, Voice::const_iterator notation_it);
+    void find_first_non_beamable(Fraction start, const Fraction &end, Voice::iterator &notation_it);
 
-    Notations connect_notation(const Voice &notation, const Fraction &beat);
+    Voice convert_notation(const Voice &notation, const Fraction &length, const Fraction &beat, const Fraction &ratio);
 
-    Voice convert_notation(const Voice &notation, const TimeSignature &signature);
-
-    Voice generate_voice_notation(const Voice &raw_voice_notation, TimeSignature signature);
-
-    Notations generate_notation(const Voice &raw_notation, TimeSignature signature);
-
-    void stretch_notation(Notations &notation, const Fraction &old_length, Fraction new_length);
-
-    void insert_padding(Paddings &paddings, const Fraction &offset, Padding padding);
+    Voice generate_voice_notation(const Voice &raw_voice_notation, const TimeSignature &signature);
 
     Padding merge_padding(const Group &notes);
 
-    Fraction sum_length(const Voice &notes);
+    Paddings merge_padding(const Paddings &a, const Paddings &b);
 
-    Fraction sum_length(const Notations &notes);
-
-    Fraction sum_final_length(const Notations &notes);
+    Padding sum_padding(Padding a, Padding b);
 };

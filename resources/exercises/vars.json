@@ -29,7 +29,7 @@
             "Arguments": {
               "Instruments": [],
               "Modifiers": [],
-              "DestinationInstrument": "Down"
+              "DestinationInstrument": "Up"
             }
           }
         ]

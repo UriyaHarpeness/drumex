@@ -92,11 +92,15 @@ Notation::Notation(const Notation &other) = default;
 Notation::~Notation() = default;
 
 Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &length,
-                   const vector<Modifier> &modifiers) : m_line(instrument_to_line.at(instrument)), m_length(length),
-                                                        m_instrument(instrument), m_playing(playing),
-                                                        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
+                   const vector<Modifier> &modifiers) :
+        m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
+        m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
     // todo: support 2 whole, etc.
 
+    initialize_with_length();
+}
+
+void Notation::initialize_with_length() {
     if (m_playing == BasePlay) {
         // todo: no more than whole note support for now.
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
@@ -105,10 +109,10 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &
             m_symbol = SymCymbal;
             m_symbol_value = make_pair(3, 0);
         } else {
-            if (Fraction(1, 1) == m_length) {
+            if (Fraction(1, 1) == get_simple_length()) {
                 m_symbol = SymWholeNote;
                 m_symbol_value = make_pair(0, 0);
-            } else if (Fraction(1, 2) == m_length) {
+            } else if (Fraction(1, 2) == get_simple_length()) {
                 m_symbol = SymHalfNote;
                 m_symbol_value = make_pair(3, 0);
             } else {
@@ -118,8 +122,8 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &
         }
     } else {
         // Before generating the standardized notation, this case may be possible.
-        if (rests_to_music_symbols.find(static_cast<int>(m_length)) != rests_to_music_symbols.end()) {
-            m_symbol = rests_to_music_symbols.at(static_cast<int>(m_length));
+        if (rests_to_music_symbols.find(static_cast<int>(get_simple_length())) != rests_to_music_symbols.end()) {
+            m_symbol = rests_to_music_symbols.at(static_cast<int>(get_simple_length()));
             m_symbol_value = music_symbols_to_values.at(m_symbol);
         }
     }
@@ -132,12 +136,14 @@ void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
     for (const Modifier &modifier : m_modifiers) {
         const auto position = modifier_to_position.at(modifier);
         // todo: also problematic when one connected notes have this only, plus others.
-        if (m_line <= direction_line) {
+        if (m_line <= DisplayConstants::direction_line) {
             m_display->draw_text(modifier_to_symbol.at(modifier), x, staff_y, m_line, position[0],
-                                 ((position[1] ? (-(tail_length + position[1]) * line_height) : 0) + position[2]));
+                                 ((position[1] ? (-(tail_length + position[1]) * DisplayConstants::line_height) : 0) +
+                                  position[2]));
         } else {
             m_display->draw_text(modifier_to_symbol.at(modifier), x, staff_y, m_line, position[0],
-                                 ((position[1] ? (-(-1 + position[1]) * line_height) : 0) + position[2]));
+                                 ((position[1] ? (-(-1 + position[1]) * DisplayConstants::line_height) : 0) +
+                                  position[2]));
         }
     }
 }
@@ -145,57 +151,52 @@ void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
 void Notation::draw_flags(int x, int staff_y, int tail_length) const {
     int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
 
-    for (int i = 0; i < (-(int) m_length) - 2; i++) {
-        if (m_line <= direction_line) {
+    for (int i = 0; i < (-static_cast<int>(get_simple_length())) - 2; i++) {
+        if (m_line <= DisplayConstants::direction_line) {
             m_display->draw_text(SymUpFlag, x + 13,
-                                 staff_y + ((m_line - tail_length + (i * 2)) * line_height) - staff_to_0);
+                                 staff_y + ((m_line - tail_length + (i * 2)) * DisplayConstants::line_height) -
+                                 DisplayConstants::staff_to_0);
 
         } else {
             m_display->draw_text(SymDownFlag, x + 4,
-                                 staff_y + ((m_line + tail_length - (i * 2)) * line_height) - staff_to_0);
+                                 staff_y + ((m_line + tail_length - (i * 2)) * DisplayConstants::line_height) -
+                                 DisplayConstants::staff_to_0);
         }
     }
 }
 
 void Notation::draw_tail(int x, int staff_y, int tail_length) const {
     int distance = (m_symbol == SymCymbal) ? 1 : 0;
-    if (m_line <= direction_line) {
-        m_display->draw_rect(x + 13, staff_y + ((m_line - tail_length + 4) * line_height) - staff_to_0,
-                             (tail_length + 2 - distance) * line_height - distance, 1);
+    if (m_line <= DisplayConstants::direction_line) {
+        m_display->draw_rect(x + 13, staff_y + ((m_line - tail_length + 4) * DisplayConstants::line_height) -
+                                     DisplayConstants::staff_to_0,
+                             (tail_length + 2 - distance) * DisplayConstants::line_height - distance, 1);
     } else {
-        m_display->draw_rect(x + 4, staff_y + ((m_line + 6) * line_height) - staff_to_0,
-                             (tail_length + 2 - distance) * line_height - distance, 1);
+        m_display->draw_rect(x + 4,
+                             staff_y + ((m_line + 6) * DisplayConstants::line_height) - DisplayConstants::staff_to_0,
+                             (tail_length + 2 - distance) * DisplayConstants::line_height - distance, 1);
     }
 }
 
 void Notation::draw_ledgers(int x, int staff_y) const {
-    if (m_line <= 0) {
-        if (m_line <= -6) {
-            m_display->draw_text(SymLedger, x, staff_y + 1 + (-6 * line_height) - staff_to_0);
-            if (m_line <= -8) {
-                m_display->draw_text(SymLedger, x, staff_y + 1 + (-8 * line_height) - staff_to_0);
-            }
-        }
-    } else {
-        if (m_line >= 6) {
-            m_display->draw_text(SymLedger, x, staff_y + 1 + (6 * line_height) - staff_to_0);
-            if (m_line >= 8) {
-                m_display->draw_text(SymLedger, x, staff_y + 1 + (8 * line_height) - staff_to_0);
-            }
+    for (const auto &it : DisplayConstants::ledger_lines) {
+        if (!((m_line > 0) ^ (it > 0)) && (abs(m_line) >= abs(it))) {
+            m_display->draw_text(SymLedger, x,
+                                 staff_y + 1 + (it * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
         }
     }
 }
 
 void Notation::draw_head(int x, int staff_y) const {
     m_display->draw_text(m_symbol, x + m_symbol_value.first,
-                         staff_y + (m_line * line_height) + m_symbol_value.second - staff_to_0);
+                         staff_y + (m_line * DisplayConstants::line_height) + m_symbol_value.second -
+                         DisplayConstants::staff_to_0);
 }
 
 void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_ledgers(x, staff_y);
     if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
         if (flags) {
-            tail_length = max(tail_length, (((-(int) m_length) - 2) * 2) + 3);
             draw_flags(x, staff_y, tail_length);
         }
         draw_tail(x, staff_y, tail_length);
@@ -233,8 +234,19 @@ Fraction Notation::get_length() const {
 
 void Notation::reset_length(const Fraction &length) {
     m_length = length;
+    initialize_with_length();
+
     auto location = find(m_modifiers.begin(), m_modifiers.end(), ModDot);
     if (location != m_modifiers.end()) {
         m_modifiers.erase(location);
     }
+}
+
+ostream &operator<<(ostream &os, const Notation &notation) {
+    os << "<Notation> " << find_by_value(playing_names, notation.m_playing) << " " << notation.m_length << " "
+       << find_by_value(instrument_names, notation.m_instrument) << " ";
+    for (const auto &modifier : notation.m_modifiers) {
+        os << find_by_value(modifier_names, modifier) << " ";
+    }
+    return os;
 }

@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Fraction.h"
+#include "../Translations.h"
 #include "../Enums.h"
 #include "../display/Display.h"
+#include "../display/DisplayConfigurations.h"
 
 #include <map>
 #include <numeric>
@@ -13,12 +15,10 @@ using namespace std;
 
 class Notation;
 
-typedef array<int, 2> Padding;
-typedef vector<pair<Fraction, Padding>> Paddings;
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;
+typedef vector<Voice> BeamedVoice;
 typedef vector<Voice> Notations;
-typedef vector<Notations> GroupedNotations;
 
 class Notation {
 public:
@@ -34,14 +34,6 @@ public:
 
     static const map<Modifier, array<int, 3>> modifier_to_position;
 
-    static const int minimal_distance = 14;
-
-    static const int line_height = 5;
-
-    static const int staff_to_0 = 2 * line_height;
-
-    static const int direction_line = 2;
-
     static shared_ptr<Display> m_display;
 
     Notation(const Notation &other);
@@ -50,17 +42,19 @@ public:
 
     ~Notation();
 
-    void draw_modifiers(int x, int staff_y, int tail_length = 7) const;
+    void initialize_with_length();
 
-    void draw_flags(int x, int staff_y, int tail_length = 7) const;
+    void draw_modifiers(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
 
-    void draw_tail(int x, int staff_y, int tail_length = 7) const;
+    void draw_flags(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
+
+    void draw_tail(int x, int staff_y, int tail_length = DisplayConstants::default_stem_length) const;
 
     void draw_ledgers(int x, int staff_y) const;
 
     void draw_head(int x, int staff_y) const;
 
-    void display(int x, int staff_y, bool flags = true, int tail_length = 7) const;
+    void display(int x, int staff_y, bool flags = true, int tail_length = DisplayConstants::default_stem_length) const;
 
     static Padding create_padding(const vector<Modifier> &modifiers);
 
@@ -72,9 +66,21 @@ public:
 
     [[nodiscard]] inline BasicPlaying get_playing() const { return m_playing; }
 
+    /**
+     * Get the length, takes into account the basic length and dots. Does not take ratio into account.
+     *
+     * @return  The length.
+     */
     [[nodiscard]] Fraction get_length() const;
 
+    /**
+     * Get the rounded length, takes into account only the basic length. Does not take ratio and dots into account.
+     *
+     * @return  The rounded length.
+     */
     [[nodiscard]] inline Fraction get_rounded_length() const { return m_length; }
+
+    [[nodiscard]] inline Fraction get_simple_length() const { return m_length.get_simple_length(); }
 
     inline void set_rounded_length(const Fraction &length) { m_length = length; }
 
@@ -86,12 +92,14 @@ public:
 
     [[nodiscard]] inline Padding get_padding() const { return m_padding; }
 
+    friend ostream &operator<<(ostream &os, const Notation &notation);
+
 private:
     MusicSymbols m_symbol;
 
     pair<int, int> m_symbol_value;
 
-    int m_line;
+    int m_line{};
 
     Fraction m_length;
 
@@ -99,7 +107,7 @@ private:
 
     BasicPlaying m_playing;
 
-    vector<Modifier> m_modifiers;
+    vector<Modifier> m_modifiers{};
 
-    Padding m_padding;
+    Padding m_padding{};
 };

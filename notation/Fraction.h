@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <ctgmath>
+#include <cassert>
 
 
 using namespace std;
@@ -16,6 +17,10 @@ public:
     Fraction();
 
     Fraction(int a, int b, bool do_simplify = true);
+
+    static Fraction FloatingFraction(int a, double b, bool do_simplify = true);
+
+    Fraction(int a);
 
     Fraction(const Fraction &other);
 
@@ -59,6 +64,10 @@ public:
 
     [[nodiscard]] inline pair<int, int> get_value() const { return m_value; };
 
+    [[nodiscard]] inline Fraction get_simple_length() const {
+        return Fraction(this->m_value.first, pow(2, (int) log2(this->m_value.second)));
+    }
+
     friend ostream &operator<<(ostream &os, const Fraction &fraction);
 
 protected:
@@ -68,3 +77,5 @@ protected:
 
     pair<int, int> m_value;
 };
+
+const Fraction OneRatio(1);

@@ -1,7 +1,7 @@
 #include "Location.h"
 
-map<Fraction, Group> location::notation_to_location(const Voice &voice) {
-    map<Fraction, Group> locations;
+Locations location::notation_to_location(const Voice &voice) {
+    Locations locations;
 
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
     Fraction notes_offset;
@@ -27,8 +27,27 @@ map<Fraction, Group> location::notation_to_location(const Voice &voice) {
     return move(locations);
 }
 
-map<Fraction, Group> location::merge_locations(const vector<map<Fraction, Group>> &locations) {
-    map<Fraction, Group> merged_locations;
+void location::clear_location(Locations &locations) {
+    // Without removing the last location.
+    for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+        if (it->second.empty()) {
+            locations.erase(it--);
+        }
+    }
+}
+
+void location::optimize_location(Locations &locations) {
+    location::clear_location(locations);
+
+    for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+        for (auto &note : it->second) {
+            note.reset_length(next(it)->first - it->first);
+        }
+    }
+}
+
+Locations location::merge_locations(const vector<Locations> &locations) {
+    Locations merged_locations;
     Group group;
 
     // The returned locations are clean of rests.
@@ -50,33 +69,79 @@ map<Fraction, Group> location::merge_locations(const vector<map<Fraction, Group>
         }
     }
 
+    // The lengths of the different locations need to be the same.
+    merged_locations.insert((*prev(locations[0].end())));
+
     return merged_locations;
 }
 
-Voice location::location_to_notation(map<Fraction, Group> &locations) {
+void location::stretch_locations(Locations &locations, const Fraction &final_length) {
+    Fraction length = prev(locations.end())->first;
+    locations.erase(prev(locations.end()));
+    Locations original = locations;
+
+    for (Fraction i = length; i < final_length; i += length) {
+        for (const auto &it : original) {
+            locations.insert({it.first + i, it.second});
+        }
+    }
+    locations.insert({final_length, {}});
+}
+
+vector<Locations> location::split_voices_locations(const Locations &locations) {
+    vector<Locations> split_locations = {{},
+                                         {}};
+    Group up;
+    Group down;
+    for (const auto &location : locations) {
+        for (const auto &note : location.second) {
+            if (DisplayConstants::direction_line >= note.get_line()) {
+                up.push_back(note);
+            } else {
+                down.push_back(note);
+            }
+        }
+        if (!up.empty()) {
+            split_locations[0].insert({location.first, move(up)});
+            up.clear();
+        }
+        if (!down.empty()) {
+            split_locations[1].insert({location.first, move(down)});
+            down.clear();
+        }
+    }
+    split_locations[0].insert({prev(locations.end())->first, {}});
+    split_locations[1].insert({prev(locations.end())->first, {}});
+    return move(split_locations);
+}
+
+Voice location::location_to_notation(Locations &locations, Instrument rests_location, const Fraction &ratio) {
     Voice voice;
     Group group;
 
     // todo: think what to do with notes with value below minimum supported fraction on different lines.
     // add dots to get to the exact needed length.
     auto location = locations.begin();
+    auto prev_note = locations.begin();
     if (location->first) {
-        voice.push_back({{BaseRest, UnboundUp, location->first, {}}});
+        voice.push_back({{BaseRest, rests_location, location->first * ratio, {}}});
     }
-    auto end = locations.end();
-    end--;
-    for (; location != end; location++) {
+    for (; location != prev(locations.end()); location++) {
         if (location->second.empty()) {
             for (auto &note : voice[voice.size() - 1]) {
                 // length should be without ModDots at this point.
-                note.reset_length(note.get_rounded_length() + location->first);
+                note.reset_length((next(location)->first - prev_note->first) * ratio);
             }
+            continue;
         }
+
         group = location->second;
+        prev_note = location;
 
         for (auto &note : group) {
-            note.reset_length(next(location)->first - location->first);
+            note.reset_length((next(location)->first - location->first) * ratio);
         }
+
         voice.push_back(move(group));
         group.clear();
     }

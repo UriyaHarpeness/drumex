@@ -72,7 +72,7 @@ void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
     bool triggered_play;
     for (auto &voice : notation) {
         auto locations = location::notation_to_location(voice);
-        map<Fraction, Group> new_locations;
+        Locations new_locations;
 
         for (const auto &location : locations) {
             Fraction global_offset = location.first;
@@ -120,7 +120,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
 
     // overriding is not possible.
     // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually aplit notation may just be that.
+    // may be solvable with some conversion function, actually split notation may just be that.
 
     // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
 
@@ -131,7 +131,7 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
     bool triggered_play;
     for (auto &voice : notation) {
         auto locations = location::notation_to_location(voice);
-        map<Fraction, Group> new_locations;
+        Locations new_locations;
 
         for (const auto &location : locations) {
             Fraction global_offset = location.first;
@@ -169,49 +169,45 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
                 }
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
+                                                       part.get_signature());
     }
 }
 
 void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
-    Notations &notation = part.get_mutable_notation();
-
     // overriding is not possible.
 
     // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
 
     Instrument destination_instrument = instrument_names.at(arguments["DestinationInstrument"].asString());
 
+    // todo: the locations are now merged, need to handle everything in a correct way, in all variations.
     // todo: better for loop.
     Group new_group;
-    for (auto &voice : notation) {
-        auto locations = location::notation_to_location(voice);
-        map<Fraction, Group> new_locations;
+    Locations new_locations;
 
-        for (const auto &location : locations) {
-            Fraction global_offset = location.first;
-            Group group = location.second;
-            new_locations[global_offset] = group;
+    for (const auto &location : part.get_location()) {
+        Fraction global_offset = location.first;
+        Group group = location.second;
+        new_locations[global_offset] = group;
 
-            for (const auto &note : group) {
-                if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
+        for (const auto &note : group) {
+            if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
+                // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
+                // can be problematic with modifiers, mostly isn't the case, currently let it slide.
 
-                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                    // to the mapping.
-                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                    new_group.push_back(
-                            {BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
-                }
-            }
-            if (!new_group.empty()) {
-                new_locations[location.first] = move(new_group);
-                new_group.clear();
+                // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
+                // to the mapping.
+                // also, think about the overlapping, and rounding the trespassing notes to the beginning.
+                new_group.push_back({BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations), part.get_signature());
+        if (!new_group.empty()) {
+            new_locations[location.first] = move(new_group);
+            new_group.clear();
+        }
     }
+    part.set_location(move(new_locations));
 }
 
 void variations::PlayRight::apply(Part &part, const Json::Value &arguments) {

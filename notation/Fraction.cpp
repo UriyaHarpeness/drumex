@@ -1,10 +1,23 @@
 #include "Fraction.h"
 
-
 Fraction::Fraction() : m_value({0, 1}) {}
 
 Fraction::Fraction(int a, int b, bool do_simplify) : m_value({a, b}) {
     if (do_simplify) simplify(*this);
+}
+
+Fraction Fraction::FloatingFraction(int a, double b, bool do_simplify) {
+    if (b != 0) {
+        assert(log2(b) == int(log2(b)));
+    }
+    if (b < 1) {
+        return Fraction((int) (a / b), 1, do_simplify);
+    }
+    return Fraction(a, (int) b, do_simplify);
+}
+
+Fraction::Fraction(int a) : m_value({a, 1}) {
+    simplify(*this);
 }
 
 Fraction::Fraction(const Fraction &other) = default;
@@ -184,7 +197,7 @@ void Fraction::equalize_denominators(Fraction &first, Fraction &second) {
     first.m_value.first *= second.m_value.second;
     second.m_value.first *= first.m_value.second;
     first.m_value.second *= second.m_value.second;
-    second.m_value.second = first.m_value.first;
+    second.m_value.second = first.m_value.second;
 }
 
 void Fraction::simplify(Fraction &fraction) {

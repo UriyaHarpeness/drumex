@@ -7,6 +7,10 @@
 
 using namespace std;
 
+const map<string, BasicPlaying> playing_names = \
+        {{"Play", BasePlay},
+         {"Rest", BaseRest}};
+
 const map<string, Instrument> instrument_names = \
         {{"Up",       UnboundUp},
          {"Down",     UnboundDown},
@@ -19,7 +23,7 @@ const map<string, Instrument> instrument_names = \
          {"Snare",    SnareInst},
          {"LowTom",   LowTomInst},
          {"FloorTom", FloorTomInst},
-         {"Bass",     BassInst},};
+         {"Bass",     BassInst}};
 
 const map<string, Modifier> modifier_names = \
     {{"CrossStick", ModCrossStick},
@@ -36,3 +40,13 @@ const map<string, Modifier> modifier_names = \
      {"Choke",      ModChoke},
      {"Right",      ModRight},
      {"Left",       ModLeft}};
+
+template<typename T>
+string find_by_value(const map<string, T> &where, T what) {
+    for (const auto &it : where) {
+        if (it.second == what) {
+            return it.first;
+        }
+    }
+    throw runtime_error("Key not Found");
+}
