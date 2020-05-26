@@ -9,10 +9,11 @@ using namespace std;
 // Log, version 0.1: a simple logging class
 // Taken and refactored from Petru Marginean's article in Dr. Dobbs - https://www.drdobbs.com/cpp/logging-in-c/201804215
 enum LogLevel {
-    ERROR = 4,
-    WARNING = 3,
-    INFO = 2,
-    DEBUG = 1
+    ERROR = 5,
+    WARNING = 4,
+    INFO = 3,
+    DEBUG = 2,
+    TRACE = 1
 };
 
 class Log {

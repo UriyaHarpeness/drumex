@@ -74,6 +74,7 @@ enum MusicSymbols {
     SymLedger = '_',
     SymTempo = 0xF2,
     SymBarLine = '\\',
+    SymDoubleBarLine = '[',
 };
 
 enum Modifier {

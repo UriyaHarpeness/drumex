@@ -1,6 +1,5 @@
 #include "Variations.h"
 
-
 bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
     bool all_instruments = instruments.empty();
     bool all_modifiers = modifiers.empty();

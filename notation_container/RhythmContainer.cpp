@@ -167,7 +167,7 @@ void RhythmContainer::beam() {
             }
         }
 
-        Log(DEBUG).Get() << "raw: " << m_notations.size() << ", beamed: " << m_beamed_notations.size() << endl;
+        Log(TRACE).Get() << "raw: " << m_notations.size() << ", beamed: " << m_beamed_notations.size() << endl;
 
         return;
     }
@@ -309,7 +309,7 @@ void RhythmContainer::init_display_scope() {
         }
     }
 
-    Log(DEBUG).Get() << "display scope: " << m_min_used_line << " - " << m_max_used_line << endl;
+    Log(TRACE).Get() << "display scope: " << m_min_used_line << " - " << m_max_used_line << endl;
 }
 
 void RhythmContainer::find_primes() {
@@ -362,7 +362,7 @@ pair<int, bool> RhythmContainer::calc_most_occurring_rhythm(const Locations &loc
      */
     map<int, int> prime_factors_counter;
     for (const auto &it : locations) {
-        Log(DEBUG).Get() << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
+        Log(TRACE).Get() << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
         auto prime_factors = get_prime_factors(it.first.get_value().second);
         if ((prime_factors.size() > 1) && (prime_factors.find(2) != prime_factors.end())) {
             prime_factors.erase(2);

@@ -55,13 +55,13 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
 
     for (VoiceContainerIterator voice_iterator(up); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
                          << rhythm->get_beamed_notations().size() << endl;
     }
 
     for (VoiceContainerIterator voice_iterator(down); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
                          << rhythm->get_beamed_notations().size() << endl;
     }
 
@@ -214,7 +214,7 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
 
     global_locations[padding_end + signature] = {offset, {0, 0}};
     for (const auto &it : global_locations) {
-        Log(DEBUG).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
+        Log(TRACE).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
                          << it.second.second[1] << endl;
     }
 

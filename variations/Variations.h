@@ -11,6 +11,15 @@
 
 using namespace std;
 
+/**
+ * todo: List of variations to implement:
+ * 1.   Change note.
+ * 2.   Change signature maybe.
+ * 3.   Double notes - considering spacing, carrying, and breaking.
+ *
+ * The variations need to also support elapsing.
+ */
+
 /*  needs to be here
     void convert_time_4_to_6(uint32_t note_value);
 
