@@ -13,7 +13,23 @@
             "Arguments": {
               "Instruments": [],
               "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "DestinationInstrument": "Snare"
+            }
+          }
+        ]
+      ],
+      [
+        "variations/3s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "HiHat"
             }
           }
         ]
@@ -29,7 +45,23 @@
             "Arguments": {
               "Instruments": [],
               "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "DestinationInstrument": "FloorTom"
+            }
+          }
+        ]
+      ],
+      [
+        "variations/2s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "Bass"
             }
           }
         ]

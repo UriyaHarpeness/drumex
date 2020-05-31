@@ -1,8 +1,8 @@
 {
-  "Name": "3's Variations",
+  "Name": "4's Variations",
   "Global": {
     "Time Signature": [
-      3,
+      4,
       4
     ],
     "Type": "Custom",
@@ -29,42 +29,28 @@
     {
       "Part": {
         "Use": [
-          "s.."
+          "sss."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          ".s."
+          ".sss"
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "..s"
+          "s.ss"
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "ss."
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          ".ss"
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          "s.s"
+          "ss.s"
         ]
       }
     }

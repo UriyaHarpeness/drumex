@@ -4,14 +4,14 @@
 Exercise::Exercise(const string &path, int index) {
     Json::Reader reader;
     Json::Value obj;
-    ifstream f(path);
+    ifstream exercise_file(path);
 
-    if (!f.good()) {
+    if (!exercise_file.good()) {
         throw runtime_error("Exercise File Does Not Exist");
     }
 
-    reader.parse(f, obj);
-    f.close();
+    reader.parse(exercise_file, obj);
+    exercise_file.close();
 
     Log(INFO).Get() << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];

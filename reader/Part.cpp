@@ -8,20 +8,32 @@ Part::Part(Locations locations, TimeSignature signature, const Fraction &length)
 Part::Part(const string &path, int index) {
     Json::Reader reader;
     Json::Value obj;
-    ifstream f(path);
+    ifstream part_file(path);
 
-    if (!f.good()) {
+    if (!part_file.good()) {
         throw runtime_error("Part File Does Not Exist");
     }
 
-    reader.parse(f, obj);
-    f.close();
+    reader.parse(part_file, obj);
+    part_file.close();
 
     Log(INFO).Get() << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
+    Json::Value global_definitions = obj["Global"];
     Json::Value part = obj["Parts"][index];
 
     if (part.isNull()) {
         throw runtime_error("Invalid Part Index");
+    }
+
+    // todo: document jsons structures.
+    if (part["Time Signature"].isNull()) {
+        part["Time Signature"] = global_definitions["Time Signature"];
+    }
+    if (part["Type"].isNull()) {
+        part["Type"] = global_definitions["Type"];
+    }
+    if (part["Part"]["Definitions"].isNull()) {
+        part["Part"]["Definitions"] = global_definitions["Part"]["Definitions"];
     }
 
     m_signature = {part["Time Signature"][0].asUInt(), part["Time Signature"][1].asUInt()};
@@ -120,9 +132,14 @@ Locations Part::read_custom_voice(const Json::Value &part) {
 int Part::get_parts_number(const string &path) {
     Json::Reader reader;
     Json::Value obj;
-    ifstream f(path);
-    reader.parse(f, obj);
-    f.close();
+    ifstream part_file(path);
+
+    if (!part_file.good()) {
+        throw runtime_error("Part File Does Not Exist");
+    }
+
+    reader.parse(part_file, obj);
+    part_file.close();
 
     return obj["Parts"].size();
 }

@@ -79,30 +79,92 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
                                                                  display_variables.bars_split, up.get_signature());
 }
 
+void NotationDisplayUtils::process_events(Metronome &m, bool &quit, const GlobalLocations &global_locations,
+                                          const TimeSignature &signature) {
+    // Interactive SDL communication part.
+    bool pause = false;
+    SDL_Event event;
+
+    while (!quit && (SDL_PollEvent(&event) || pause)) {
+        if (event.type == SDL_QUIT) {
+            quit = true;
+            Log(INFO).Get() << "Exiting" << endl;
+            break;
+        }
+        if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                quit = true;
+                Log(INFO).Get() << "Exiting" << endl;
+                break;
+            } else if (event.key.keysym.sym == SDLK_SPACE) {
+                pause = !pause;
+                if (pause) {
+                    Log(INFO).Get() << "Pause" << endl;
+                } else {
+                    Log(INFO).Get() << "Continue" << endl;
+                    m.reset();
+                }
+            } else if (event.key.keysym.sym == SDLK_UP) {
+                m.increase_tempo(20);
+                Log(INFO).Get() << "Increasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_DOWN) {
+                m.increase_tempo(-20);
+                Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+                auto current_location = global_locations.find(
+                        Fraction(((int) static_cast<double>(m.get_current_location() / signature)) + 1) * signature);
+                if (current_location == prev(global_locations.end())) {
+                    m.set_current_location(prev(global_locations.end())->first);
+                } else {
+                    m.set_current_location(prev(current_location)->first);
+                }
+                Log(INFO).Get() << "Moving to Next Measure" << endl;
+            } else if (event.key.keysym.sym == SDLK_LEFT) {
+                auto current_location_fraction =
+                        Fraction(((int) static_cast<double>(m.get_current_location() / signature)) - 1) *
+                        signature;
+                if (current_location_fraction == Fraction()) {
+                    m.set_current_location(prev(global_locations.end())->first);
+                } else if (current_location_fraction < Fraction()) {
+                    auto current_location = global_locations.find(
+                            Fraction(((int) static_cast<double>(prev(global_locations.end())->first / signature)) - 1) *
+                            signature);
+                    m.set_current_location(prev(current_location)->first);
+                } else {
+                    m.set_current_location(prev(global_locations.find(current_location_fraction))->first);
+                }
+                Log(INFO).Get() << "Moving to Previous Measure" << endl;
+            }
+            if (pause) {
+                Metronome::pause(250);
+            }
+        }
+    }
+}
+
 void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,
                                                        DisplayVariables &display_variables, int tempo) {
     vector<Fraction> locations;
     for (const auto &i : display_variables.global_locations) {
         locations.push_back(i.first);
     }
-    SDL_Event event;
-    bool quit = false, pause = false;
+    bool quit = false;
     int display_count = 0;
 
     Metronome m(move(locations), tempo, up.get_signature());
 
     while (!quit) {
-        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << *m.get_current_location()
+        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << m.get_current_location()
                          << endl;
 
-        get_display_scope(up, down, *m.get_current_location(), display_variables);
+        get_display_scope(up, down, m.get_current_location(), display_variables);
 
         pair<pair<int, int>, Padding> note_location = {
-                {display_variables.global_locations.at(*m.get_current_location()).first,
+                {display_variables.global_locations.at(m.get_current_location()).first,
                  DisplayConstants::displaying_init_y +
                  ((display_variables.current_line % DisplayConstants::max_lines_displayed) *
                   DisplayConstants::staff_lines_spacing)},
-                display_variables.global_locations.at(*m.get_current_location()).second};
+                display_variables.global_locations.at(m.get_current_location()).second};
 
         Notation::m_display->clear_screen();
 
@@ -119,40 +181,11 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
-        display_notation(up, down, *m.get_current_location(), display_variables);
+        display_notation(up, down, m.get_current_location(), display_variables);
 
         Notation::m_display->present();
 
-        // Interactive SDL communication part.
-        while (!quit && (SDL_PollEvent(&event) || pause)) {
-            if (event.type == SDL_QUIT) {
-                quit = true;
-                Log(INFO).Get() << "Exiting" << endl;
-                break;
-            }
-            if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                    Log(INFO).Get() << "Exiting" << endl;
-                    break;
-                } else if (event.key.keysym.sym == SDLK_SPACE) {
-                    pause = !pause;
-                    if (pause) {
-                        Log(INFO).Get() << "Pause" << endl;
-                        m.pause(250);
-                    } else {
-                        Log(INFO).Get() << "Continue" << endl;
-                        m.reset();
-                    }
-                } else if (event.key.keysym.sym == SDLK_UP) {
-                    m.increase_tempo(20);
-                    Log(INFO).Get() << "Increasing Tempo to " << m.get_tempo() << endl;
-                } else if (event.key.keysym.sym == SDLK_DOWN) {
-                    m.increase_tempo(-20);
-                    Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
-                }
-            }
-        }
+        process_events(m, quit, display_variables.global_locations, up.get_signature());
 
         if (!quit) {
             m.poll();

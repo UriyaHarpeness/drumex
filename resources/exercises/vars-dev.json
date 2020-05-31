@@ -1,0 +1,39 @@
+{
+  "Name": "Variations Development",
+  "Variations": [
+    [
+      [
+        "variations/4s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "Up"
+            }
+          }
+        ]
+      ],
+      [
+        "variations/3s-variations.json",
+        [
+          0
+        ],
+        [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Instruments": [],
+              "Modifiers": [],
+              "DestinationInstrument": "Down"
+            }
+          }
+        ]
+      ]
+    ]
+  ]
+}
