@@ -105,9 +105,14 @@ void Notation::initialize_with_length() {
         // todo: no more than whole note support for now.
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
         if (m_line <= -4) {
-            // for cymbals support, temporary i believe in this way.
-            m_symbol = SymCymbal;
-            m_symbol_value = make_pair(3, 0);
+            // todo: there are more places with cymbals, like hihat foot.
+            if (Fraction(1, 2) <= get_simple_length()) {
+                m_symbol = SymWholeCymbal;
+                m_symbol_value = make_pair(3, 0);
+            } else {
+                m_symbol = SymQuarterCymbal;
+                m_symbol_value = make_pair(3, 0);
+            }
         } else {
             if (Fraction(1, 1) == get_simple_length()) {
                 m_symbol = SymWholeNote;
@@ -149,8 +154,6 @@ void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_flags(int x, int staff_y, int tail_length) const {
-    int distance = (m_symbol_value.first == SymCymbal) ? 1 : 0;
-
     for (int i = 0; i < (-static_cast<int>(get_simple_length())) - 2; i++) {
         if (m_line <= DisplayConstants::direction_line) {
             m_display->draw_text(SymUpFlag, x + 13,
@@ -166,7 +169,7 @@ void Notation::draw_flags(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_tail(int x, int staff_y, int tail_length) const {
-    int distance = (m_symbol == SymCymbal) ? 1 : 0;
+    int distance = ((m_symbol == SymQuarterCymbal) || (m_symbol == SymWholeCymbal)) ? 1 : 0;
     if (m_line <= DisplayConstants::direction_line) {
         m_display->draw_rect(x + 13, staff_y + ((m_line - tail_length + 4) * DisplayConstants::line_height) -
                                      DisplayConstants::staff_to_0,

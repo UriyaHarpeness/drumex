@@ -13,21 +13,18 @@ using namespace std;
 
 /**
  * todo: List of variations to implement:
+ *
  * 1.   Change note.
  * 2.   Change signature maybe.
  * 3.   Double notes - considering spacing, carrying, and breaking.
+ * 4.   Right left alternation.
+ * 5.   Fill notes with fixed spacing.
+ * 6.   3 bars of random beat and than one of exercise, chester for example.
+ * 7.   Continue hand play until not ghost.
+ * 8.   Stretch time - for example 1/16 to 1/32.
+ * 9.   Convert 4/4 to triplets.
  *
  * The variations need to also support elapsing.
- */
-
-/*  needs to be here
-    void convert_time_4_to_6(uint32_t note_value);
-
-    void convert_time_multiply(uint32_t note_value);
-
-    void convert_time_stretch(uint32_t note_value);
-
-    void convert_time(uint32_t note_value);
  */
 
 namespace variations {
