@@ -26,23 +26,9 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
 }
 
 void NotationDisplayUtils::display_notation(const VoiceContainer &up, const VoiceContainer &down,
-                                            const Fraction &current_location, DisplayVariables &display_variables) {
-    /*for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-            s[0] = (char) (i * 16 + j);
-            if (s[0] == 0)continue;
-
-            //d.draw_image("../stuff.png", 400, 0, a * 8, a * 8);
-            //d.draw_rect(a, a, 80, 10);
-
-            string k(s);
-            d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
-            //d.draw_text(to_string(i * 16 + j), 100, 100);
-        }
-    }*/
+                                            DisplayVariables &display_variables) {
     up.display(display_variables);
     down.display(display_variables);
-    // todo: add the notation end double line.
 }
 
 void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down,
@@ -181,7 +167,9 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
-        display_notation(up, down, m.get_current_location(), display_variables);
+        display_notation(up, down, display_variables);
+
+        // Notation::m_display->draw_image("stuff.png", 400, 400, 80, 80);
 
         Notation::m_display->present();
 

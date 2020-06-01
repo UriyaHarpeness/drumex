@@ -23,8 +23,7 @@ namespace NotationDisplayUtils {
     /**
      * Display the notation.
      */
-    void display_notation(const VoiceContainer &up, const VoiceContainer &down, const Fraction &current_location,
-                          DisplayVariables &display_variables);
+    void display_notation(const VoiceContainer &up, const VoiceContainer &down, DisplayVariables &display_variables);
 
     void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, DisplayVariables &display_variables);
 

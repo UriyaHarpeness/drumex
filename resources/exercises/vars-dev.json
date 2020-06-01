@@ -11,15 +11,16 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "Match": {},
+              "Apply": {
+                "Instrument": "Down"
+              }
             }
           }
         ]
       ],
       [
-        "variations/3s-variations.json",
+        "rudiments/chester-2-a.json",
         [
           0
         ],
@@ -27,9 +28,13 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "DestinationInstrument": "Down"
+              "Match": {},
+              "Apply": {
+                "Instrument": "Up",
+                "Modifiers": [
+                  "Open"
+                ]
+              }
             }
           }
         ]

@@ -1,8 +1,8 @@
 #include "Variations.h"
 
 bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
-    bool all_instruments = instruments.empty();
-    bool all_modifiers = modifiers.empty();
+    bool all_instruments = instruments.isNull() or instruments.empty();
+    bool all_modifiers = modifiers.isNull() or modifiers.empty();
 
     if (all_instruments && all_modifiers) {
         return true;
@@ -174,14 +174,18 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
 }
 
 void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
-    // overriding is not possible.
+    bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
+    Instrument destination_instrument = (override_instrument ? instrument_names.at(
+            arguments["Apply"]["Instrument"].asString()) : Unbound);
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
 
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+    if (override_modifiers) {
+        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
 
-    Instrument destination_instrument = instrument_names.at(arguments["DestinationInstrument"].asString());
-
-    // todo: the locations are now merged, need to handle everything in a correct way, in all variations.
-    // todo: better for loop.
     Group new_group;
     Locations new_locations;
 
@@ -191,14 +195,10 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
         new_locations[global_offset] = group;
 
         for (const auto &note : group) {
-            if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                // to the mapping.
-                // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                new_group.push_back({BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
+            if ((note.get_playing() == BasePlay) &&
+                match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
+                new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
+                                     note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
             }
         }
         if (!new_group.empty()) {

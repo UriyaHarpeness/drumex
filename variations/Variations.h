@@ -14,7 +14,7 @@ using namespace std;
 /**
  * todo: List of variations to implement:
  *
- * 1.   Change note.
+ * 1. + Change note.
  * 2.   Change signature maybe.
  * 3.   Double notes - considering spacing, carrying, and breaking.
  * 4.   Right left alternation.
