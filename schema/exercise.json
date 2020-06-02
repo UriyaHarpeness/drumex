@@ -1,0 +1,233 @@
+{
+  "$id": "Exercise",
+  "title": "Exercise",
+  "type": "object",
+  "description": "A full definition of an Exercise.",
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Name of the Exercise."
+    },
+    "Variations": {
+      "type": "array",
+      "description": "Different defined Variation batches.",
+      "items": {
+        "type": "array",
+        "description": "Different defined Variations.",
+        "items": {
+          "type": "object",
+          "description": "Singe defined Variation.",
+          "properties": {
+            "Part": {
+              "type": "string",
+              "description": "Part path."
+            },
+            "Indexes": {
+              "description": "Part indexes.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "All"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 1
+                }
+              ]
+            },
+            "Apply": {
+              "type": "array",
+              "description": "Applied Variations.",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/Variations/properties/Change Note"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "Part",
+            "Indexes",
+            "Apply"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "Name",
+    "Variations"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Note": {
+      "type": "array",
+      "description": "Single Note definition.",
+      "items": [
+        {
+          "type": "string",
+          "description": "Instrument.",
+          "enum": [
+            "Up",
+            "Down",
+            "Rest",
+            "China",
+            "Crash",
+            "HiHat",
+            "HighTom",
+            "MidTom",
+            "Snare",
+            "LowTom",
+            "FloorTom",
+            "Bass"
+          ]
+        },
+        {
+          "type": "array",
+          "description": "Length.",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "additionalItems": false
+        },
+        {
+          "type": "array",
+          "description": "Modifiers.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CrossStick",
+              "Ghost",
+              "Accent",
+              "Dot",
+              "Rimshot",
+              "Flam",
+              "Drag",
+              "Close",
+              "Loose",
+              "OpenClose",
+              "Open",
+              "Choke",
+              "Right",
+              "Left"
+            ]
+          },
+          "minItems": 1
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 3,
+      "additionalItems": false
+    },
+    "Variations": {
+      "type": "object",
+      "description": "The available Variations.",
+      "properties": {
+        "Change Note": {
+          "type": "object",
+          "description": "Change Note Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "Change Note"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Match": {
+                  "type": "object",
+                  "description": "Note match properties.",
+                  "properties": {
+                    "Instruments": {
+                      "type": "array",
+                      "description": "Instruments match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/0"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "Apply": {
+                  "type": "object",
+                  "description": "Note apply properties.",
+                  "properties": {
+                    "Instrument": {
+                      "type": "string",
+                      "description": "Instrument apply.",
+                      "oneOf": [
+                        {
+                          "$ref": "#/definitions/Note/items/0"
+                        }
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers apply.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "Match",
+                "Apply"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

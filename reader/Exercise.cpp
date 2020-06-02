@@ -16,25 +16,21 @@ Exercise::Exercise(const string &path, int index) {
     Log(INFO).Get() << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
 
-    if (variation.isNull()) {
-        throw runtime_error("Invalid Variation Index");
-    }
-
     vector<Part> parts;
     vector<vector<Part>> all_parts;
     for (const auto &parts_variation : variation) {
-        if (parts_variation[1].empty()) {
+        if (parts_variation["Indexes"] == "All") {
             for (int i = 0;
-                 i < Part::get_parts_number("resources/" + parts_variation[0].asString()); parts.emplace_back(
-                    "resources/" + parts_variation[0].asString(), i++));
+                 i < Part::get_parts_number("resources/" + parts_variation["Part"].asString()); parts.emplace_back(
+                    "resources/" + parts_variation["Part"].asString(), i++));
         } else {
-            for (const auto &i : parts_variation[1]) {
-                parts.emplace_back("resources/" + parts_variation[0].asString(), i.asInt());
+            for (const auto &i : parts_variation["Indexes"]) {
+                parts.emplace_back("resources/" + parts_variation["Part"].asString(), i.asInt());
             }
         }
 
         for (auto &part : parts) {
-            for (const auto &single_variation : parts_variation[2]) {
+            for (const auto &single_variation : parts_variation["Apply"]) {
                 Log(INFO).Get() << "Applying variation: " << single_variation["Name"].asString() << endl;
                 variations::name_to_variation.at(single_variation["Name"].asString())
                         (part, single_variation["Arguments"]);

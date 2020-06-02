@@ -206,34 +206,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
             new_group.clear();
         }
     }
-    part.set_location(move(new_locations));
-}
-
-void variations::PlayRight::apply(Part &part, const Json::Value &arguments) {
-    /*printf("variations::PlayRight::apply\n");
-
-    TimeSignature time_signature = part.get_time_signature();
-    Actions actions(time_signature.first);
-    size_t index = 0;
-    for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Right);
-    }
-    part.set_actions(actions);
-    part.set_time_signature(time_signature);
-    */
-}
-
-void variations::PlayLeft::apply(Part &part, const Json::Value &arguments) {
-    /*
-    TimeSignature time_signature = part.get_time_signature();
-    Actions actions(time_signature.first);
-    size_t index = 0;
-    for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Left);
-    }
-    part.set_actions(actions);
-    part.set_time_signature(time_signature);
-    */
+    part.set_location(new_locations);
 }
 
 void variations::StretchTimeSignature::apply(Part &part, const Json::Value &arguments) {

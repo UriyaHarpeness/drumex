@@ -21,10 +21,6 @@ Part::Part(const string &path, int index) {
     Json::Value global_definitions = obj["Global"];
     Json::Value part = obj["Parts"][index];
 
-    if (part.isNull()) {
-        throw runtime_error("Invalid Part Index");
-    }
-
     // todo: document jsons structures.
     if (part["Time Signature"].isNull()) {
         part["Time Signature"] = global_definitions["Time Signature"];
@@ -32,7 +28,7 @@ Part::Part(const string &path, int index) {
     if (part["Type"].isNull()) {
         part["Type"] = global_definitions["Type"];
     }
-    if (part["Part"]["Definitions"].isNull()) {
+    if ((part["Type"].asString() == "Custom") && (part["Part"]["Definitions"].isNull())) {
         part["Part"]["Definitions"] = global_definitions["Part"]["Definitions"];
     }
 
@@ -41,11 +37,8 @@ Part::Part(const string &path, int index) {
     // currently supported types are only "Regular" and "Custom", maybe will need to expand.
     if (part["Type"].asString() == "Regular") {
         m_location = read_regular_voice(part["Part"]);
-    } else if (part["Type"].asString() == "Custom") {
-        m_location = read_custom_voice(part["Part"]);
     } else {
-        // todo: add more understandable exceptions throughout the code.
-        throw runtime_error("Unknown Part Type");
+        m_location = read_custom_voice(part["Part"]);
     }
 
     // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in

@@ -100,7 +100,7 @@ void NotationDisplayUtils::process_events(Metronome &m, bool &quit, const Global
                 auto current_location = global_locations.find(
                         Fraction(((int) static_cast<double>(m.get_current_location() / signature)) + 1) * signature);
                 if (current_location == prev(global_locations.end())) {
-                    m.set_current_location(prev(global_locations.end())->first);
+                    m.set_current_location(prev(prev(global_locations.end()))->first);
                 } else {
                     m.set_current_location(prev(current_location)->first);
                 }

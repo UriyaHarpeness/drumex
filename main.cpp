@@ -56,6 +56,7 @@ int main(int argv, char *argc[]) {
     // todo: maybe limit the note length to single beat optionally.
     // todo: add support for buzz roll and maybe even open roll.
     // todo: add option to enable dotted rests.
+    // todo: improve the schemas of parts and exercises to be more readable and clear, accordingly update schemas.
 
     /**
      * todo:
@@ -66,38 +67,6 @@ int main(int argv, char *argc[]) {
      */
 
     return 0;
-
-    /*
-    vector<vector<Notation>> stuff = {
-            {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,   {1, 8},  {}}},
-            {{BasePlay, SnareInst,   {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,   {1, 1},  {}}},
-            {{BaseRest, UnboundUp,   {1, 2},  {}}},
-            {{BasePlay, SnareInst,   {1, 2},  {}},              {BasePlay, BassInst,  {1, 2}, {}}},
-            {{BasePlay, BassInst,    {1, 8},  {}},              {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,   {1, 8},  {}}},
-            {{BasePlay, SnareInst,   {1, 8},  {ModCrossStick}}, {BasePlay, HiHatInst, {1, 8}, {}}},
-            {{BasePlay, HiHatInst,   {1, 8},  {ModOpen}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModFlam}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BaseRest, UnboundUp,   {1, 16}, {}}},
-            {{BasePlay, HighTomInst, {1, 16}, {ModDrag}}},
-    };
-     */
 
     // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
     // between them.

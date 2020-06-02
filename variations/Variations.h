@@ -15,14 +15,14 @@ using namespace std;
  * todo: List of variations to implement:
  *
  * 1. + Change note.
- * 2.   Change signature maybe.
+ * 2.   Convert 4/4 to triplets.
  * 3.   Double notes - considering spacing, carrying, and breaking.
  * 4.   Right left alternation.
  * 5.   Fill notes with fixed spacing.
  * 6.   3 bars of random beat and than one of exercise, chester for example.
  * 7.   Continue hand play until not ghost.
  * 8.   Stretch time - for example 1/16 to 1/32.
- * 9.   Convert 4/4 to triplets.
+ * 9.   Change signature maybe.
  *
  * The variations need to also support elapsing.
  */
@@ -42,12 +42,6 @@ namespace variations {
     namespace ChangeNote {
         void apply(Part &part, const Json::Value &arguments);
     }
-    namespace PlayRight {
-        void apply(Part &part, const Json::Value &arguments);
-    }
-    namespace PlayLeft {
-        void apply(Part &part, const Json::Value &arguments);
-    }
     namespace StretchTimeSignature {
         void apply(Part &part, const Json::Value &arguments);
     }
@@ -59,8 +53,6 @@ namespace variations {
                                                       {"Quick Double",           QuickDouble::apply},
                                                       {"Quick Double Carry",     QuickDoubleCarry::apply},
                                                       {"Change Note",            ChangeNote::apply},
-                                                      {"Play Right",             PlayRight::apply},
-                                                      {"Play Left",              PlayLeft::apply},
                                                       {"Stretch Time Signature", StretchTimeSignature::apply},
                                                       {"Extend Time Signature",  ExtendTimeSignature::apply}};
 }

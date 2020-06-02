@@ -2,12 +2,12 @@
   "Name": "Variations",
   "Variations": [
     [
-      [
-        "rudiments/chester-2-a.json",
-        [
+      {
+        "Part": "rudiments/chester-2-a.json",
+        "Indexes": [
           0
         ],
-        [
+        "Apply": [
           {
             "Name": "Quick Double",
             "Arguments": {
@@ -28,7 +28,7 @@
             }
           }
         ]
-      ]
+      }
     ]
   ]
 }
