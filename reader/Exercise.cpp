@@ -13,7 +13,7 @@ Exercise::Exercise(const string &path, int index) {
     reader.parse(exercise_file, obj);
     exercise_file.close();
 
-    Log(INFO).Get() << "Loading exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
+    Log(INFO).Get() << "Loading Exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
 
     vector<Part> parts;
@@ -31,9 +31,10 @@ Exercise::Exercise(const string &path, int index) {
 
         for (auto &part : parts) {
             for (const auto &single_variation : parts_variation["Apply"]) {
-                Log(INFO).Get() << "Applying variation: " << single_variation["Name"].asString() << endl;
+                Log(INFO).Get() << "Applying Variation: " << single_variation["Name"].asString() << endl;
                 variations::name_to_variation.at(single_variation["Name"].asString())
                         (part, single_variation["Arguments"]);
+                location::optimize_location(part.get_mutable_location());
             }
         }
 

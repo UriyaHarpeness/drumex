@@ -11,10 +11,7 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Match": {
-                "Instruments": [],
-                "Modifiers": []
-              },
+              "Match": {},
               "Apply": {
                 "Instrument": "Snare"
               }
@@ -31,10 +28,7 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Match": {
-                "Instruments": [],
-                "Modifiers": []
-              },
+              "Match": {},
               "Apply": {
                 "Instrument": "HiHat"
               }
@@ -51,10 +45,7 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Match": {
-                "Instruments": [],
-                "Modifiers": []
-              },
+              "Match": {},
               "Apply": {
                 "Instrument": "FloorTom"
               }
@@ -71,10 +62,7 @@
           {
             "Name": "Change Note",
             "Arguments": {
-              "Match": {
-                "Instruments": [],
-                "Modifiers": []
-              },
+              "Match": {},
               "Apply": {
                 "Instrument": "Bass"
               }

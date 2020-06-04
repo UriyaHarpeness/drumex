@@ -47,6 +47,9 @@
                 "oneOf": [
                   {
                     "$ref": "#/definitions/Variations/properties/Change Note"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Tuplet"
                   }
                 ]
               }
@@ -145,7 +148,7 @@
             "Name": {
               "type": "string",
               "description": "Variation name.",
-              "pattern": "Change Note"
+              "pattern": "^Change Note$"
             },
             "Arguments": {
               "type": "object",
@@ -224,6 +227,21 @@
           "required": [
             "Name",
             "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Tuplet": {
+          "type": "object",
+          "description": "Tuplet Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Tuplet$"
+            }
+          },
+          "required": [
+            "Name"
           ],
           "additionalProperties": false
         }

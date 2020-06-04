@@ -198,7 +198,7 @@ void Notation::draw_head(int x, int staff_y) const {
 
 void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
     draw_ledgers(x, staff_y);
-    if ((m_length < Fraction(1, 1)) && (m_playing != BaseRest)) {
+    if ((get_simple_length() < Fraction(1, 1)) && (m_playing != BaseRest)) {
         if (flags) {
             draw_flags(x, staff_y, tail_length);
         }

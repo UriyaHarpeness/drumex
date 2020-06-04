@@ -100,7 +100,7 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
     Fraction offset;
 
     for (const auto &group : notation) {
-        // Assumes all the group has the same BasicPlaying and length.
+        // Assumes every group has the same BasicPlaying and length.
         auto fractions = split_fraction(beat, offset, group[0].get_rounded_length(), ratio);
         BasicPlaying playing = group[0].get_playing();
         for (const auto &fraction : fractions) {

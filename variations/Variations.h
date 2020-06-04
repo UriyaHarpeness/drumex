@@ -15,7 +15,7 @@ using namespace std;
  * todo: List of variations to implement:
  *
  * 1. + Change note.
- * 2.   Convert 4/4 to triplets.
+ * 2. + Convert 4/4 to triplets.
  * 3.   Double notes - considering spacing, carrying, and breaking.
  * 4.   Right left alternation.
  * 5.   Fill notes with fixed spacing.
@@ -30,6 +30,17 @@ using namespace std;
 namespace variations {
     bool match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers);
 
+    namespace ChangeNote {
+        void apply(Part &part, const Json::Value &arguments);
+    }
+    namespace Tuplet {
+        static const array<int, 4> sixteenth_tuplet = {0,
+                                                       2,
+                                                       3,
+                                                       5};
+
+        void apply(Part &part, const Json::Value &arguments);
+    }
     namespace DoubleNotes {
         void apply(Part &part, const Json::Value &arguments);
     }
@@ -39,20 +50,19 @@ namespace variations {
     namespace QuickDoubleCarry {
         void apply(Part &part, const Json::Value &arguments);
     }
-    namespace ChangeNote {
-        void apply(Part &part, const Json::Value &arguments);
-    }
     namespace StretchTimeSignature {
         void apply(Part &part, const Json::Value &arguments);
     }
     namespace ExtendTimeSignature {
         void apply(Part &part, const Json::Value &arguments);
     }
-    const map<string, void (*)(Part &, const Json::Value &)> name_to_variation = \
-                                                     {{"Double Notes",           DoubleNotes::apply},
+
+    static const map<string, void (*)(Part &, const Json::Value &)> name_to_variation = \
+                                                     {{"Change Note",            ChangeNote::apply},
+                                                      {"Tuplet",                 Tuplet::apply},
+                                                      {"Double Notes",           DoubleNotes::apply},
                                                       {"Quick Double",           QuickDouble::apply},
                                                       {"Quick Double Carry",     QuickDoubleCarry::apply},
-                                                      {"Change Note",            ChangeNote::apply},
                                                       {"Stretch Time Signature", StretchTimeSignature::apply},
                                                       {"Extend Time Signature",  ExtendTimeSignature::apply}};
 }

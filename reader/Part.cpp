@@ -17,7 +17,7 @@ Part::Part(const string &path, int index) {
     reader.parse(part_file, obj);
     part_file.close();
 
-    Log(INFO).Get() << "Loading part: " << obj["Name"].asString() << "[" << index << "]" << endl;
+    Log(INFO).Get() << "Loading Part: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value global_definitions = obj["Global"];
     Json::Value part = obj["Parts"][index];
 

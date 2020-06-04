@@ -47,7 +47,8 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
         for (const auto &location : m_locations) {
             while (next_beat <= location.first) {
                 m_rhythms_containers.emplace_back(move(rhythm_location), CommonTime, direction,
-                                                  offset + (next_beat - m_beat), ratio / m_most_occurring_rhythm);
+                                                  offset + (next_beat - m_beat),
+                                                  ratio / (m_most_occurring_rhythm == 2 ? 4 : m_most_occurring_rhythm));
                 rhythm_location.clear();
                 if (next_beat == scope) {
                     break;
@@ -378,12 +379,11 @@ pair<int, bool> RhythmContainer::calc_most_occurring_rhythm(const Locations &loc
     }
     if (prime_factors_by_count.empty()) {
         prime_factors_by_count[1] = {2};
-    } else if ((prime_factors_by_count.size() == 2) &&
-               (prime_factors_by_count.begin()->second.size() == 1) &&
+    } else if ((prime_factors_counter.size() > 1) &&
                (*prime_factors_by_count.begin()->second.begin() == 2)) {
         // If the rhythms for example can all be divided by 2 and 5, and 5 is the most occurring - act like they all
         // divide only by 5, because 2 can always be noted.
-        prime_factors_by_count.erase(prime_factors_by_count.begin());
+        prime_factors_by_count.begin()->second.erase(2);
     }
 
     // Choose the most occurring rhythm.

@@ -39,6 +39,61 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
     return false;
 }
 
+void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
+    bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
+    Instrument destination_instrument = (override_instrument ? instrument_names.at(
+            arguments["Apply"]["Instrument"].asString()) : Unbound);
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
+
+    if (override_modifiers) {
+        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
+
+    Group new_group;
+    Locations new_locations;
+
+    for (const auto &location : part.get_location()) {
+        Fraction global_offset = location.first;
+        Group group = location.second;
+        new_locations[global_offset] = group;
+
+        // todo: support change only single note in group.
+        for (const auto &note : group) {
+            if ((note.get_playing() == BasePlay) &&
+                match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
+                new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
+                                     note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
+            }
+        }
+        if (!new_group.empty()) {
+            new_locations[location.first] = move(new_group);
+            new_group.clear();
+        }
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    for (const auto &location : part.get_location()) {
+        if (static_cast<bool>(location.first % Fraction(1, 16))) {
+            throw runtime_error("Invalid Note Offset For Tuplet Variation");
+        }
+        Fraction offset_in_quarter = location.first % Fraction(1, 4);
+        Fraction quarter_location = location.first - offset_in_quarter;
+        Fraction tuplet_offset = {sixteenth_tuplet[(int) static_cast<double>(offset_in_quarter / Fraction(1, 16))],
+                                  4 * 6};
+        new_locations[quarter_location + tuplet_offset] = location.second;
+    }
+
+    part.set_location(new_locations);
+}
+
 void variations::DoubleNotes::apply(Part &part, const Json::Value &arguments) {
     /*
     TimeSignature time_signature = part.get_time_signature();
@@ -171,42 +226,6 @@ void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &argument
         voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
                                                        part.get_signature());
     }
-}
-
-void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
-    bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
-    Instrument destination_instrument = (override_instrument ? instrument_names.at(
-            arguments["Apply"]["Instrument"].asString()) : Unbound);
-    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
-    vector<Modifier> modifiers;
-
-    if (override_modifiers) {
-        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
-            modifiers.push_back(modifier_names.at(modifier.asString()));
-        }
-    }
-
-    Group new_group;
-    Locations new_locations;
-
-    for (const auto &location : part.get_location()) {
-        Fraction global_offset = location.first;
-        Group group = location.second;
-        new_locations[global_offset] = group;
-
-        for (const auto &note : group) {
-            if ((note.get_playing() == BasePlay) &&
-                match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
-                new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
-                                     note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
-            }
-        }
-        if (!new_group.empty()) {
-            new_locations[location.first] = move(new_group);
-            new_group.clear();
-        }
-    }
-    part.set_location(new_locations);
 }
 
 void variations::StretchTimeSignature::apply(Part &part, const Json::Value &arguments) {
