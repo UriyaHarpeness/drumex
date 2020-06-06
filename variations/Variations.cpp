@@ -39,6 +39,26 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
     return false;
 }
 
+Locations variations::match(const Locations &locations, const Json::Value &instruments, const Json::Value &modifiers) {
+    Locations matching_locations;
+
+    for (const auto &location : locations) {
+        Group matching_group;
+        for (const auto &note : location.second) {
+            if (match(note, instruments, modifiers)) {
+                matching_group.push_back(note);
+            }
+        }
+        if (!matching_group.empty()) {
+            matching_locations[location.first] = move(matching_group);
+            matching_group.clear();
+        }
+    }
+    matching_locations.insert(*prev(locations.end()));
+
+    return move(matching_locations);
+}
+
 void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
     bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
     Instrument destination_instrument = (override_instrument ? instrument_names.at(
@@ -94,154 +114,54 @@ void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
     part.set_location(new_locations);
 }
 
-void variations::DoubleNotes::apply(Part &part, const Json::Value &arguments) {
-    /*
-    TimeSignature time_signature = part.get_time_signature();
-    // the nature of doubling notes can cause overriding, but since it is a single role, which should not have left and
-    // right sticking at the same time, this is ok.
-    const Actions &part_actions = part.get_actions();
-    Actions actions(part_actions);
-    for (size_t index = 0; index < time_signature.first; index++) {
-        if (get<0>(part_actions[index]) != Rest) {
-            actions[(index + 1) % time_signature.first] = part_actions[index];
-        }
-    }
-    part.set_actions(actions);
-    */
-}
-
-void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
-    Notations &notation = part.get_mutable_notation();
-
-    // overriding is not possible.
-    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually aplit notation may just be that.
-
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+void variations::Double::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
 
     Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+    Locations matching = match(part.get_location(), arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"]);
+    bool carry = arguments["Carry"].asBool();
 
-    // todo: better for loop.
-    int play_count = 0;
-    bool triggered_play;
-    for (auto &voice : notation) {
-        auto locations = location::notation_to_location(voice);
-        Locations new_locations;
-
-        for (const auto &location : locations) {
-            Fraction global_offset = location.first;
-            Group group = location.second;
-            new_locations[global_offset] = group;
-            triggered_play = false;
-            for (const auto &note : group) {
-                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                    // to the mapping.
-                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                    if (triggered_play) {
-                        break;
-                    }
-                    triggered_play = true;
-                    play_count = 1;
-                    if (note.get_length() > distance) {
-                        for (Fraction play = global_offset + distance;
-                             (play < global_offset + note.get_length()) &&
-                             (play_count > 0); play_count--, play += distance) {
-                            new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
-                        }
-                        play_count = 0;
-                    } else if (note.get_length() == distance) {
-                        // todo: what if the next note is irrelevant to the doubled notes?
-                        //new_locations[location.first + distance].push_back(
-                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
-                    } else {
-                        // What otherwise?
-                    }
-                }
+    // Treats all matching notes as the same one for that matter.
+    if (!carry) {
+        for (const auto &location : matching) {
+            if ((matching.find(location.first + distance) == matching.end()) &&
+                (location.first + distance < prev(matching.end())->first)) {
+                new_locations[location.first + distance] = location.second;
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
-                                                       part.get_signature());
+        part.set_location(location::merge_locations({new_locations, part.get_location()}));
+        return;
     }
-}
 
-void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &arguments) {
-    Notations &notation = part.get_mutable_notation();
-
-    // overriding is not possible.
-    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually split notation may just be that.
-
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
-
-    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
-
-    // todo: better for loop.
     int play_count = 0;
-    bool triggered_play;
-    for (auto &voice : notation) {
-        auto locations = location::notation_to_location(voice);
-        Locations new_locations;
+    for (auto location_it = matching.begin(); location_it != prev(matching.end()); location_it++) {
+        Fraction space = next(location_it)->first - location_it->first;
+        play_count++;
 
-        for (const auto &location : locations) {
-            Fraction global_offset = location.first;
-            Group group = location.second;
-            new_locations[global_offset] = group;
-            triggered_play = false;
-            for (const auto &note : group) {
-                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                    // to the mapping.
-                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                    if (triggered_play) {
-                        break;
-                    }
-                    triggered_play = true;
-                    play_count++;
-                    if (note.get_length() > distance) {
-                        for (Fraction play = global_offset + distance;
-                             (play < global_offset + note.get_length()) &&
-                             (play_count > 0); play_count--, play += distance) {
-                            new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
-                        }
-                        play_count = 0;
-                    } else if (note.get_length() == distance) {
-                        // todo: what if the next note is irrelevant to the doubled notes?
-                        //new_locations[location.first + distance].push_back(
-                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
-                    } else {
-                        // What otherwise?
-                    }
-                }
+        if (space == distance) {
+            /*
+             * Carry.
+             * todo:
+             * multiplying can have several types, for example for:
+             * 0----00---0-0---
+             * it can be:
+             * 0o---00oo-0o0o--
+             * 0-o--00oo-0-0-o-
+             * 0-o--00-oo0-0-o-
+             * need to see which to choose, or how to support multiple types,
+             * currently it will be supported naively, assuming there won't be smaller space that the distance, this may not be always true.
+             */
+        } else {
+            if (space < distance) {
+                throw runtime_error("Double assumes that there's no space smaller than the distance");
             }
+
+            play_count = min(play_count, (int) static_cast<double>(space / distance));
+            do {
+                new_locations[location_it->first + (Fraction(play_count) * distance)] = location_it->second;
+            } while (--play_count);
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
-                                                       part.get_signature());
     }
-}
 
-void variations::StretchTimeSignature::apply(Part &part, const Json::Value &arguments) {
-    /*
-    printf("variations::StretchTimeSignature::apply\n");
-
-    // todo: this currently multiplies, need to support some time in "as triplets"
-    part.convert_time_stretch(arguments[1].asInt());
-    */
-}
-
-void variations::ExtendTimeSignature::apply(Part &part, const Json::Value &arguments) {
-    /*
-    // todo: only words in whole note results, like 3/3 or 4/4
-    TimeSignature time_signature = part.get_time_signature();
-    time_signature.second = arguments[1].asInt();
-    part.set_time_signature(time_signature);
-    */
+    part.set_location(location::merge_locations({new_locations, part.get_location()}));
 }

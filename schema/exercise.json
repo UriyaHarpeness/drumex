@@ -50,6 +50,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Tuplet"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Double"
                   }
                 ]
               }
@@ -106,6 +109,8 @@
               "type": "integer"
             }
           ],
+          "minItems": 2,
+          "maxItems": 2,
           "additionalItems": false
         },
         {
@@ -242,6 +247,81 @@
           },
           "required": [
             "Name"
+          ],
+          "additionalProperties": false
+        },
+        "Double": {
+          "type": "object",
+          "description": "Double Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Double$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Distance": {
+                  "type": "array",
+                  "description": "Distance between doubled Notes.",
+                  "items": {
+                    "$ref": "#/definitions/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                },
+                "Match": {
+                  "type": "object",
+                  "description": "Note match properties.",
+                  "properties": {
+                    "Instruments": {
+                      "type": "array",
+                      "description": "Instruments match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/0"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "Carry": {
+                  "type": "boolean",
+                  "description": "Carry Notes between matches."
+                }
+              },
+              "required": [
+                "Distance",
+                "Match",
+                "Carry"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
           ],
           "additionalProperties": false
         }
