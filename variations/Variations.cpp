@@ -201,3 +201,52 @@ void variations::Fill::apply(Part &part, const Json::Value &arguments) {
 
     part.set_location(location::merge_locations({new_locations, part.get_location()}));
 }
+
+void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    string sticking = arguments["Sticking"].asString();
+    int index = 0;
+    bool modifier_found;
+    Modifier modifier;
+    vector<Modifier> modifiers;
+    Group group;
+
+    for (auto location_it = part.get_location().begin();
+         location_it != prev(part.get_location().end()); location_it++, index = (index + 1) % (int) sticking.length()) {
+        for (auto &note : location_it->second) {
+            modifier_found = false;
+            for (const auto &mod : note.get_modifiers()) {
+                if ((mod == ModRight) || (mod == ModLeft)) {
+                    modifier_found = true;
+                    modifier = mod;
+                } else {
+                    modifiers.push_back(mod);
+                }
+            }
+
+            switch (sticking[index]) {
+                case 'L':
+                    modifiers.push_back(ModLeft);
+                    break;
+                case 'R':
+                    modifiers.push_back(ModRight);
+                    break;
+                case '.':
+                    break;
+                case '-':
+                    if (modifier_found) {
+                        modifiers.push_back((modifier == ModRight) ? ModLeft : ModRight);
+                    }
+                    break;
+            }
+            group.emplace_back(note.get_playing(), note.get_instrument(), note.get_length(), move(modifiers));
+            modifiers.clear();
+        }
+
+        new_locations[location_it->first] = move(group);
+        group.clear();
+    }
+
+    part.set_location(new_locations);
+}

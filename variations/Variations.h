@@ -18,7 +18,7 @@ using namespace std;
  * 2. + Convert 4/4 to triplets.
  * 3. + Double notes - considering spacing, carrying, and breaking.
  * 4. + Fill notes with fixed spacing.
- * 5.   Right left alternation.
+ * 5. + Right left alternation.
  * 6.   3 bars of random beat and than one of exercise, chester for example.
  * 7.   Continue hand play until not ghost.
  * 8.   Stretch time - for example 1/16 to 1/32.
@@ -50,10 +50,14 @@ namespace variations {
     namespace Fill {
         void apply(Part &part, const Json::Value &arguments);
     }
+    namespace Sticking {
+        void apply(Part &part, const Json::Value &arguments);
+    }
 
     static const map<string, void (*)(Part &, const Json::Value &)> name_to_variation = \
                                                      {{"Change Note", ChangeNote::apply},
                                                       {"Tuplet",      Tuplet::apply},
                                                       {"Double",      Double::apply},
-                                                      {"Fill",        Fill::apply}};
+                                                      {"Fill",        Fill::apply},
+                                                      {"Sticking",    Sticking::apply}};
 }

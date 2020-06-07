@@ -56,6 +56,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Fill"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Sticking"
                   }
                 ]
               }
@@ -387,6 +390,38 @@
               "required": [
                 "Distance",
                 "Apply"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Sticking": {
+          "type": "object",
+          "description": "Sticking Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Sticking$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Sticking": {
+                  "type": "string",
+                  "description": "Sticking indication.",
+                  "pattern": "^[RL/.-]+$",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "Sticking"
               ],
               "additionalProperties": false
             }
