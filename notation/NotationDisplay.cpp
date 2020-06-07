@@ -99,13 +99,13 @@ void NotationDisplay::draw_connected_notes(const int staff_y, const GlobalLocati
                 // Rests in beams keep the previous note beams number.
                 beams = (-2 - static_cast<int>(note.get_simple_length()));
             }
+            distance = global_locations.at(offset + group[0].get_length()).first - global_locations.at(offset).first;
+
             if (&note == &(group[0])) {
                 if (&group < &(notations[notations.size() - 2])) {
-                    distance = next(global_locations.find(offset))->second.first - global_locations.at(offset).first;
                     draw_connectors(global_locations.at(offset).first, staff_y, group[0].get_line(), distance, beams,
                                     stem_length);
                 } else if (&group == &(notations[notations.size() - 2])) {
-                    distance = next(global_locations.find(offset))->second.first - global_locations.at(offset).first;
                     // Last beam can be broken if notes have different lengths.
                     if (group[0].get_rounded_length() > DisplayConstants::minimal_supported_fraction) {
                         last_distance = DisplayConstants::minimal_distance;

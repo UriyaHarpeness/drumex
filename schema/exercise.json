@@ -53,6 +53,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Double"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Fill"
                   }
                 ]
               }
@@ -315,6 +318,75 @@
                 "Distance",
                 "Match",
                 "Carry"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Fill": {
+          "type": "object",
+          "description": "Fill Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Fill$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Distance": {
+                  "type": "array",
+                  "description": "Distance between filled Notes.",
+                  "items": {
+                    "$ref": "#/definitions/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                },
+                "Apply": {
+                  "type": "object",
+                  "description": "Note apply properties.",
+                  "properties": {
+                    "Instrument": {
+                      "type": "string",
+                      "description": "Instrument apply.",
+                      "oneOf": [
+                        {
+                          "$ref": "#/definitions/Note/items/0"
+                        }
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers apply.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "#/definitions/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "required": [
+                    "Instrument"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "Distance",
+                "Apply"
               ],
               "additionalProperties": false
             }

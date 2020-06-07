@@ -153,13 +153,49 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
              */
         } else {
             if (space < distance) {
-                throw runtime_error("Double assumes that there's no space smaller than the distance");
+                throw runtime_error("Double Variation assumes that there's no space smaller than the distance");
             }
 
             play_count = min(play_count, (int) static_cast<double>(space / distance));
             do {
                 new_locations[location_it->first + (Fraction(play_count) * distance)] = location_it->second;
             } while (--play_count);
+        }
+    }
+
+    part.set_location(location::merge_locations({new_locations, part.get_location()}));
+}
+
+
+void variations::Fill::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+    Instrument destination_instrument = instrument_names.at(arguments["Apply"]["Instrument"].asString());
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
+
+    if (override_modifiers) {
+        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
+    Notation fill_note(BasePlay, destination_instrument, distance, modifiers);
+
+    // todo: maybe fill group of notes, and add match and fill the notes where no match (and only where hardcoded rests).
+    for (auto location_it = part.get_location().begin();
+         location_it != prev(part.get_location().end()); location_it++) {
+        Fraction space = next(location_it)->first - location_it->first;
+
+        if (space == distance) {
+        } else {
+            if (space < distance) {
+                throw runtime_error("Fill Variation assumes that there's no space smaller than the distance");
+            }
+
+            for (space -= distance; space >= distance; space -= distance) {
+                new_locations[location_it->first + space] = {fill_note};
+            }
         }
     }
 
