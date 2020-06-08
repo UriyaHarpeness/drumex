@@ -62,6 +62,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Stretch Sticking"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Scale"
                   }
                 ]
               }
@@ -447,6 +450,42 @@
           },
           "required": [
             "Name"
+          ],
+          "additionalProperties": false
+        },
+        "Scale": {
+          "type": "object",
+          "description": "Scale Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Scale$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Ratio": {
+                  "type": "array",
+                  "description": "Ratio to rescale with.",
+                  "items": {
+                    "$ref": "#/definitions/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                }
+              },
+              "required": [
+                "Ratio"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
           ],
           "additionalProperties": false
         }

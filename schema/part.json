@@ -139,10 +139,10 @@
       "description": "Time signature.",
       "items": [
         {
-          "type": "number"
+          "type": "integer"
         },
         {
-          "type": "number"
+          "type": "integer"
         }
       ],
       "minItems": 2,

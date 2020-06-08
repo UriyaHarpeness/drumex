@@ -1,5 +1,5 @@
 {
-  "Name": "Variations Development",
+  "Name": "Scale Example",
   "Variations": [
     [
       {
@@ -15,27 +15,6 @@
               "Apply": {
                 "Modifiers": [
                   "Accent"
-                ]
-              }
-            }
-          },
-          {
-            "Name": "Sticking",
-            "Arguments": {
-              "Sticking": "RL"
-            }
-          },
-          {
-            "Name": "Fill",
-            "Arguments": {
-              "Distance": [
-                1,
-                16
-              ],
-              "Apply": {
-                "Instrument": "Snare",
-                "Modifiers": [
-                  "Ghost"
                 ]
               }
             }
