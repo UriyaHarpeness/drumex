@@ -141,7 +141,6 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
         offset += group[0].get_rounded_length();
     }
 
-
     // todo: problematic if a note is as long as several bars, also does not consider other notes that may break the consistency.
     /*
      * Irrational notes are rounded up for the notes used, for example: 2/3 would contain 2-1/2, 3/7 would contain 3-1/4.

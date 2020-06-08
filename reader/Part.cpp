@@ -41,10 +41,6 @@ Part::Part(const string &path, int index) {
         m_location = read_custom_voice(part["Part"]);
     }
 
-    // todo: maybe generate only partially? splitting the notes correctly will need to happen again, and keeping it in
-    // one voice may be easier to modify, but first regenerate the correct spacing of stuff.
-    // this needs to happen on the Exercise part since he modifies the pure notation.
-
     location::optimize_location(m_location);
     m_length = prev(m_location.end())->first;
 }

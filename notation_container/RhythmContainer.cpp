@@ -197,7 +197,6 @@ void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end
             padding[offset] = NotationUtils::sum_padding(padding[offset], NotationUtils::merge_padding(it));
             offset += it[0].get_length();
         }
-        // todo: see what is the correct spacing.
         // todo: handle this 20 + 10 - 10 stuff more correctly.
         if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
             start_padding -= DisplayConstants::polyrhythm_sides_padding;
@@ -221,7 +220,6 @@ void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end
 void RhythmContainer::display(const GlobalLocations &global_locations, const int y, int start_padding,
                               int end_padding) const {
     if (m_rhythms_containers.empty()) {
-        // todo: see what is the correct spacing.
         if ((m_most_occurring_rhythm == 2) && (m_ratio == OneRatio)) {
             start_padding -= DisplayConstants::polyrhythm_sides_padding;
             end_padding -= DisplayConstants::polyrhythm_sides_padding;

@@ -59,6 +59,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Sticking"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Stretch Sticking"
                   }
                 ]
               }
@@ -416,7 +419,7 @@
                 "Sticking": {
                   "type": "string",
                   "description": "Sticking indication.",
-                  "pattern": "^[RL/.-]+$",
+                  "pattern": "^[RL/.0x]+$",
                   "minLength": 1
                 }
               },
@@ -429,6 +432,21 @@
           "required": [
             "Name",
             "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Stretch Sticking": {
+          "type": "object",
+          "description": "Stretch Sticking Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Stretch Sticking$"
+            }
+          },
+          "required": [
+            "Name"
           ],
           "additionalProperties": false
         }

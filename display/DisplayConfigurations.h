@@ -19,7 +19,6 @@ namespace DisplayConstants {
 
     const int line_height = 5;
 
-    // todo: maybe extract all of these configurations somewhere, and avoid passing to external functions.
     const int displaying_init_x = 80;
 
     const int displaying_max_x = window_width - 80;

@@ -138,7 +138,7 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
         Fraction space = next(location_it)->first - location_it->first;
         play_count++;
 
-        if (space == distance) {
+        if (space != distance) {
             /*
              * Carry.
              * todo:
@@ -151,7 +151,6 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
              * need to see which to choose, or how to support multiple types,
              * currently it will be supported naively, assuming there won't be smaller space that the distance, this may not be always true.
              */
-        } else {
             if (space < distance) {
                 throw runtime_error("Double Variation assumes that there's no space smaller than the distance");
             }
@@ -183,12 +182,14 @@ void variations::Fill::apply(Part &part, const Json::Value &arguments) {
     Notation fill_note(BasePlay, destination_instrument, distance, modifiers);
 
     // todo: maybe fill group of notes, and add match and fill the notes where no match (and only where hardcoded rests).
+    if (part.get_location().begin()->first > Fraction()) {
+        part.get_mutable_location().insert({Fraction(), {fill_note}});
+    }
     for (auto location_it = part.get_location().begin();
          location_it != prev(part.get_location().end()); location_it++) {
         Fraction space = next(location_it)->first - location_it->first;
 
-        if (space == distance) {
-        } else {
+        if (space != distance) {
             if (space < distance) {
                 throw runtime_error("Fill Variation assumes that there's no space smaller than the distance");
             }
@@ -233,8 +234,13 @@ void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
                     modifiers.push_back(ModRight);
                     break;
                 case '.':
+                    if (modifier_found) {
+                        modifiers.push_back(modifier);
+                    }
                     break;
-                case '-':
+                case '0':
+                    break;
+                case 'x':
                     if (modifier_found) {
                         modifiers.push_back((modifier == ModRight) ? ModLeft : ModRight);
                     }
@@ -246,6 +252,47 @@ void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
 
         new_locations[location_it->first] = move(group);
         group.clear();
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::StretchSticking::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations = part.get_location();
+
+    bool modifier_found;
+    Modifier modifier, prev_modifier;
+    Group group;
+    auto prev_location_it = new_locations.begin();
+
+    bool first = true;
+    for (auto location_it = new_locations.begin(); location_it != prev(new_locations.end()); location_it++) {
+        modifier_found = false;
+        for (auto &note : location_it->second) {
+            for (const auto &mod : note.get_modifiers()) {
+                if ((mod == ModRight) || (mod == ModLeft)) {
+                    modifier_found = true;
+                    modifier = mod;
+                }
+            }
+            if (modifier_found) {
+                break;
+            }
+        }
+
+        if (modifier_found) {
+            if (first) {
+                prev_modifier = (modifier == ModRight) ? ModLeft : ModRight;
+                first = false;
+            }
+            for (; prev_location_it != location_it; prev_location_it++) {
+                for (auto &note : prev_location_it->second) {
+                    note.add_modifier(prev_modifier);
+                }
+            }
+            prev_modifier = modifier;
+            prev_location_it++;
+        }
     }
 
     part.set_location(new_locations);
