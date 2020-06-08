@@ -65,6 +65,9 @@
                   },
                   {
                     "$ref": "#/definitions/Variations/properties/Scale"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Filter"
                   }
                 ]
               }
@@ -479,6 +482,75 @@
               },
               "required": [
                 "Ratio"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Filter": {
+          "type": "object",
+          "description": "Filter Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Filter$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Match": {
+                  "type": "array",
+                  "description": "Notes match properties.",
+                  "items": {
+                    "type": "object",
+                    "description": "Note match properties.",
+                    "properties": {
+                      "Instruments": {
+                        "type": "array",
+                        "description": "Instruments match.",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/definitions/Note/items/0"
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "additionalItems": false
+                      },
+                      "Modifiers": {
+                        "type": "array",
+                        "description": "Modifiers match.",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "$ref": "#/definitions/Note/items/2/items"
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "additionalItems": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "additionalItems": false
+                },
+                "Invert": {
+                  "type": "boolean",
+                  "description": "Invert Note matching."
+                }
+              },
+              "required": [
+                "Match"
               ],
               "additionalProperties": false
             }

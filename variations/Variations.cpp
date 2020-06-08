@@ -309,3 +309,33 @@ void variations::StretchSticking::apply(Part &part, const Json::Value &arguments
 
     part.set_location(new_locations);
 }
+
+void variations::Filter::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    bool invert = arguments["Invert"].isNull() ? false : arguments["Invert"].asBool();
+
+    Group group;
+    bool matching;
+    new_locations.insert(*prev(part.get_location().end()));
+    for (const auto &location : part.get_location()) {
+        for (const auto &note : location.second) {
+            matching = false;
+            for (const auto &match_arguments : arguments["Match"]) {
+                matching = match(note, match_arguments["Instruments"], match_arguments["Modifiers"]);
+                if (matching) {
+                    break;
+                }
+            }
+            if (invert ^ matching) {
+                group.push_back(note);
+            }
+        }
+        if (!group.empty()) {
+            new_locations[location.first] = move(group);
+            group.clear();
+        }
+    }
+
+    part.set_location(new_locations);
+}

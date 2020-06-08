@@ -1,5 +1,5 @@
 {
-  "Name": "Variations Development",
+  "Name": "Filter Example",
   "Variations": [
     [
       {
@@ -48,9 +48,14 @@
                   "Modifiers": [
                     "Right"
                   ]
+                },
+                {
+                  "Modifiers": [
+                    "Ghost"
+                  ]
                 }
               ],
-              "Invert": true
+              "Invert": false
             }
           }
         ]
