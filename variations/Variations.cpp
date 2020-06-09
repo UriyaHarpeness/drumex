@@ -1,9 +1,8 @@
 #include "Variations.h"
 
-
 bool variations::match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers) {
-    bool all_instruments = instruments.empty();
-    bool all_modifiers = modifiers.empty();
+    bool all_instruments = instruments.isNull() or instruments.empty();
+    bool all_modifiers = modifiers.isNull() or modifiers.empty();
 
     if (all_instruments && all_modifiers) {
         return true;
@@ -40,149 +39,39 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
     return false;
 }
 
-void variations::DoubleNotes::apply(Part &part, const Json::Value &arguments) {
-    /*
-    TimeSignature time_signature = part.get_time_signature();
-    // the nature of doubling notes can cause overriding, but since it is a single role, which should not have left and
-    // right sticking at the same time, this is ok.
-    const Actions &part_actions = part.get_actions();
-    Actions actions(part_actions);
-    for (size_t index = 0; index < time_signature.first; index++) {
-        if (get<0>(part_actions[index]) != Rest) {
-            actions[(index + 1) % time_signature.first] = part_actions[index];
-        }
-    }
-    part.set_actions(actions);
-    */
-}
+Locations variations::match(const Locations &locations, const Json::Value &instruments, const Json::Value &modifiers) {
+    Locations matching_locations;
 
-void variations::QuickDouble::apply(Part &part, const Json::Value &arguments) {
-    Notations &notation = part.get_mutable_notation();
-
-    // overriding is not possible.
-    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually aplit notation may just be that.
-
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
-
-    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
-
-    // todo: better for loop.
-    int play_count = 0;
-    bool triggered_play;
-    for (auto &voice : notation) {
-        auto locations = location::notation_to_location(voice);
-        Locations new_locations;
-
-        for (const auto &location : locations) {
-            Fraction global_offset = location.first;
-            Group group = location.second;
-            new_locations[global_offset] = group;
-            triggered_play = false;
-            for (const auto &note : group) {
-                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                    // to the mapping.
-                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                    if (triggered_play) {
-                        break;
-                    }
-                    triggered_play = true;
-                    play_count = 1;
-                    if (note.get_length() > distance) {
-                        for (Fraction play = global_offset + distance;
-                             (play < global_offset + note.get_length()) &&
-                             (play_count > 0); play_count--, play += distance) {
-                            new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
-                        }
-                        play_count = 0;
-                    } else if (note.get_length() == distance) {
-                        // todo: what if the next note is irrelevant to the doubled notes?
-                        //new_locations[location.first + distance].push_back(
-                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
-                    } else {
-                        // What otherwise?
-                    }
-                }
+    for (const auto &location : locations) {
+        Group matching_group;
+        for (const auto &note : location.second) {
+            if (match(note, instruments, modifiers)) {
+                matching_group.push_back(note);
             }
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
-                                                       part.get_signature());
-    }
-}
-
-void variations::QuickDoubleCarry::apply(Part &part, const Json::Value &arguments) {
-    Notations &notation = part.get_mutable_notation();
-
-    // overriding is not possible.
-    // todo: will need to see the whole parts of rests, for example seeing 1/2 rest as 2 1/4 rests...
-    // may be solvable with some conversion function, actually split notation may just be that.
-
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
-
-    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
-
-    // todo: better for loop.
-    int play_count = 0;
-    bool triggered_play;
-    for (auto &voice : notation) {
-        auto locations = location::notation_to_location(voice);
-        Locations new_locations;
-
-        for (const auto &location : locations) {
-            Fraction global_offset = location.first;
-            Group group = location.second;
-            new_locations[global_offset] = group;
-            triggered_play = false;
-            for (const auto &note : group) {
-                if (match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                    // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                    // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                    // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                    // to the mapping.
-                    // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                    if (triggered_play) {
-                        break;
-                    }
-                    triggered_play = true;
-                    play_count++;
-                    if (note.get_length() > distance) {
-                        for (Fraction play = global_offset + distance;
-                             (play < global_offset + note.get_length()) &&
-                             (play_count > 0); play_count--, play += distance) {
-                            new_locations[play] = {{BasePlay, note.get_instrument(),
-                                                           note.get_length() - distance, note.get_modifiers()}};
-                        }
-                        play_count = 0;
-                    } else if (note.get_length() == distance) {
-                        // todo: what if the next note is irrelevant to the doubled notes?
-                        //new_locations[location.first + distance].push_back(
-                        //        {BasePlay, note.get_instrument(), note.get_length() - distance, note.get_modifiers()});
-                    } else {
-                        // What otherwise?
-                    }
-                }
-            }
+        if (!matching_group.empty()) {
+            matching_locations[location.first] = move(matching_group);
+            matching_group.clear();
         }
-        voice = NotationUtils::generate_voice_notation(location::location_to_notation(new_locations),
-                                                       part.get_signature());
     }
+    matching_locations.insert(*prev(locations.end()));
+
+    return move(matching_locations);
 }
 
 void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
-    // overriding is not possible.
+    bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
+    Instrument destination_instrument = (override_instrument ? instrument_names.at(
+            arguments["Apply"]["Instrument"].asString()) : Unbound);
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
 
-    // todo: maybe keep the notation in a map of global locations, at least at first for easy distance management and changes.
+    if (override_modifiers) {
+        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
 
-    Instrument destination_instrument = instrument_names.at(arguments["DestinationInstrument"].asString());
-
-    // todo: the locations are now merged, need to handle everything in a correct way, in all variations.
-    // todo: better for loop.
     Group new_group;
     Locations new_locations;
 
@@ -191,15 +80,12 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
         Group group = location.second;
         new_locations[global_offset] = group;
 
+        // todo: support change only single note in group.
         for (const auto &note : group) {
-            if ((note.get_playing() == BasePlay) && match(note, arguments["Instruments"], arguments["Modifiers"])) {
-                // easy case, otherwise overriding needs to be checked, plus other difficult logic, lets go!
-                // can be problematic with modifiers, mostly isn't the case, currently let it slide.
-
-                // todo: use only the global mapping, not the notes distance, and later adjust the notes distance
-                // to the mapping.
-                // also, think about the overlapping, and rounding the trespassing notes to the beginning.
-                new_group.push_back({BasePlay, destination_instrument, note.get_length(), note.get_modifiers()});
+            if ((note.get_playing() == BasePlay) &&
+                match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
+                new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
+                                     note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
             }
         }
         if (!new_group.empty()) {
@@ -207,50 +93,249 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
             new_group.clear();
         }
     }
-    part.set_location(move(new_locations));
+
+    part.set_location(new_locations);
 }
 
-void variations::PlayRight::apply(Part &part, const Json::Value &arguments) {
-    /*printf("variations::PlayRight::apply\n");
+void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
 
-    TimeSignature time_signature = part.get_time_signature();
-    Actions actions(time_signature.first);
-    size_t index = 0;
-    for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Right);
+    for (const auto &location : part.get_location()) {
+        if (static_cast<bool>(location.first % Fraction(1, 16))) {
+            throw runtime_error("Invalid Note Offset For Tuplet Variation");
+        }
+        Fraction offset_in_quarter = location.first % Fraction(1, 4);
+        Fraction quarter_location = location.first - offset_in_quarter;
+        Fraction tuplet_offset = {sixteenth_tuplet[(int) static_cast<double>(offset_in_quarter / Fraction(1, 16))],
+                                  4 * 6};
+        new_locations[quarter_location + tuplet_offset] = location.second;
     }
-    part.set_actions(actions);
-    part.set_time_signature(time_signature);
-    */
+
+    part.set_location(new_locations);
 }
 
-void variations::PlayLeft::apply(Part &part, const Json::Value &arguments) {
-    /*
-    TimeSignature time_signature = part.get_time_signature();
-    Actions actions(time_signature.first);
-    size_t index = 0;
-    for (const Action &action : part.get_actions()) {
-        actions[index++] = make_tuple(get<0>(action), (get<0>(action) == Rest) ? UnboundStick : Left);
+void variations::Double::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+    Locations matching = match(part.get_location(), arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"]);
+    bool carry = arguments["Carry"].asBool();
+
+    // Treats all matching notes as the same one for that matter.
+    if (!carry) {
+        for (const auto &location : matching) {
+            if ((matching.find(location.first + distance) == matching.end()) &&
+                (location.first + distance < prev(matching.end())->first)) {
+                new_locations[location.first + distance] = location.second;
+            }
+        }
+        part.set_location(location::merge_locations({new_locations, part.get_location()}));
+        return;
     }
-    part.set_actions(actions);
-    part.set_time_signature(time_signature);
-    */
+
+    int play_count = 0;
+    for (auto location_it = matching.begin(); location_it != prev(matching.end()); location_it++) {
+        Fraction space = next(location_it)->first - location_it->first;
+        play_count++;
+
+        if (space != distance) {
+            /*
+             * Carry.
+             * todo:
+             * multiplying can have several types, for example for:
+             * 0----00---0-0---
+             * it can be:
+             * 0o---00oo-0o0o--
+             * 0-o--00oo-0-0-o-
+             * 0-o--00-oo0-0-o-
+             * need to see which to choose, or how to support multiple types,
+             * currently it will be supported naively, assuming there won't be smaller space that the distance, this may not be always true.
+             */
+            if (space < distance) {
+                throw runtime_error("Double Variation assumes that there's no space smaller than the distance");
+            }
+
+            play_count = min(play_count, (int) static_cast<double>(space / distance));
+            do {
+                new_locations[location_it->first + (Fraction(play_count) * distance)] = location_it->second;
+            } while (--play_count);
+        }
+    }
+
+    part.set_location(location::merge_locations({new_locations, part.get_location()}));
 }
 
-void variations::StretchTimeSignature::apply(Part &part, const Json::Value &arguments) {
-    /*
-    printf("variations::StretchTimeSignature::apply\n");
 
-    // todo: this currently multiplies, need to support some time in "as triplets"
-    part.convert_time_stretch(arguments[1].asInt());
-    */
+void variations::Fill::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+    Instrument destination_instrument = instrument_names.at(arguments["Apply"]["Instrument"].asString());
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
+
+    if (override_modifiers) {
+        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
+    Notation fill_note(BasePlay, destination_instrument, distance, modifiers);
+
+    // todo: maybe fill group of notes, and add match and fill the notes where no match (and only where hardcoded rests).
+    if (part.get_location().begin()->first > Fraction()) {
+        part.get_mutable_location().insert({Fraction(), {fill_note}});
+    }
+    for (auto location_it = part.get_location().begin();
+         location_it != prev(part.get_location().end()); location_it++) {
+        Fraction space = next(location_it)->first - location_it->first;
+
+        if (space != distance) {
+            if (space < distance) {
+                throw runtime_error("Fill Variation assumes that there's no space smaller than the distance");
+            }
+
+            for (space -= distance; space >= distance; space -= distance) {
+                new_locations[location_it->first + space] = {fill_note};
+            }
+        }
+    }
+
+    part.set_location(location::merge_locations({new_locations, part.get_location()}));
 }
 
-void variations::ExtendTimeSignature::apply(Part &part, const Json::Value &arguments) {
-    /*
-    // todo: only words in whole note results, like 3/3 or 4/4
-    TimeSignature time_signature = part.get_time_signature();
-    time_signature.second = arguments[1].asInt();
-    part.set_time_signature(time_signature);
-    */
+void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    string sticking = arguments["Sticking"].asString();
+    int index = 0;
+    bool modifier_found;
+    Modifier modifier;
+    vector<Modifier> modifiers;
+    Group group;
+
+    for (auto location_it = part.get_location().begin();
+         location_it != prev(part.get_location().end()); location_it++, index = (index + 1) % (int) sticking.length()) {
+        for (auto &note : location_it->second) {
+            modifier_found = false;
+            for (const auto &mod : note.get_modifiers()) {
+                if ((mod == ModRight) || (mod == ModLeft)) {
+                    modifier_found = true;
+                    modifier = mod;
+                } else {
+                    modifiers.push_back(mod);
+                }
+            }
+
+            switch (sticking[index]) {
+                case 'L':
+                    modifiers.push_back(ModLeft);
+                    break;
+                case 'R':
+                    modifiers.push_back(ModRight);
+                    break;
+                case '.':
+                    if (modifier_found) {
+                        modifiers.push_back(modifier);
+                    }
+                    break;
+                case '0':
+                    break;
+                case 'x':
+                    if (modifier_found) {
+                        modifiers.push_back((modifier == ModRight) ? ModLeft : ModRight);
+                    }
+                    break;
+            }
+            group.emplace_back(note.get_playing(), note.get_instrument(), note.get_length(), move(modifiers));
+            modifiers.clear();
+        }
+
+        new_locations[location_it->first] = move(group);
+        group.clear();
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::Scale::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    Fraction ratio = {arguments["Ratio"][0].asInt(), arguments["Ratio"][1].asInt()};
+
+    for (const auto &location : part.get_location()) {
+        new_locations[location.first * ratio] = location.second;
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::StretchSticking::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations = part.get_location();
+
+    bool modifier_found;
+    Modifier modifier, prev_modifier;
+    Group group;
+    auto prev_location_it = new_locations.begin();
+
+    bool first = true;
+    for (auto location_it = new_locations.begin(); location_it != prev(new_locations.end()); location_it++) {
+        modifier_found = false;
+        for (auto &note : location_it->second) {
+            for (const auto &mod : note.get_modifiers()) {
+                if ((mod == ModRight) || (mod == ModLeft)) {
+                    modifier_found = true;
+                    modifier = mod;
+                }
+            }
+            if (modifier_found) {
+                break;
+            }
+        }
+
+        if (modifier_found) {
+            if (first) {
+                prev_modifier = (modifier == ModRight) ? ModLeft : ModRight;
+                first = false;
+            }
+            for (; prev_location_it != location_it; prev_location_it++) {
+                for (auto &note : prev_location_it->second) {
+                    note.add_modifier(prev_modifier);
+                }
+            }
+            prev_modifier = modifier;
+            prev_location_it++;
+        }
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::Filter::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    bool invert = arguments["Invert"].isNull() ? false : arguments["Invert"].asBool();
+
+    Group group;
+    bool matching;
+    new_locations.insert(*prev(part.get_location().end()));
+    for (const auto &location : part.get_location()) {
+        for (const auto &note : location.second) {
+            matching = false;
+            for (const auto &match_arguments : arguments["Match"]) {
+                matching = match(note, match_arguments["Instruments"], match_arguments["Modifiers"]);
+                if (matching) {
+                    break;
+                }
+            }
+            if (invert ^ matching) {
+                group.push_back(note);
+            }
+        }
+        if (!group.empty()) {
+            new_locations[location.first] = move(group);
+            group.clear();
+        }
+    }
+
+    part.set_location(new_locations);
 }

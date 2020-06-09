@@ -24,9 +24,11 @@ public:
 
     void reset();
 
-    [[nodiscard]] int get_tempo() const { return m_tempo; }
+    [[nodiscard]] inline int get_tempo() const { return m_tempo; }
 
-    [[nodiscard]] vector<Fraction>::iterator get_current_location() const { return m_current_location; }
+    [[nodiscard]] inline const Fraction &get_current_location() const { return *m_current_location; }
+
+    void set_current_location(const Fraction &location);
 
 private:
     chrono::system_clock::time_point get_next_beat_time();
@@ -36,8 +38,5 @@ private:
 
     int m_tempo;
 
-    Fraction m_beat;
-
-    // Reset m_start after completing one round.
-    std::chrono::system_clock::time_point m_start;
+    chrono::system_clock::time_point m_start;
 };

@@ -1,0 +1,140 @@
+{
+  "$id": "Part",
+  "title": "Part",
+  "type": "object",
+  "description": "A full definition of a Part.",
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Name of the Part."
+    },
+    "Global": {
+      "type": "object",
+      "description": "Global Part definition.",
+      "properties": {
+        "Time Signature": {
+          "$ref": "#/definitions/Time Signature"
+        },
+        "Type": {
+          "$ref": "#/definitions/Type"
+        },
+        "Part": {
+          "type": "object",
+          "description": "Global Part definition.",
+          "properties": {
+            "Definitions": {
+              "$ref": "#/definitions/Definitions"
+            }
+          }
+        }
+      }
+    },
+    "Parts": {
+      "type": "array",
+      "description": "Different defined Parts.",
+      "items": {
+        "type": "object",
+        "description": "Single Part definition.",
+        "properties": {
+          "Time Signature": {
+            "$ref": "#/definitions/Time Signature"
+          },
+          "Type": {
+            "$ref": "#/definitions/Type"
+          },
+          "Part": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/Custom Part"
+              },
+              {
+                "$ref": "#/definitions/Regular Part"
+              }
+            ]
+          }
+        },
+        "required": [
+          "Part"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "additionalItems": false
+    }
+  },
+  "required": [
+    "Name",
+    "Parts"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Time Signature": {
+      "type": "array",
+      "description": "Time signature.",
+      "items": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "integer"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "additionalItems": false
+    },
+    "Type": {
+      "type": "string",
+      "description": "Type of Part definition.",
+      "enum": [
+        "Regular",
+        "Custom"
+      ]
+    },
+    "Definitions": {
+      "type": "object",
+      "description": "Play definitions.",
+      "additionalProperties": {
+        "$ref": "note.json#/properties/Note"
+      },
+      "minItems": 1
+    },
+    "Custom Part": {
+      "type": "object",
+      "description": "Single Part definition.",
+      "properties": {
+        "Definitions": {
+          "$ref": "#/definitions/Definitions"
+        },
+        "Use": {
+          "type": "array",
+          "description": "Use of the defined Notes.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "additionalItems": false
+        }
+      },
+      "required": [
+        "Use"
+      ],
+      "additionalProperties": false
+    },
+    "Regular Part": {
+      "type": "array",
+      "description": "Single Group definition.",
+      "items": {
+        "type": "array",
+        "description": "Single Note definition.",
+        "items": {
+          "$ref": "note.json#/properties/Note"
+        },
+        "minItems": 1,
+        "additionalItems": false
+      },
+      "minItems": 1,
+      "additionalItems": false
+    }
+  }
+}

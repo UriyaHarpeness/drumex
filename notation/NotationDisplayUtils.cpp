@@ -26,23 +26,9 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
 }
 
 void NotationDisplayUtils::display_notation(const VoiceContainer &up, const VoiceContainer &down,
-                                            const Fraction &current_location, DisplayVariables &display_variables) {
-    /*for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-            s[0] = (char) (i * 16 + j);
-            if (s[0] == 0)continue;
-
-            //d.draw_image("../stuff.png", 400, 0, a * 8, a * 8);
-            //d.draw_rect(a, a, 80, 10);
-
-            string k(s);
-            d->draw_text(k, 40 + (j * 60), 100 + (i * 60));
-            //d.draw_text(to_string(i * 16 + j), 100, 100);
-        }
-    }*/
+                                            DisplayVariables &display_variables) {
     up.display(display_variables);
     down.display(display_variables);
-    // todo: add the notation end double line.
 }
 
 void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down,
@@ -55,13 +41,13 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
 
     for (VoiceContainerIterator voice_iterator(up); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
                          << rhythm->get_beamed_notations().size() << endl;
     }
 
     for (VoiceContainerIterator voice_iterator(down); voice_iterator; voice_iterator++) {
         rhythm = *voice_iterator;
-        Log(DEBUG).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
+        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
                          << rhythm->get_beamed_notations().size() << endl;
     }
 
@@ -79,30 +65,92 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
                                                                  display_variables.bars_split, up.get_signature());
 }
 
+void NotationDisplayUtils::process_events(Metronome &m, bool &quit, const GlobalLocations &global_locations,
+                                          const TimeSignature &signature) {
+    // Interactive SDL communication part.
+    bool pause = false;
+    SDL_Event event;
+
+    while (!quit && (SDL_PollEvent(&event) || pause)) {
+        if (event.type == SDL_QUIT) {
+            quit = true;
+            Log(INFO).Get() << "Exiting" << endl;
+            break;
+        }
+        if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                quit = true;
+                Log(INFO).Get() << "Exiting" << endl;
+                break;
+            } else if (event.key.keysym.sym == SDLK_SPACE) {
+                pause = !pause;
+                if (pause) {
+                    Log(INFO).Get() << "Pause" << endl;
+                } else {
+                    Log(INFO).Get() << "Continue" << endl;
+                    m.reset();
+                }
+            } else if (event.key.keysym.sym == SDLK_UP) {
+                m.increase_tempo(20);
+                Log(INFO).Get() << "Increasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_DOWN) {
+                m.increase_tempo(-20);
+                Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+                auto current_location = global_locations.find(
+                        Fraction(((int) static_cast<double>(m.get_current_location() / signature)) + 1) * signature);
+                if (current_location == prev(global_locations.end())) {
+                    m.set_current_location(prev(prev(global_locations.end()))->first);
+                } else {
+                    m.set_current_location(prev(current_location)->first);
+                }
+                Log(INFO).Get() << "Moving to Next Measure" << endl;
+            } else if (event.key.keysym.sym == SDLK_LEFT) {
+                auto current_location_fraction =
+                        Fraction(((int) static_cast<double>(m.get_current_location() / signature)) - 1) *
+                        signature;
+                if (current_location_fraction == Fraction()) {
+                    m.set_current_location(prev(global_locations.end())->first);
+                } else if (current_location_fraction < Fraction()) {
+                    auto current_location = global_locations.find(
+                            Fraction(((int) static_cast<double>(prev(global_locations.end())->first / signature)) - 1) *
+                            signature);
+                    m.set_current_location(prev(current_location)->first);
+                } else {
+                    m.set_current_location(prev(global_locations.find(current_location_fraction))->first);
+                }
+                Log(INFO).Get() << "Moving to Previous Measure" << endl;
+            }
+            if (pause) {
+                Metronome::pause(250);
+            }
+        }
+    }
+}
+
 void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,
                                                        DisplayVariables &display_variables, int tempo) {
     vector<Fraction> locations;
     for (const auto &i : display_variables.global_locations) {
         locations.push_back(i.first);
     }
-    SDL_Event event;
-    bool quit = false, pause = false;
+    bool quit = false;
     int display_count = 0;
 
     Metronome m(move(locations), tempo, up.get_signature());
 
     while (!quit) {
-        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << *m.get_current_location()
+        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << m.get_current_location()
                          << endl;
 
-        get_display_scope(up, down, *m.get_current_location(), display_variables);
+        get_display_scope(up, down, m.get_current_location(), display_variables);
 
         pair<pair<int, int>, Padding> note_location = {
-                {display_variables.global_locations.at(*m.get_current_location()).first,
+                {display_variables.global_locations.at(m.get_current_location()).first,
                  DisplayConstants::displaying_init_y +
                  ((display_variables.current_line % DisplayConstants::max_lines_displayed) *
                   DisplayConstants::staff_lines_spacing)},
-                display_variables.global_locations.at(*m.get_current_location()).second};
+                display_variables.global_locations.at(m.get_current_location()).second};
 
         Notation::m_display->clear_screen();
 
@@ -119,40 +167,13 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
-        display_notation(up, down, *m.get_current_location(), display_variables);
+        display_notation(up, down, display_variables);
+
+        // Notation::m_display->draw_image("stuff.png", 400, 400, 80, 80);
 
         Notation::m_display->present();
 
-        // Interactive SDL communication part.
-        while (!quit && (SDL_PollEvent(&event) || pause)) {
-            if (event.type == SDL_QUIT) {
-                quit = true;
-                Log(INFO).Get() << "Exiting" << endl;
-                break;
-            }
-            if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    quit = true;
-                    Log(INFO).Get() << "Exiting" << endl;
-                    break;
-                } else if (event.key.keysym.sym == SDLK_SPACE) {
-                    pause = !pause;
-                    if (pause) {
-                        Log(INFO).Get() << "Pause" << endl;
-                        m.pause(250);
-                    } else {
-                        Log(INFO).Get() << "Continue" << endl;
-                        m.reset();
-                    }
-                } else if (event.key.keysym.sym == SDLK_UP) {
-                    m.increase_tempo(20);
-                    Log(INFO).Get() << "Increasing Tempo to " << m.get_tempo() << endl;
-                } else if (event.key.keysym.sym == SDLK_DOWN) {
-                    m.increase_tempo(-20);
-                    Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
-                }
-            }
-        }
+        process_events(m, quit, display_variables.global_locations, up.get_signature());
 
         if (!quit) {
             m.poll();
@@ -214,7 +235,7 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
 
     global_locations[padding_end + signature] = {offset, {0, 0}};
     for (const auto &it : global_locations) {
-        Log(DEBUG).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
+        Log(TRACE).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
                          << it.second.second[1] << endl;
     }
 

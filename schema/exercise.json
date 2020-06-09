@@ -1,0 +1,501 @@
+{
+  "$id": "Exercise",
+  "title": "Exercise",
+  "type": "object",
+  "description": "A full definition of an Exercise.",
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Name of the Exercise."
+    },
+    "Variations": {
+      "type": "array",
+      "description": "Different defined Variation batches.",
+      "items": {
+        "type": "array",
+        "description": "Different defined Variations.",
+        "items": {
+          "type": "object",
+          "description": "Singe defined Variation.",
+          "properties": {
+            "Part": {
+              "type": "string",
+              "description": "Part path."
+            },
+            "Indexes": {
+              "description": "Part indexes.",
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "All"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 1
+                }
+              ]
+            },
+            "Apply": {
+              "type": "array",
+              "description": "Applied Variations.",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/Variations/properties/Change Note"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Tuplet"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Double"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Fill"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Sticking"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Stretch Sticking"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Scale"
+                  },
+                  {
+                    "$ref": "#/definitions/Variations/properties/Filter"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "Part",
+            "Indexes",
+            "Apply"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 1
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "Name",
+    "Variations"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Variations": {
+      "type": "object",
+      "description": "The available Variations.",
+      "properties": {
+        "Change Note": {
+          "type": "object",
+          "description": "Change Note Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Change Note$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Match": {
+                  "type": "object",
+                  "description": "Note match properties.",
+                  "properties": {
+                    "Instruments": {
+                      "type": "array",
+                      "description": "Instruments match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/0"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "Apply": {
+                  "type": "object",
+                  "description": "Note apply properties.",
+                  "properties": {
+                    "Instrument": {
+                      "type": "string",
+                      "description": "Instrument apply.",
+                      "oneOf": [
+                        {
+                          "$ref": "note.json#/properties/Note/items/0"
+                        }
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers apply.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "Match",
+                "Apply"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Tuplet": {
+          "type": "object",
+          "description": "Tuplet Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Tuplet$"
+            }
+          },
+          "required": [
+            "Name"
+          ],
+          "additionalProperties": false
+        },
+        "Double": {
+          "type": "object",
+          "description": "Double Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Double$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Distance": {
+                  "type": "array",
+                  "description": "Distance between doubled Notes.",
+                  "items": {
+                    "$ref": "note.json#/properties/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                },
+                "Match": {
+                  "type": "object",
+                  "description": "Note match properties.",
+                  "properties": {
+                    "Instruments": {
+                      "type": "array",
+                      "description": "Instruments match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/0"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "Carry": {
+                  "type": "boolean",
+                  "description": "Carry Notes between matches."
+                }
+              },
+              "required": [
+                "Distance",
+                "Match",
+                "Carry"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Fill": {
+          "type": "object",
+          "description": "Fill Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Fill$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Distance": {
+                  "type": "array",
+                  "description": "Distance between filled Notes.",
+                  "items": {
+                    "$ref": "note.json#/properties/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                },
+                "Apply": {
+                  "type": "object",
+                  "description": "Note apply properties.",
+                  "properties": {
+                    "Instrument": {
+                      "type": "string",
+                      "description": "Instrument apply.",
+                      "oneOf": [
+                        {
+                          "$ref": "note.json#/properties/Note/items/0"
+                        }
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers apply.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "required": [
+                    "Instrument"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "Distance",
+                "Apply"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Sticking": {
+          "type": "object",
+          "description": "Sticking Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Sticking$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Sticking": {
+                  "type": "string",
+                  "description": "Sticking indication.",
+                  "pattern": "^[RL/.0x]+$",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "Sticking"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Stretch Sticking": {
+          "type": "object",
+          "description": "Stretch Sticking Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Stretch Sticking$"
+            }
+          },
+          "required": [
+            "Name"
+          ],
+          "additionalProperties": false
+        },
+        "Scale": {
+          "type": "object",
+          "description": "Scale Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Scale$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Ratio": {
+                  "type": "array",
+                  "description": "Ratio to rescale with.",
+                  "items": {
+                    "$ref": "note.json#/properties/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                }
+              },
+              "required": [
+                "Ratio"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        },
+        "Filter": {
+          "type": "object",
+          "description": "Filter Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Filter$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Match": {
+                  "type": "array",
+                  "description": "Notes match properties.",
+                  "items": {
+                    "type": "object",
+                    "description": "Note match properties.",
+                    "properties": {
+                      "Instruments": {
+                        "type": "array",
+                        "description": "Instruments match.",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "$ref": "note.json#/properties/Note/items/0"
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "additionalItems": false
+                      },
+                      "Modifiers": {
+                        "type": "array",
+                        "description": "Modifiers match.",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "$ref": "note.json#/properties/Note/items/2/items"
+                            }
+                          ]
+                        },
+                        "minItems": 1,
+                        "additionalItems": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "minItems": 1,
+                  "additionalItems": false
+                },
+                "Invert": {
+                  "type": "boolean",
+                  "description": "Invert Note matching."
+                }
+              },
+              "required": [
+                "Match"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

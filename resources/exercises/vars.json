@@ -2,38 +2,74 @@
   "Name": "Variations",
   "Variations": [
     [
-      [
-        "variations/3s-variations.json",
-        [
+      {
+        "Part": "variations/3s-variations.json",
+        "Indexes": [
           0
         ],
-        [
+        "Apply": [
           {
             "Name": "Change Note",
             "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "Match": {},
+              "Apply": {
+                "Instrument": "Snare"
+              }
             }
           }
         ]
-      ],
-      [
-        "variations/2s-variations.json",
-        [
+      },
+      {
+        "Part": "variations/3s-variations.json",
+        "Indexes": [
           0
         ],
-        [
+        "Apply": [
           {
             "Name": "Change Note",
             "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "DestinationInstrument": "Up"
+              "Match": {},
+              "Apply": {
+                "Instrument": "HiHat"
+              }
             }
           }
         ]
-      ]
+      },
+      {
+        "Part": "variations/4s-variations.json",
+        "Indexes": [
+          0
+        ],
+        "Apply": [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Match": {},
+              "Apply": {
+                "Instrument": "FloorTom"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "Part": "variations/4s-variations.json",
+        "Indexes": [
+          0
+        ],
+        "Apply": [
+          {
+            "Name": "Change Note",
+            "Arguments": {
+              "Match": {},
+              "Apply": {
+                "Instrument": "Bass"
+              }
+            }
+          }
+        ]
+      }
     ]
   ]
 }

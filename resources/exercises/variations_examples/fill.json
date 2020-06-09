@@ -1,0 +1,27 @@
+{
+  "Name": "Fill Example",
+  "Variations": [
+    [
+      {
+        "Part": "rudiments/chester-2-a.json",
+        "Indexes": [
+          0
+        ],
+        "Apply": [
+          {
+            "Name": "Fill",
+            "Arguments": {
+              "Distance": [
+                1,
+                16
+              ],
+              "Apply": {
+                "Instrument": "Bass"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  ]
+}

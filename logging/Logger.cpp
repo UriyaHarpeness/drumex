@@ -5,6 +5,7 @@ const map<LogLevel, string> Log::level_strings = {
         {WARNING, "WARNING"},
         {INFO,    "INFO"},
         {DEBUG,   "DEBUG"},
+        {TRACE,   "TRACE"},
 };
 
 Log::Log(LogLevel level) : m_level(level) {}

@@ -38,7 +38,8 @@ void VoiceContainer::display(const DisplayVariables &display_variables) const {
         m_bars[bar_index].display(display_variables.global_locations,
                                   DisplayConstants::displaying_init_y + (DisplayConstants::staff_lines_spacing * line));
         auto last_bar_note = prev(display_variables.global_locations.find(Fraction(bar_index + 1) * m_signature));
-        Notation::m_display->draw_text(SymBarLine, last_bar_note->second.first + last_bar_note->second.second[1],
+        Notation::m_display->draw_text((bar_index == m_bars.size() - 1) ? SymDoubleBarLine : SymBarLine,
+                                       last_bar_note->second.first + last_bar_note->second.second[1],
                                        DisplayConstants::displaying_init_y +
                                        (DisplayConstants::staff_lines_spacing * line));
     }
@@ -97,11 +98,11 @@ VoiceContainerIterator VoiceContainerIterator::operator++(int) {
 }
 
 RhythmContainer *VoiceContainerIterator::operator*() {
-    Log(DEBUG).Get() << "* bar: " << m_bar_index << ", indexes: ";
+    Log(TRACE).Get() << "* bar: " << m_bar_index << ", indexes: ";
     for (auto i : m_rhythms_index) {
-        Log(DEBUG).Get() << i << " ";
+        Log(TRACE).Get() << i << " ";
     }
-    Log(DEBUG).Get() << endl;
+    Log(TRACE).Get() << endl;
 
     return m_rhythms[m_rhythms.size() - 1];
 }

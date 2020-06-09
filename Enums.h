@@ -57,7 +57,8 @@ enum MusicSymbols {
     SymStaff = '=',
     SymClef = 0xD6,
     SymDot = 'k',
-    SymCymbal = 0xC0,
+    SymQuarterCymbal = 0xC0,
+    SymWholeCymbal = 0xC3,
     SymAccent = '>',
     SymGhost = '}',
     SymCrossStick = 'r',
@@ -74,6 +75,7 @@ enum MusicSymbols {
     SymLedger = '_',
     SymTempo = 0xF2,
     SymBarLine = '\\',
+    SymDoubleBarLine = '[',
 };
 
 enum Modifier {

@@ -3,7 +3,6 @@
 Locations location::notation_to_location(const Voice &voice) {
     Locations locations;
 
-    // todo: think what to do with notes with value below minimum supported fraction on different lines.
     Fraction notes_offset;
     for (const auto &group : voice) {
         // todo: need to think if may be possible that there will be a rest and a note in the same group.
@@ -30,6 +29,9 @@ Locations location::notation_to_location(const Voice &voice) {
 void location::clear_location(Locations &locations) {
     // Without removing the last location.
     for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+        it->second.erase(remove_if(it->second.begin(), it->second.end(),
+                                   [](const Notation &note) { return note.get_playing() == BaseRest; }),
+                         it->second.end());
         if (it->second.empty()) {
             locations.erase(it--);
         }
@@ -119,8 +121,6 @@ Voice location::location_to_notation(Locations &locations, Instrument rests_loca
     Voice voice;
     Group group;
 
-    // todo: think what to do with notes with value below minimum supported fraction on different lines.
-    // add dots to get to the exact needed length.
     auto location = locations.begin();
     auto prev_note = locations.begin();
     if (location->first) {

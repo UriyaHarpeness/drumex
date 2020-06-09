@@ -51,6 +51,8 @@ public:
 
     [[nodiscard]] inline TimeSignature get_signature() const { return m_signature; };
 
+    inline void set_signature(const TimeSignature &signature) { m_signature = signature; };
+
     [[nodiscard]] inline Fraction get_length() const { return m_length; };
 
 private:
