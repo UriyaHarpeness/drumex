@@ -1,0 +1,74 @@
+{
+  "$id": "Note",
+  "title": "Note",
+  "type": "object",
+  "description": "A full definition of a Note.",
+  "properties": {
+    "Note": {
+      "type": "array",
+      "description": "Single Note definition.",
+      "items": [
+        {
+          "type": "string",
+          "description": "Instrument.",
+          "enum": [
+            "Up",
+            "Down",
+            "Rest",
+            "China",
+            "Crash",
+            "HiHat",
+            "HighTom",
+            "MidTom",
+            "Snare",
+            "LowTom",
+            "FloorTom",
+            "Bass"
+          ]
+        },
+        {
+          "type": "array",
+          "description": "Length.",
+          "items": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "additionalItems": false
+        },
+        {
+          "type": "array",
+          "description": "Modifiers.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CrossStick",
+              "Ghost",
+              "Accent",
+              "Dot",
+              "Rimshot",
+              "Flam",
+              "Drag",
+              "Close",
+              "Loose",
+              "OpenClose",
+              "Open",
+              "Choke",
+              "Right",
+              "Left"
+            ]
+          },
+          "minItems": 1
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 3,
+      "additionalItems": false
+    }
+  }
+}

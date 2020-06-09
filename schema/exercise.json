@@ -91,72 +91,6 @@
   ],
   "additionalProperties": false,
   "definitions": {
-    "Note": {
-      "type": "array",
-      "description": "Single Note definition.",
-      "items": [
-        {
-          "type": "string",
-          "description": "Instrument.",
-          "enum": [
-            "Up",
-            "Down",
-            "Rest",
-            "China",
-            "Crash",
-            "HiHat",
-            "HighTom",
-            "MidTom",
-            "Snare",
-            "LowTom",
-            "FloorTom",
-            "Bass"
-          ]
-        },
-        {
-          "type": "array",
-          "description": "Length.",
-          "items": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "integer"
-            }
-          ],
-          "minItems": 2,
-          "maxItems": 2,
-          "additionalItems": false
-        },
-        {
-          "type": "array",
-          "description": "Modifiers.",
-          "items": {
-            "type": "string",
-            "enum": [
-              "CrossStick",
-              "Ghost",
-              "Accent",
-              "Dot",
-              "Rimshot",
-              "Flam",
-              "Drag",
-              "Close",
-              "Loose",
-              "OpenClose",
-              "Open",
-              "Choke",
-              "Right",
-              "Left"
-            ]
-          },
-          "minItems": 1
-        }
-      ],
-      "minItems": 2,
-      "maxItems": 3,
-      "additionalItems": false
-    },
     "Variations": {
       "type": "object",
       "description": "The available Variations.",
@@ -184,7 +118,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/0"
+                            "$ref": "note.json#/properties/Note/items/0"
                           }
                         ]
                       },
@@ -197,7 +131,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/2/items"
+                            "$ref": "note.json#/properties/Note/items/2/items"
                           }
                         ]
                       },
@@ -216,7 +150,7 @@
                       "description": "Instrument apply.",
                       "oneOf": [
                         {
-                          "$ref": "#/definitions/Note/items/0"
+                          "$ref": "note.json#/properties/Note/items/0"
                         }
                       ]
                     },
@@ -226,7 +160,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/2/items"
+                            "$ref": "note.json#/properties/Note/items/2/items"
                           }
                         ]
                       },
@@ -282,7 +216,7 @@
                   "type": "array",
                   "description": "Distance between doubled Notes.",
                   "items": {
-                    "$ref": "#/definitions/Note/items/1/items"
+                    "$ref": "note.json#/properties/Note/items/1/items"
                   },
                   "minItems": 2,
                   "maxItems": 2,
@@ -298,7 +232,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/0"
+                            "$ref": "note.json#/properties/Note/items/0"
                           }
                         ]
                       },
@@ -311,7 +245,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/2/items"
+                            "$ref": "note.json#/properties/Note/items/2/items"
                           }
                         ]
                       },
@@ -357,7 +291,7 @@
                   "type": "array",
                   "description": "Distance between filled Notes.",
                   "items": {
-                    "$ref": "#/definitions/Note/items/1/items"
+                    "$ref": "note.json#/properties/Note/items/1/items"
                   },
                   "minItems": 2,
                   "maxItems": 2,
@@ -372,7 +306,7 @@
                       "description": "Instrument apply.",
                       "oneOf": [
                         {
-                          "$ref": "#/definitions/Note/items/0"
+                          "$ref": "note.json#/properties/Note/items/0"
                         }
                       ]
                     },
@@ -382,7 +316,7 @@
                       "items": {
                         "anyOf": [
                           {
-                            "$ref": "#/definitions/Note/items/2/items"
+                            "$ref": "note.json#/properties/Note/items/2/items"
                           }
                         ]
                       },
@@ -473,7 +407,7 @@
                   "type": "array",
                   "description": "Ratio to rescale with.",
                   "items": {
-                    "$ref": "#/definitions/Note/items/1/items"
+                    "$ref": "note.json#/properties/Note/items/1/items"
                   },
                   "minItems": 2,
                   "maxItems": 2,
@@ -518,7 +452,7 @@
                         "items": {
                           "anyOf": [
                             {
-                              "$ref": "#/definitions/Note/items/0"
+                              "$ref": "note.json#/properties/Note/items/0"
                             }
                           ]
                         },
@@ -531,7 +465,7 @@
                         "items": {
                           "anyOf": [
                             {
-                              "$ref": "#/definitions/Note/items/2/items"
+                              "$ref": "note.json#/properties/Note/items/2/items"
                             }
                           ]
                         },
