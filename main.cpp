@@ -57,6 +57,8 @@ int main(int argv, char *argc[]) {
     // todo: add support for buzz roll and maybe even open roll.
     // todo: add option to enable dotted rests.
     // todo: improve the schemas of parts and exercises to be more readable and clear, accordingly update schemas.
+    // todo: add more instruments and modifiers and update everywhere (docs included), like HiHatFoot.
+    // todo: maybe add a GUI editing option in the future.
 
     /**
      * todo:
