@@ -30,23 +30,3 @@ private:
 
     NotesDirection m_direction;
 };
-
-
-class VoiceContainerIterator {
-public:
-    VoiceContainerIterator(VoiceContainer &voice);
-
-    VoiceContainerIterator &operator++();
-
-    VoiceContainerIterator operator++(int);
-
-    RhythmContainer *operator*();
-
-    explicit operator bool() const;
-
-private:
-    VoiceContainer &m_voice;
-    size_t m_bar_index;
-    vector<size_t> m_rhythms_index;
-    vector<RhythmContainer *> m_rhythms;
-};

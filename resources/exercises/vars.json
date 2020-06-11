@@ -1,75 +1,80 @@
 {
   "Name": "Variations",
   "Variations": [
-    [
-      {
-        "Part": "variations/3s-variations.json",
-        "Indexes": [
-          0
-        ],
-        "Apply": [
-          {
-            "Name": "Change Note",
-            "Arguments": {
-              "Match": {},
-              "Apply": {
-                "Instrument": "Snare"
+    {
+      "Parts": [
+        {
+          "Part": "variations/3s-variations.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Snare"
+                }
               }
             }
-          }
-        ]
-      },
-      {
-        "Part": "variations/3s-variations.json",
-        "Indexes": [
-          0
-        ],
-        "Apply": [
-          {
-            "Name": "Change Note",
-            "Arguments": {
-              "Match": {},
-              "Apply": {
-                "Instrument": "HiHat"
+          ]
+        },
+        {
+          "Part": "variations/3s-variations.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "HiHat"
+                }
               }
             }
-          }
-        ]
-      },
-      {
-        "Part": "variations/4s-variations.json",
-        "Indexes": [
-          0
-        ],
-        "Apply": [
-          {
-            "Name": "Change Note",
-            "Arguments": {
-              "Match": {},
-              "Apply": {
-                "Instrument": "FloorTom"
+          ]
+        },
+        {
+          "Part": "variations/4s-variations.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "FloorTom"
+                }
               }
             }
-          }
-        ]
-      },
-      {
-        "Part": "variations/4s-variations.json",
-        "Indexes": [
-          0
-        ],
-        "Apply": [
-          {
-            "Name": "Change Note",
-            "Arguments": {
-              "Match": {},
-              "Apply": {
-                "Instrument": "Bass"
+          ]
+        },
+        {
+          "Part": "variations/4s-variations.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Bass"
+                }
               }
             }
-          }
-        ]
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
       }
-    ]
+    }
   ]
 }

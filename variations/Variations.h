@@ -11,22 +11,7 @@
 
 using namespace std;
 
-/**
- * todo: List of variations to implement:
- *
- * 1. + Change note.
- * 2. + Convert 4/4 to triplets.
- * 3. + Double notes - considering spacing, carrying, and breaking.
- * 4. + Fill notes with fixed spacing.
- * 5. + Right left alternation.
- * 6. + Stretch sticking (continue current R/L).
- * 7. + Stretch time - for example 1/16 to 1/32 - scale.
- * 8. + Filter notes, plus inverted to delete notes.
- * 9.   3 bars of random beat and than one of exercise, chester for example - may need to make this an exercise setting.
- * 10.  Change signature maybe.
- *
- * The variations need to also support elapsing.
- */
+// todo: Maybe the variations need to also support elapsing.
 
 namespace variations {
     bool match(const Notation &note, const Json::Value &instruments, const Json::Value &modifiers);

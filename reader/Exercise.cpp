@@ -1,6 +1,5 @@
 #include "Exercise.h"
 
-
 Exercise::Exercise(const string &path, int index) {
     Json::Reader reader;
     Json::Value obj;
@@ -18,7 +17,7 @@ Exercise::Exercise(const string &path, int index) {
 
     vector<Part> parts;
     vector<vector<Part>> all_parts;
-    for (const auto &parts_variation : variation) {
+    for (const auto &parts_variation : variation["Parts"]) {
         if (parts_variation["Indexes"] == "All") {
             for (int i = 0;
                  i < Part::get_parts_number("resources/" + parts_variation["Part"].asString()); parts.emplace_back(
@@ -47,5 +46,68 @@ Exercise::Exercise(const string &path, int index) {
         all_parts_flat.insert(all_parts_flat.end(), it.begin(), it.end());
     }
 
-    m_part = Part::merge_parts(move(all_parts_flat));
+    m_part = merge_parts(move(all_parts_flat), variation["Combination"], variation["Time Signature"]);
+}
+
+Part Exercise::merge_parts(vector<Part> parts, const Json::Value &combination, const Json::Value &signature) {
+    vector<Locations> locations;
+    Locations merged_locations;
+    vector<Fraction> lengths;
+    Fraction length;
+
+    // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
+    // todo: solve this in some better way.
+    TimeSignature time_signature = signature.isNull() ? parts[0].get_signature() :
+                                   TimeSignature(signature[0].asUInt(), signature[1].asUInt());
+
+    if (combination["Type"].asString() == "Merge") {
+        for_each(parts.begin(), parts.end(), [&lengths](const Part &part) { lengths.push_back(part.get_length()); });
+
+        Fraction merged_length = NotationUtils::merge_lengths(lengths);
+
+        merged_length = merged_length * Fraction((merged_length % time_signature).get_value().second);
+
+        for (auto &part : parts) {
+            part.multiple_length(merged_length);
+            locations.push_back(part.get_location());
+        }
+
+        merged_locations = location::merge_locations(locations);
+
+        return move(Part(move(merged_locations), time_signature, length));
+    }
+
+    map<int, int> parts_bar_indexes;
+
+    for (int i = 0; i < parts.size(); i++) {
+        parts_bar_indexes[i] = 0;
+        parts[i].multiple_length((parts[i].get_length() % time_signature).get_value().second);
+    }
+
+    int sum, part_index, global_bar_index = 0;
+    do {
+        part_index = combination["Arguments"]["Indexes"][global_bar_index %
+                                                         combination["Arguments"]["Indexes"].size()].asInt();
+        for (auto location = parts[part_index].get_location().lower_bound(
+                Fraction(parts_bar_indexes[part_index]) * time_signature);
+             location->first < (Fraction(parts_bar_indexes[part_index] + 1) * time_signature); location++) {
+            merged_locations[(Fraction(global_bar_index) * time_signature) + (location->first -
+                                                                              (Fraction(parts_bar_indexes[part_index]) *
+                                                                               time_signature))] = location->second;
+        }
+
+        parts_bar_indexes[part_index] = (parts_bar_indexes[part_index] + 1) %
+                                        (int) static_cast<double>(parts[part_index].get_length() / time_signature);
+
+        sum = 0;
+        for_each(parts_bar_indexes.begin(), parts_bar_indexes.end(),
+                 [&sum](const auto &bar_index) { sum += bar_index.second; });
+        global_bar_index++;
+    } while (sum || (global_bar_index % combination["Arguments"]["Indexes"].size()));
+    for_each(parts.begin(), parts.end(), [&lengths](const Part &part) { lengths.push_back(part.get_length()); });
+
+    Fraction merged_length = Fraction(global_bar_index) * time_signature;
+    merged_locations[merged_length] = {};
+
+    return move(Part(move(merged_locations), time_signature, merged_length));
 }
