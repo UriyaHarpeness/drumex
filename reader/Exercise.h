@@ -15,6 +15,8 @@ class Exercise {
 public:
     Exercise(const string &path, int index);
 
+    static Part merge_parts(vector<Part> parts, const Json::Value &combination, const Json::Value &signature);
+
     [[nodiscard]] inline Part &get_part() { return m_part; };
 
 private:

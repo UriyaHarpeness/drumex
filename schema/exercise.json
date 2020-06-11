@@ -12,75 +12,139 @@
       "type": "array",
       "description": "Different defined Variation batches.",
       "items": {
-        "type": "array",
+        "type": "object",
         "description": "Different defined Variations.",
-        "items": {
-          "type": "object",
-          "description": "Singe defined Variation.",
-          "properties": {
-            "Part": {
-              "type": "string",
-              "description": "Part path."
-            },
-            "Indexes": {
-              "description": "Part indexes.",
-              "oneOf": [
-                {
+        "properties": {
+          "Part": {
+            "type": "array",
+            "description": "Different defined Variations Parts.",
+            "items": {
+              "type": "object",
+              "description": "Singe defined Variation.",
+              "properties": {
+                "Part": {
                   "type": "string",
-                  "enum": [
-                    "All"
+                  "description": "Part path."
+                },
+                "Indexes": {
+                  "description": "Part indexes.",
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "All"
+                      ]
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "minItems": 1
+                    }
                   ]
                 },
-                {
+                "Apply": {
                   "type": "array",
+                  "description": "Applied Variations.",
                   "items": {
-                    "type": "integer"
-                  },
-                  "minItems": 1
+                    "oneOf": [
+                      {
+                        "$ref": "#/definitions/Variations/properties/Change Note"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Tuplet"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Double"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Fill"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Sticking"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Stretch Sticking"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Scale"
+                      },
+                      {
+                        "$ref": "#/definitions/Variations/properties/Filter"
+                      }
+                    ]
+                  }
                 }
-              ]
+              },
+              "required": [
+                "Part",
+                "Indexes",
+                "Apply"
+              ],
+              "additionalProperties": false
             },
-            "Apply": {
-              "type": "array",
-              "description": "Applied Variations.",
-              "items": {
+            "minItems": 1
+          },
+          "Time Signature": {
+            "type": "array",
+            "description": "Time signature.",
+            "items": {
+              "$ref": "note.json#/properties/Note/items/1/items"
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "additionalItems": false
+          },
+          "Combination": {
+            "type": "object",
+            "description": "Instructions for combining the Parts.",
+            "properties": {
+              "Type": {
+                "type": "string",
+                "description": "Part combination type.",
+                "enum": [
+                  "Merge",
+                  "Alternate"
+                ]
+              },
+              "Arguments": {
+                "type": "object",
+                "description": "Arguments for the combination.",
                 "oneOf": [
                   {
-                    "$ref": "#/definitions/Variations/properties/Change Note"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Tuplet"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Double"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Fill"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Sticking"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Stretch Sticking"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Scale"
-                  },
-                  {
-                    "$ref": "#/definitions/Variations/properties/Filter"
+                    "type": "object",
+                    "description": "Arguments for the Alternate combination.",
+                    "properties": {
+                      "Indexes": {
+                        "type": "array",
+                        "description": "Indexes of the Parts to alternate.",
+                        "items": {
+                          "type": "integer"
+                        },
+                        "minItems": 1,
+                        "additionalItems": false
+                      }
+                    },
+                    "required": [
+                      "Indexes"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
-            }
-          },
-          "required": [
-            "Part",
-            "Indexes",
-            "Apply"
-          ],
-          "additionalProperties": false
+            },
+            "required": [
+              "Type"
+            ],
+            "additionalProperties": false
+          }
         },
-        "minItems": 1
+        "required": [
+          "Parts",
+          "Combination"
+        ],
+        "additionalItems": false
       },
       "minItems": 1
     }

@@ -33,15 +33,15 @@ public:
 
     static int get_parts_number(const string &path);
 
-    static Locations voices_to_location(const Notations &notations);
+    static Locations voices_to_location(const vector<Voice> &notations);
 
-    static Part merge_parts(vector<Part> parts);
+    void multiple_length(int multiply);
+
+    void multiple_length(const Fraction &new_length);
 
     [[nodiscard]] inline VoiceContainer &get_up() { return m_up; };
 
     [[nodiscard]] inline VoiceContainer &get_down() { return m_down; };
-
-    [[nodiscard]] inline Notations &get_mutable_notation() { return m_notation; };
 
     inline void set_location(const Locations &location) { m_location = location; };
 
@@ -57,8 +57,6 @@ public:
 
 private:
     TimeSignature m_signature;
-
-    Notations m_notation;
 
     VoiceContainer m_up;
 

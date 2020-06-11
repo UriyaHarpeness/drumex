@@ -95,7 +95,7 @@ Locations Part::read_custom_voice(const Json::Value &part) {
     }
 
     Voice voice;
-    Notations voices;
+    vector<Voice> voices;
     char last = '|';
     for (const Json::Value &json_voice : part["Use"]) {
         for (const char &c : json_voice.asString()) {
@@ -133,7 +133,7 @@ int Part::get_parts_number(const string &path) {
     return obj["Parts"].size();
 }
 
-Locations Part::voices_to_location(const Notations &notations) {
+Locations Part::voices_to_location(const vector<Voice> &notations) {
     vector<Locations> locations;
 
     for (const auto &notation : notations) {
@@ -143,25 +143,11 @@ Locations Part::voices_to_location(const Notations &notations) {
     return move(location::merge_locations(locations));
 }
 
-Part Part::merge_parts(vector<Part> parts) {
-    vector<Locations> locations;
-    vector<Fraction> lengths;
-    Fraction length;
+void Part::multiple_length(int multiply) {
+    multiple_length(m_length * Fraction(multiply));
+}
 
-    for (const auto &part : parts) {
-        lengths.push_back(part.get_length());
-    }
-
-    Fraction merged_length = NotationUtils::merge_lengths(lengths);
-
-    for (auto &part : parts) {
-        location::stretch_locations(part.get_mutable_location(), merged_length);
-        locations.push_back(part.get_location());
-    }
-
-    Locations merged_locations = location::merge_locations(locations);
-
-    // merged_signature denominator can't be 1, makes problem with beams and the beat, so currently solve with sort of a patch.
-    // todo: solve this in some better way.
-    return move(Part(move(merged_locations), parts[0].get_signature(), length));
+void Part::multiple_length(const Fraction &new_length) {
+    location::stretch_locations(m_location, new_length);
+    m_length = new_length;
 }

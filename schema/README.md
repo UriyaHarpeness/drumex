@@ -44,7 +44,9 @@ Other instruments that are not not mapped to a real instrument are:
 * Rest
 
 ---
-**Note** that using the instrument Rest means that no note will be played, since it is a
+**Note:**
+
+Using the instrument Rest means that no note will be played, since it is a
 [rest](https://en.wikipedia.org/wiki/Rest_(music)).
 ---
 
@@ -63,6 +65,7 @@ a power of two, for example 2/1, 1/1, 1/4, or 1/32.
 A note can have any number of modifiers, the modifiers change the way a note is played, for example a ghost note, is
 played quietly.
 
+The modifiers supported are:
 * CrossStick
 * Ghost
 * Accent

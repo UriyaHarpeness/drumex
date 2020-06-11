@@ -18,7 +18,6 @@ class Notation;
 typedef vector<Notation> Group;
 typedef vector<Group> Voice;
 typedef vector<Voice> BeamedVoice;
-typedef vector<Voice> Notations;
 
 class Notation {
 public:

@@ -1,34 +1,39 @@
 {
   "Name": "Variations",
   "Variations": [
-    [
-      {
-        "Part": "rudiments/chester-2-a.json",
-        "Indexes": [
-          0
-        ],
-        "Apply": [
-          {
-            "Name": "Quick Double",
-            "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "Distance": [
-                1,
-                16
-              ]
+    {
+      "Parts": [
+        {
+          "Part": "rudiments/chester-2-a.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Quick Double",
+              "Arguments": {
+                "Instruments": [],
+                "Modifiers": [],
+                "Distance": [
+                  1,
+                  16
+                ]
+              }
+            },
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Instruments": [],
+                "Modifiers": [],
+                "DestinationInstrument": "Up"
+              }
             }
-          },
-          {
-            "Name": "Change Note",
-            "Arguments": {
-              "Instruments": [],
-              "Modifiers": [],
-              "DestinationInstrument": "Up"
-            }
-          }
-        ]
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
       }
-    ]
+    }
   ]
 }

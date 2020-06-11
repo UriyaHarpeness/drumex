@@ -39,18 +39,6 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
     RhythmContainer *rhythm;
     Paddings up_padding, down_padding, empty_padding;
 
-    for (VoiceContainerIterator voice_iterator(up); voice_iterator; voice_iterator++) {
-        rhythm = *voice_iterator;
-        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-                         << rhythm->get_beamed_notations().size() << endl;
-    }
-
-    for (VoiceContainerIterator voice_iterator(down); voice_iterator; voice_iterator++) {
-        rhythm = *voice_iterator;
-        Log(TRACE).Get() << rhythm->get_offset() << " " << rhythm->get_notations().size() << " "
-                         << rhythm->get_beamed_notations().size() << endl;
-    }
-
     up.prepare_empty_padding(empty_padding);
     down.prepare_empty_padding(empty_padding);
 
