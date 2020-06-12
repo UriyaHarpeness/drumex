@@ -2,11 +2,168 @@
 
 ## Part Structure
 
-A Part defines a list of musical pieces. 
+A Part defines a list of musical pieces, the schema is defined [here](part.json).
 
-[schema](part.json)
+There are 2 ways to define a Part: [Custom](#Custom) and [Regular](#Regular).
+A Part file can contain both ways at the same time.
 
-[Notation](#Notation)
+#### Custom
+
+The structure is as follows:
+
+```text
+{
+  "Name": "Custom Part Example",
+  "Global": {
+      "Time Signature": <Time Signature>,
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": <Note>
+        }
+      }
+    },
+  "Parts": [
+    {
+      "Time Signature": <Time Signature>,
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": <Note>,
+          ".": <Note>
+        },
+        "Use": [
+          "s.....s.s..s...."
+        ]
+      }
+    }
+  ]
+}
+```
+
+The different sections explanation:
+* **Name** - The name of the Part.
+* **Global** - A global section, the different attributes that a Part requires can be defined there, except for the
+    `Use` attribute, if a specific Part has a definition for any of these attributes, it overrides the attribute's 
+    global definition.
+* **Parts** - The Parts that the Part file defines, a list of separate Parts definitions, each Part has the following
+    attributes, which if are not defined will be taken from the `Global` section, except for the `Use` attribute which
+    must be defined per definition.
+    * **Time Signature** - The [time signature](https://en.wikipedia.org/wiki/Time_signature) of the Part, written in a
+        form of list with two integers.
+    * **Type** - The type of definition of the Part, this example is for the "Custom" type.
+    * **Part** - Contains the actual definition of notes of the part, contains the following attributes:
+        * **Definitions** - A mapping between a character and a [Notation](#Notation) definition.
+        * **Use** - The use of the defined notes, a list of strings that contain the characters that are mapped to a
+            note. Besides the defined characters, the symbol `|` can be used for readability, and when used as the last
+            character of a string, defines that the time of the piece continues, if not used, all the different strings
+            until the first occurrence of it at the end start at the same time, for example:
+            ```json
+            {
+              "Definitions": {
+               "s": [
+                 "Snare",
+                 [
+                   1,
+                   16
+                 ]
+               ],
+               ".": [
+                 "Rest",
+                 [
+                   1,
+                   16
+                 ]
+               ]
+             },
+             "Use": [
+               "s.....s.s..s....",
+               "s..s...s..s...s.|",
+               "s..........s...."
+             ]
+            }
+            ```
+            The first two lines are played at the same time, while the third is played after and ends the piece.
+
+#### Regular
+
+The structure is as follows:
+
+```text
+{
+  "Name": "Regular Part Example",
+  "Global": {
+      "Time Signature": <Time Signature>,
+      "Type": "Regular"
+    },
+  "Parts": [
+    {
+      "Time Signature": <Time Signature>,
+      "Type": "Regular",
+      "Part": [
+        [
+          <Note>,
+          <Note>
+        ],
+        [
+          <Note>
+        ]
+      ]
+    }
+  ]
+}
+```
+
+The definitions are same as in the [Custom](#Custom) Part, the only difference is in the different Parts, specifically
+in the `Part` attribute.
+
+While in the custom Part, it contains the `Definitions` attribute which defines the usable notes, and the `Use`
+attribute which uses them, in a "Regular" Part definition it is not so.
+
+* **Parts**
+    * **Type** - The type of definition of the Part, this example is for the "Regular" type.
+    * **Part** - Contains the actual definition of notes of the part, contains a list of lists of
+        [Notations](#Notation). Each item in the main list contains a list with at least on note, all the notes in the
+        same sublist must have the same length, and the notes within in are played at the same time.
+        For example:
+        ```json
+        [
+          [
+            [
+              "Bass",
+              [
+                1,
+                8
+              ]
+            ],
+            [
+              "HiHat",
+              [
+                1,
+                8
+              ],
+              [
+                "Loose"
+              ]
+            ]
+          ],
+          [
+            [
+              "Snare",
+              [
+                7,
+                8
+              ],
+              [
+                "Rimshot"
+              ]
+            ]
+          ]
+        ]
+        ```
+        First for 1 eighth the bass drum is played with a loose hihat, followed by a 7/8 rimshot on the snare drum.
+
+---
 
 ### Notation
 
@@ -43,12 +200,8 @@ Other instruments that are not not mapped to a real instrument are:
 * Down
 * Rest
 
----
-**Note:**
-
-Using the instrument Rest means that no note will be played, since it is a
+> **Note:** Using the instrument Rest means that no note will be played, since it is a
 [rest](https://en.wikipedia.org/wiki/Rest_(music)).
----
 
 #### Length
 
@@ -80,3 +233,23 @@ The modifiers supported are:
 * Choke
 * Right
 * Left
+
+#### Examples
+
+```json
+["Snare", [1, 4], ["Right", "Ghost"]]
+```
+A quarter note, played on the snare drum, using the right hand as a ghost note.
+
+```json
+["Rest", [1, 1]]
+```
+A whole note rest.
+
+```json
+["Bass", [3, 4]]
+```
+A 3/4 length note played on the bass drum, although notes only have a natural length that is a power of 2, the notes can
+be defined with the desired length, and will later on be translated to valid notes, for example a dotted eighth note.
+
+---
