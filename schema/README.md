@@ -1,5 +1,9 @@
 # Creating Parts and Exercises
 
+Following is a description for how to create Parts and Exercises, the way for the user to interact with DrumEX.
+
+> It is recommended for clarity to refer to the [examples](../resources/examples). 
+
 ## Part Structure
 
 A Part defines a list of musical pieces, the schema is defined [here](part.json).

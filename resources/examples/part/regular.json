@@ -1,0 +1,69 @@
+{
+  "Name": "Regular Part Example",
+  "Global": {
+    "Type": "Regular"
+  },
+  "Parts": [
+    {
+      "Time Signature": [
+        2,
+        4
+      ],
+      "Part": [
+        [
+          [
+            "Bass",
+            [
+              1,
+              8
+            ]
+          ],
+          [
+            "HiHat",
+            [
+              1,
+              8
+            ]
+          ]
+        ],
+        [
+          [
+            "HiHat",
+            [
+              1,
+              8
+            ]
+          ]
+        ],
+        [
+          [
+            "HiHat",
+            [
+              1,
+              8
+            ]
+          ],
+          [
+            "Snare",
+            [
+              1,
+              8
+            ]
+          ]
+        ],
+        [
+          [
+            "HiHat",
+            [
+              1,
+              8
+            ],
+            [
+              "Loose"
+            ]
+          ]
+        ]
+      ]
+    }
+  ]
+}

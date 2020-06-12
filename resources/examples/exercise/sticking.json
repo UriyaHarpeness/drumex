@@ -1,0 +1,26 @@
+{
+  "Name": "Sticking Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Sticking",
+              "Arguments": {
+                "Sticking": "RL.-"
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

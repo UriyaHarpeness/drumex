@@ -1,29 +1,12 @@
 {
-  "Name": "Alternate Example",
+  "Name": "Change Note Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "rudiments/chester-2-a.json",
+          "Part": "examples/part/custom.json",
           "Indexes": [
             0
-          ],
-          "Apply": [
-            {
-              "Name": "Change Note",
-              "Arguments": {
-                "Match": {},
-                "Apply": {
-                  "Instrument": "Up"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "Part": "rudiments/paradidles.json",
-          "Indexes": [
-            1
           ],
           "Apply": [
             {
@@ -36,23 +19,30 @@
               }
             }
           ]
-        }
-      ],
-      "Time Signature": [
-        4,
-        4
-      ],
-      "Combination": {
-        "Type": "Alternate",
-        "Arguments": {
+        },
+        {
+          "Part": "examples/part/custom.json",
           "Indexes": [
-            0,
-            1,
-            0,
-            1,
-            1
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Up",
+                  "Modifiers": [
+                    "Open"
+                  ]
+                }
+              }
+            }
           ]
         }
+      ],
+      "Combination": {
+        "Type": "Merge"
       }
     }
   ]
