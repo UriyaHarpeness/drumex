@@ -257,18 +257,6 @@ void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
     part.set_location(new_locations);
 }
 
-void variations::Scale::apply(Part &part, const Json::Value &arguments) {
-    Locations new_locations;
-
-    Fraction ratio = {arguments["Ratio"][0].asInt(), arguments["Ratio"][1].asInt()};
-
-    for (const auto &location : part.get_location()) {
-        new_locations[location.first * ratio] = location.second;
-    }
-
-    part.set_location(new_locations);
-}
-
 void variations::StretchSticking::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations = part.get_location();
 
@@ -305,6 +293,18 @@ void variations::StretchSticking::apply(Part &part, const Json::Value &arguments
             prev_modifier = modifier;
             prev_location_it++;
         }
+    }
+
+    part.set_location(new_locations);
+}
+
+void variations::Scale::apply(Part &part, const Json::Value &arguments) {
+    Locations new_locations;
+
+    Fraction ratio = {arguments["Ratio"][0].asInt(), arguments["Ratio"][1].asInt()};
+
+    for (const auto &location : part.get_location()) {
+        new_locations[location.first * ratio] = location.second;
     }
 
     part.set_location(new_locations);

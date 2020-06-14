@@ -1,3 +1,5 @@
+refer to the [Parts ans Exercises docs](schema/README.md).
+
 ### References
 * https://en.wikipedia.org/wiki/Time_signature
 * https://en.wikipedia.org/wiki/List_of_musical_symbols

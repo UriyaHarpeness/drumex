@@ -1,0 +1,23 @@
+{
+  "Name": "Variations Development",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Tuplet"
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}
