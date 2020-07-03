@@ -15,7 +15,7 @@
         "type": "object",
         "description": "Different defined Variations.",
         "properties": {
-          "Part": {
+          "Parts": {
             "type": "array",
             "description": "Different defined Variations Parts.",
             "items": {
@@ -144,7 +144,7 @@
           "Parts",
           "Combination"
         ],
-        "additionalItems": false
+        "additionalProperties": false
       },
       "minItems": 1
     }

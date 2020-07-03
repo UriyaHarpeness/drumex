@@ -26,7 +26,12 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     auto most_occurring = calc_most_occurring_rhythm(locations);
     m_most_occurring_rhythm = most_occurring.first;
     bool same_rhythm = most_occurring.second;
-    m_beat = get_beat_from_most_occurring_rhythm(m_most_occurring_rhythm, scope, ratio);
+    m_beats = get_beats_from_most_occurring_rhythm(m_most_occurring_rhythm, scope, ratio);
+    Fraction beat_offset;
+    for (const auto &beat : m_beats) {
+        beat_offset += beat;
+        m_location_beats.push_back(beat_offset);
+    }
 
     // If no notes start at the beginning of the scope.
     if (m_locations.find({}) == m_locations.end()) {
@@ -35,11 +40,17 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     }
     m_locations.insert({scope, {}});
 
-    Log(DEBUG).Get() << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", beat: " << m_beat << ", same: "
-                     << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio << endl;
+    Log(DEBUG).Get() << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", same: "
+                     << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio
+                     << ", beats: ";
+    for (const auto &beat : m_beats) {
+        Log(DEBUG).Get() << beat << " ";
+    }
+    Log(DEBUG).Get() << endl;
 
     // Now split according to the most occurring rhythm.
-    Fraction next_beat = m_beat;
+    auto beats_it = m_location_beats.begin();
+    Fraction next_beat = *beats_it;
     Locations rhythm_location;
 
     // Split rhythm further.
@@ -47,17 +58,18 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
         for (const auto &location : m_locations) {
             while (next_beat <= location.first) {
                 m_rhythms_containers.emplace_back(move(rhythm_location), CommonTime, direction,
-                                                  offset + (next_beat - m_beat),
+                                                  offset + (next_beat - *beats_it),
                                                   ratio / (m_most_occurring_rhythm == 2 ? 4 : m_most_occurring_rhythm));
                 rhythm_location.clear();
                 if (next_beat == scope) {
                     break;
                 }
-                next_beat += m_beat;
+                beats_it++;
+                next_beat = *beats_it;
             }
 
             // The location is relative to the offset and the beat, need to think how this will be represented.
-            rhythm_location.insert({(location.first - (next_beat - m_beat)) / m_beat, location.second});
+            rhythm_location.insert({(location.first - (next_beat - *beats_it)) / *beats_it, location.second});
         }
     }
 
@@ -95,7 +107,7 @@ void RhythmContainer::notationize() {
         // Locations does not contain rests at this point.
         m_notations = location::location_to_notation(m_locations, rests_location, m_ratio);
 
-        m_notations = NotationUtils::convert_notation(m_notations, m_length, m_beat,
+        m_notations = NotationUtils::convert_notation(m_notations, m_length, m_location_beats,
                                                       (m_most_occurring_rhythm == 2) ? m_ratio : m_ratio /
                                                                                                  m_most_occurring_rhythm);
         return;
@@ -114,22 +126,23 @@ void RhythmContainer::beam() {
      */
     if (m_rhythms_containers.empty()) {
         // todo: optimize / shorten this function.
-        Fraction beam_limit, offset;
-        if (m_ratio == OneRatio) {
-            beam_limit = m_beat;
+        Fraction offset;
+        vector<Fraction> beam_limits;
+        if (m_most_occurring_rhythm == 2) {
+            beam_limits = m_location_beats;
         } else {
-            beam_limit = m_length;
+            beam_limits = {m_length};
         }
 
         auto notation_it = m_notations.begin(), notation_end = m_notations.begin();
         auto first_non_beamable = m_notations.begin(), prev_non_beamable = m_notations.begin();
         int remaining_plays;
         Voice beamed;
-        Fraction current_beam = beam_limit;
+        auto beam_it = beam_limits.begin();
 
         while (offset < m_length) {
-            while (offset < current_beam) {
-                NotationUtils::find_first_non_beamable(offset, current_beam, first_non_beamable);
+            while (offset < *beam_it) {
+                NotationUtils::find_first_non_beamable(offset, *beam_it, first_non_beamable);
 
                 remaining_plays = NotationUtils::count_remaining_plays(prev_non_beamable, first_non_beamable);
 
@@ -155,7 +168,7 @@ void RhythmContainer::beam() {
                     offset += (*notation_it)[0].get_length();
                     notation_it++;
                 }
-                if (offset < current_beam) {
+                if (offset < *beam_it) {
                     m_beamed_notations.push_back({*notation_it});
                     offset += (*notation_it)[0].get_length();
                     notation_it++;
@@ -163,8 +176,8 @@ void RhythmContainer::beam() {
                 }
                 prev_non_beamable = first_non_beamable;
             }
-            while (current_beam <= offset) {
-                current_beam += beam_limit;
+            while (*beam_it <= offset) {
+                beam_it++;
             }
         }
 
@@ -388,8 +401,11 @@ pair<int, bool> RhythmContainer::calc_most_occurring_rhythm(const Locations &loc
     return {*prev(prime_factors_by_count.end())->second.begin(), prime_factors_by_count.size() == 1};
 }
 
-Fraction RhythmContainer::get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
-                                                              const Fraction &ratio) {
-    return (((ratio == OneRatio) && (most_occurring_rhythm == 2)) ? signature.get_beat() :
-            ratio / ((most_occurring_rhythm == 2) ? 4 : most_occurring_rhythm));
+vector<Fraction>
+RhythmContainer::get_beats_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
+                                                      const Fraction &ratio) {
+    if (most_occurring_rhythm == 2) {
+        return TimeSignature(signature * ratio).get_beats();
+    }
+    return move(vector<Fraction>(most_occurring_rhythm, ratio / most_occurring_rhythm));
 }

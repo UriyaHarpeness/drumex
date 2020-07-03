@@ -59,6 +59,7 @@ int main(int argv, char *argc[]) {
     // todo: improve the schemas of parts and exercises to be more readable and clear, accordingly update schemas.
     // todo: add more instruments and modifiers and update everywhere (docs included), like HiHatFoot, same for variations or anything that change the schemas.
     // todo: maybe add a GUI editing option in the future.
+    // todo: support both one voice writing and two voice and conversion between them.
 
     /**
      * todo:
@@ -69,9 +70,6 @@ int main(int argv, char *argc[]) {
      */
 
     return 0;
-
-    // splitting voices from one voice notation, will support both one voice writing and two voice and conversion
-    // between them.
 
     // sudo apt-get install gcc g++ cmake libsdl2-dev libsdl2-ttf-dev
     // optional: libsdl2-image-dev libsdl2-mixer-dev libasound2-dev

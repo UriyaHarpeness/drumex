@@ -10,7 +10,7 @@ public:
 
     TimeSignature(unsigned int a, unsigned int b);
 
-    [[nodiscard]] Fraction get_beat() const;
+    [[nodiscard]] vector<Fraction> get_beats() const;
 };
 
 const TimeSignature CommonTime(4, 4);

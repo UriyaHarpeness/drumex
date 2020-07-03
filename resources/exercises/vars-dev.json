@@ -4,7 +4,7 @@
     {
       "Parts": [
         {
-          "Part": "rudiments/chester-2-a.json",
+          "Part": "play/playing.json",
           "Indexes": [
             0
           ],
@@ -12,47 +12,23 @@
             {
               "Name": "Change Note",
               "Arguments": {
-                "Match": {},
+                "Match": {
+                  "Instruments": [
+                    "HiHat"
+                  ]
+                },
                 "Apply": {
-                  "Instrument": "Up"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "Part": "rudiments/paradidles.json",
-          "Indexes": [
-            1
-          ],
-          "Apply": [
-            {
-              "Name": "Change Note",
-              "Arguments": {
-                "Match": {},
-                "Apply": {
-                  "Instrument": "Down"
+                  "Modifiers": [
+                    "Loose"
+                  ]
                 }
               }
             }
           ]
         }
-      ],
-      "Time Signature": [
-        4,
-        4
       ],
       "Combination": {
-        "Type": "Alternate",
-        "Arguments": {
-          "Indexes": [
-            0,
-            1,
-            0,
-            1,
-            1
-          ]
-        }
+        "Type": "Merge"
       }
     }
   ]

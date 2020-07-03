@@ -74,18 +74,16 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
 
     Group new_group;
     Locations new_locations;
+    new_locations.insert(*prev(part.get_location().end()));
 
     for (const auto &location : part.get_location()) {
-        Fraction global_offset = location.first;
-        Group group = location.second;
-        new_locations[global_offset] = group;
-
-        // todo: support change only single note in group.
-        for (const auto &note : group) {
+        for (const auto &note : location.second) {
             if ((note.get_playing() == BasePlay) &&
                 match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
                 new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
                                      note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
+            } else {
+                new_group.push_back(note);
             }
         }
         if (!new_group.empty()) {
