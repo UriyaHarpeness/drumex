@@ -104,6 +104,9 @@ Locations Part::read_custom_voice(const Json::Value &part) {
             if (c == '|') {
                 continue;
             }
+            if (definitions.find(c) == definitions.end()) {
+                throw runtime_error("Character '" + string({c}) + "' was not defined before use");
+            }
             voice.push_back({definitions.at(c)});
         }
         // Enables splitting long notation lines.

@@ -28,13 +28,15 @@ namespace NotationUtils {
 
     vector<Fraction> split_fraction(Fraction fraction, const Fraction &ratio);
 
-    vector<Fraction> split_fraction(const Fraction &beat, Fraction offset, Fraction fraction, const Fraction &ratio);
+    vector<Fraction>
+    split_fraction(const Fraction &next_beat, Fraction offset, Fraction length, const Fraction &ratio);
 
     int count_remaining_plays(const Voice::iterator &start, const Voice::iterator &end);
 
     void find_first_non_beamable(Fraction start, const Fraction &end, Voice::iterator &notation_it);
 
-    Voice convert_notation(const Voice &notation, const Fraction &length, const Fraction &beat, const Fraction &ratio);
+    Voice convert_notation(const Voice &notation, const Fraction &length, const vector<Fraction> &beats,
+                           const Fraction &ratio);
 
     Voice generate_voice_notation(const Voice &raw_voice_notation, const TimeSignature &signature);
 

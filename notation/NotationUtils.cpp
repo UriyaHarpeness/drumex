@@ -48,24 +48,24 @@ vector<Fraction> NotationUtils::split_fraction(Fraction fraction, const Fraction
 }
 
 vector<Fraction>
-NotationUtils::split_fraction(const Fraction &beat, Fraction offset, Fraction fraction, const Fraction &ratio) {
+NotationUtils::split_fraction(const Fraction &next_beat, Fraction offset, Fraction length, const Fraction &ratio) {
     vector<Fraction> fractions;
     vector<Fraction> tmp;
 
     Fraction fill;
 
     // If it's offset in a beat, first filling the beat is needed before stretching over it.
-    if (static_cast<bool>(offset % beat)) {
-        fill = min(fraction, beat - (offset % beat));
+    if (static_cast<bool>(offset % next_beat)) {
+        fill = min(length, next_beat - (offset % next_beat));
         tmp = split_fraction(fill, ratio);
         fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
         offset += fill;
-        fraction -= fill;
+        length -= fill;
     }
 
     // After using the BarContainer, the note will never overlaps the bar.
-    tmp = split_fraction(fraction, ratio);
+    tmp = split_fraction(length, ratio);
     fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
     return move(fractions);
@@ -93,15 +93,16 @@ void NotationUtils::find_first_non_beamable(Fraction start, const Fraction &end,
     }
 }
 
-Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &length, const Fraction &beat,
+Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &length, const vector<Fraction> &beats,
                                       const Fraction &ratio) {
     Voice generated_notation;
+    auto beats_it = beats.begin();
 
     Fraction offset;
 
     for (const auto &group : notation) {
         // Assumes every group has the same BasicPlaying and length.
-        auto fractions = split_fraction(beat, offset, group[0].get_rounded_length(), ratio);
+        auto fractions = split_fraction(*beats_it, offset, group[0].get_rounded_length(), ratio);
         BasicPlaying playing = group[0].get_playing();
         for (const auto &fraction : fractions) {
             if (playing == BasePlay) {
@@ -121,8 +122,9 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
                     if ((note.get_playing() == BasePlay) &&
                         (find(modifiers.begin(), modifiers.end(), ModDot) == modifiers.end()) &&
                         (note.get_length() / fraction == Fraction(2, 1)) &&
-                        (((offset % beat) + fraction + note.get_length() <= beat) ||
-                         (!static_cast<bool>(offset % beat) && !static_cast<bool>(note.get_length() % beat)))) {
+                        (((offset % *beats_it) + fraction + note.get_length() <= *beats_it) ||
+                         (!static_cast<bool>(offset % *beats_it) &&
+                          !static_cast<bool>(note.get_length() % *beats_it)))) {
                         dot = true;
                     }
                 }

@@ -6,7 +6,7 @@
         {
           "Part": "play/playing.json",
           "Indexes": [
-            1
+            0
           ],
           "Apply": [
             {
@@ -18,7 +18,9 @@
                   ]
                 },
                 "Apply": {
-                  "Instrument": "China"
+                  "Modifiers": [
+                    "Loose"
+                  ]
                 }
               }
             }

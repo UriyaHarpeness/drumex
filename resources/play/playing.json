@@ -3,12 +3,33 @@
   "Parts": [
     {
       "Time Signature": [
-        4,
-        4
+        11,
+        8
       ],
       "Type": "Custom",
       "Part": {
         "Definitions": {
+          "B": [
+            "Bass",
+            [
+              1,
+              5
+            ]
+          ],
+          "S": [
+            "Snare",
+            [
+              1,
+              5
+            ]
+          ],
+          "-": [
+            "Rest",
+            [
+              1,
+              5
+            ]
+          ],
           "s": [
             "Snare",
             [
@@ -42,9 +63,9 @@
           ]
         },
         "Use": [
-          "........",
-          "ssss....",
-          "....bbbb"
+          "ccccc.c...cccc",
+          "..s...ssss....",
+          "b...bb.b...bb."
         ]
       }
     },

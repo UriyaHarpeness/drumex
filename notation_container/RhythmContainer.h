@@ -40,16 +40,9 @@ public:
 
     static pair<int, bool> calc_most_occurring_rhythm(const Locations &locations);
 
-    static Fraction get_beat_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
-                                                        const Fraction &ratio);
-
-    [[nodiscard]] inline vector<RhythmContainer> &get_mutable_rhythms() { return m_rhythms_containers; };
-
-    [[nodiscard]] inline const Voice &get_notations() const { return m_notations; };
-
-    [[nodiscard]] inline const BeamedVoice &get_beamed_notations() const { return m_beamed_notations; };
-
-    [[nodiscard]] inline const Fraction &get_offset() const { return m_offset; };
+    static vector<Fraction>
+    get_beats_from_most_occurring_rhythm(int most_occurring_rhythm, const TimeSignature &signature,
+                                         const Fraction &ratio);
 
     [[nodiscard]] inline const int &get_max_used_line() const { return m_max_used_line; };
 
@@ -70,7 +63,9 @@ private:
 
     Fraction m_length;
 
-    Fraction m_beat;
+    vector<Fraction> m_beats;
+
+    vector<Fraction> m_location_beats;
 
     int m_most_occurring_rhythm;
 

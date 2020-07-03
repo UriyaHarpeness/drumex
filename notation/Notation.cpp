@@ -95,14 +95,12 @@ Notation::Notation(BasicPlaying playing, Instrument instrument, const Fraction &
                    const vector<Modifier> &modifiers) :
         m_line(instrument_to_line.at(instrument)), m_length(length), m_instrument(instrument), m_playing(playing),
         m_modifiers(modifiers), m_padding(create_padding(modifiers)) {
-    // todo: support 2 whole, etc.
-
+    // todo: support 2 whole, etc, no more than whole note support for now.
     initialize_with_length();
 }
 
 void Notation::initialize_with_length() {
     if (m_playing == BasePlay) {
-        // todo: no more than whole note support for now.
         // todo: support flam and drag that are not tied to the next note hit (like quick flam of snare and bass)
         if (m_line <= -4) {
             // todo: there are more places with cymbals, like hihat foot.
