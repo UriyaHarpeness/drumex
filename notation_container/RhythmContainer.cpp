@@ -9,7 +9,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
      * There is only one main rhythm.
      * The prioritized is the normal meter, that matches the time signature, a division of 2 probably.
      * After that, lower polyrhythm first in ascending order.
-     * Each polythythm notation notates only a beat of the upper rhythm.
+     * Each polyrhythm notation notates only a beat of the upper rhythm.
      */
 
     /**
@@ -28,7 +28,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     bool same_rhythm = most_occurring.second;
     m_beats = get_beats_from_most_occurring_rhythm(m_most_occurring_rhythm, scope, ratio);
     Fraction beat_offset;
-    for (const auto &beat : m_beats) {
+    for (const auto &beat: m_beats) {
         beat_offset += beat;
         m_location_beats.push_back(beat_offset);
     }
@@ -43,33 +43,31 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     Log(DEBUG).Get() << "most_occurring_rhythm: " << m_most_occurring_rhythm << ", same: "
                      << (same_rhythm ? "yes" : "no") << ", offset: " << m_offset << ", ratio: " << m_ratio
                      << ", beats: ";
-    for (const auto &beat : m_beats) {
-        Log(DEBUG).Get() << beat << " ";
+    for (const auto &beat: m_beats) {
+        Log(DEBUG).Get(false) << beat << " ";
     }
-    Log(DEBUG).Get() << endl;
+    Log(DEBUG).Get(false) << endl;
 
     // Now split according to the most occurring rhythm.
     auto beats_it = m_location_beats.begin();
-    Fraction next_beat = *beats_it;
     Locations rhythm_location;
 
     // Split rhythm further.
     if (!same_rhythm) {
-        for (const auto &location : m_locations) {
-            while (next_beat <= location.first) {
+        for (const auto &location: m_locations) {
+            while (*beats_it <= location.first) {
                 m_rhythms_containers.emplace_back(move(rhythm_location), CommonTime, direction,
-                                                  offset + (next_beat - *beats_it),
+                                                  offset + *beats_it - m_beats[0],
                                                   ratio / (m_most_occurring_rhythm == 2 ? 4 : m_most_occurring_rhythm));
                 rhythm_location.clear();
-                if (next_beat == scope) {
+                if (*beats_it == scope) {
                     break;
                 }
                 beats_it++;
-                next_beat = *beats_it;
             }
 
-            // The location is relative to the offset and the beat, need to think how this will be represented.
-            rhythm_location.insert({(location.first - (next_beat - *beats_it)) / *beats_it, location.second});
+            // The location is relative to the offset and the beat and scaled accordingly, need to think how this will be represented.
+            rhythm_location.insert({(location.first - (*beats_it - m_beats[0])) / m_beats[0], location.second});
         }
     }
 
@@ -128,7 +126,7 @@ void RhythmContainer::beam() {
         // todo: optimize / shorten this function.
         Fraction offset;
         vector<Fraction> beam_limits;
-        if (m_most_occurring_rhythm == 2) {
+        if ((m_most_occurring_rhythm == 2) && (m_ratio.get_simple_length() > Fraction(1, 4))) {
             beam_limits = m_location_beats;
         } else {
             beam_limits = {m_length};
@@ -192,7 +190,7 @@ void RhythmContainer::prepare_empty_padding(Paddings &padding) const {
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
 
-        for (const auto &it : m_notations) {
+        for (const auto &it: m_notations) {
             padding[offset] = {};
             offset += it[0].get_length();
         }
@@ -206,7 +204,7 @@ void RhythmContainer::fill_padding(Paddings &padding, int start_padding, int end
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
 
-        for (const auto &it : m_notations) {
+        for (const auto &it: m_notations) {
             padding[offset] = NotationUtils::sum_padding(padding[offset], NotationUtils::merge_padding(it));
             offset += it[0].get_length();
         }
@@ -255,13 +253,13 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
 
     if (m_rhythms_containers.empty()) {
         Fraction offset = m_offset;
-        for (const auto &it : m_beamed_notations) {
+        for (const auto &it: m_beamed_notations) {
             if (it.size() == 1) {
                 NotationDisplay::draw_individual_notes(y, global_locations, offset, it);
             } else {
                 NotationDisplay::draw_connected_notes(y, global_locations, offset, it);
             }
-            for (const auto &i : it) {
+            for (const auto &i: it) {
                 offset += i[0].get_length();
             }
         }
@@ -278,7 +276,7 @@ void RhythmContainer::display(const GlobalLocations &global_locations, const int
 void RhythmContainer::extend(const RhythmContainer &container) {
     m_length += container.m_length;
     m_locations.erase(prev(m_locations.end()));
-    for (const auto &location : container.m_locations) {
+    for (const auto &location: container.m_locations) {
         m_locations.insert({location.first + ((container.m_offset - m_offset) / m_ratio), location.second});
     }
     location::optimize_location(m_locations);
@@ -292,7 +290,7 @@ void RhythmContainer::init_display_scope() {
     m_max_used_line = DisplayConstants::direction_line;
 
     if (m_rhythms_containers.empty()) {
-        for (const auto &notations : m_beamed_notations) {
+        for (const auto &notations: m_beamed_notations) {
             array<int, 2> display_scope = NotationDisplay::get_display_scope(notations);
             if (m_direction == NotesUp) {
                 assert(display_scope[0] <= DisplayConstants::direction_line);
@@ -308,7 +306,7 @@ void RhythmContainer::init_display_scope() {
         for_each(m_rhythms_containers.begin(), m_rhythms_containers.end(),
                  [](RhythmContainer &n) { n.init_display_scope(); });
 
-        for (const auto &rhythms_container : m_rhythms_containers) {
+        for (const auto &rhythms_container: m_rhythms_containers) {
             int spacing = (rhythms_container.get_most_occurring_rhythm() == 2 ? 0
                                                                               : DisplayConstants::polyrhythm_height_line_spacing);
             if (m_direction == NotesUp) {
@@ -373,19 +371,19 @@ pair<int, bool> RhythmContainer::calc_most_occurring_rhythm(const Locations &loc
      * rhythm.
      */
     map<int, int> prime_factors_counter;
-    for (const auto &it : locations) {
+    for (const auto &it: locations) {
         Log(TRACE).Get() << "denominator: " << it.first.get_value().second << ", value: " << it.first << endl;
         auto prime_factors = get_prime_factors(it.first.get_value().second);
         if ((prime_factors.size() > 1) && (prime_factors.find(2) != prime_factors.end())) {
             prime_factors.erase(2);
         }
-        for (const auto &prime_factor : prime_factors) {
+        for (const auto &prime_factor: prime_factors) {
             prime_factors_counter[prime_factor]++;
         }
     }
 
     map<int, set<int>> prime_factors_by_count;
-    for (const auto &it : prime_factors_counter) {
+    for (const auto &it: prime_factors_counter) {
         prime_factors_by_count[it.second].insert(it.first);
     }
     if (prime_factors_by_count.empty()) {

@@ -6,7 +6,7 @@ Part::Part(Locations locations, TimeSignature signature, const Fraction &length)
                                                                                    m_length(length) {}
 
 Part::Part(const string &path, int index) {
-    Json::Reader reader;
+    Json::CharReaderBuilder reader;
     Json::Value obj;
     ifstream part_file(path);
 
@@ -14,8 +14,17 @@ Part::Part(const string &path, int index) {
         throw runtime_error("Part File Does Not Exist");
     }
 
-    reader.parse(part_file, obj);
+    string errs;
+    Json::parseFromStream(reader, part_file, &obj, &errs);
     part_file.close();
+
+    if (obj["Parts"].empty()) {
+        throw runtime_error("Could not find \"Parts\"");
+    }
+    if (index >= obj["Parts"].size()) {
+        throw runtime_error(
+                "Index " + to_string(index) + " does not exist (maximum " + to_string(obj["Parts"].size() - 1) + ")");
+    }
 
     Log(INFO).Get() << "Loading Part: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value global_definitions = obj["Global"];
@@ -59,7 +68,7 @@ Notation Part::json_to_note(const Json::Value &note_json) {
     Instrument inst = instrument_names.at(note_json[0].asString());
     Fraction length = {note_json[1][0].asInt(), note_json[1][1].asInt()};
     if (!note_json[2].empty()) {
-        for (const auto &modifier : note_json[2]) {
+        for (const auto &modifier: note_json[2]) {
             modifiers.push_back(modifier_names.at(modifier.asString()));
         }
     }
@@ -71,8 +80,8 @@ Locations Part::read_regular_voice(const Json::Value &part) {
     Voice voice;
     Group group;
     vector<Modifier> modifiers;
-    for (const auto &raw_group : part) {
-        for (const auto &note : raw_group) {
+    for (const auto &raw_group: part) {
+        for (const auto &note: raw_group) {
             group.push_back(json_to_note(note));
             modifiers.clear();
         }
@@ -87,7 +96,7 @@ Locations Part::read_custom_voice(const Json::Value &part) {
     map<char, Notation> definitions;
     vector<Modifier> modifiers;
 
-    for (const string &name : part["Definitions"].getMemberNames()) {
+    for (const string &name: part["Definitions"].getMemberNames()) {
         const Json::Value &note = part["Definitions"][name];
 
         definitions.insert(pair<char, Notation>(name[0], json_to_note(note)));
@@ -97,8 +106,8 @@ Locations Part::read_custom_voice(const Json::Value &part) {
     Voice voice;
     vector<Voice> voices;
     char last = '|';
-    for (const Json::Value &json_voice : part["Use"]) {
-        for (const char &c : json_voice.asString()) {
+    for (const Json::Value &json_voice: part["Use"]) {
+        for (const char &c: json_voice.asString()) {
             // For readability purpose.
             last = c;
             if (c == '|') {
@@ -122,7 +131,7 @@ Locations Part::read_custom_voice(const Json::Value &part) {
 }
 
 int Part::get_parts_number(const string &path) {
-    Json::Reader reader;
+    Json::CharReaderBuilder reader;
     Json::Value obj;
     ifstream part_file(path);
 
@@ -130,7 +139,8 @@ int Part::get_parts_number(const string &path) {
         throw runtime_error("Part File Does Not Exist");
     }
 
-    reader.parse(part_file, obj);
+    string errs;
+    Json::parseFromStream(reader, part_file, &obj, &errs);
     part_file.close();
 
     return obj["Parts"].size();
@@ -139,7 +149,7 @@ int Part::get_parts_number(const string &path) {
 Locations Part::voices_to_location(const vector<Voice> &notations) {
     vector<Locations> locations;
 
-    for (const auto &notation : notations) {
+    for (const auto &notation: notations) {
         locations.push_back(location::notation_to_location(notation));
     }
 

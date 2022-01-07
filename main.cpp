@@ -60,6 +60,7 @@ int main(int argv, char *argc[]) {
     // todo: add more instruments and modifiers and update everywhere (docs included), like HiHatFoot, same for variations or anything that change the schemas.
     // todo: maybe add a GUI editing option in the future.
     // todo: support both one voice writing and two voice and conversion between them.
+    // todo: enforce time signature's lower part is always a power of 2.
 
     /**
      * todo:
@@ -73,4 +74,5 @@ int main(int argv, char *argc[]) {
 
     // sudo apt-get install gcc g++ cmake libsdl2-dev libsdl2-ttf-dev
     // optional: libsdl2-image-dev libsdl2-mixer-dev libasound2-dev
+    // brew install sdl2 sdl2_image sdl2_ttf sdl2_mixer jsoncpp
 }

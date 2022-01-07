@@ -14,17 +14,17 @@ using namespace std;
 
 class Metronome {
 public:
-    Metronome(vector<Fraction> locations, int tempo, const TimeSignature &signature);
+    Metronome(vector<Fraction> locations, unsigned int tempo, unsigned char grace_ticks);
 
     void poll();
 
-    void increase_tempo(int change);
+    void increase_tempo(char change);
 
     static void pause(int milliseconds);
 
     void reset();
 
-    [[nodiscard]] inline int get_tempo() const { return m_tempo; }
+    [[nodiscard]] inline unsigned int get_tempo() const { return m_tempo; }
 
     [[nodiscard]] inline const Fraction &get_current_location() const { return *m_current_location; }
 
@@ -36,7 +36,8 @@ private:
     vector<Fraction> m_locations;
     vector<Fraction>::iterator m_current_location;
 
-    int m_tempo;
+    unsigned int m_tempo;
+    unsigned char m_grace_ticks;
 
     chrono::system_clock::time_point m_start;
 };

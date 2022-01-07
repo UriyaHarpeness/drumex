@@ -1,7 +1,7 @@
 #include "Exercise.h"
 
 Exercise::Exercise(const string &path, int index) {
-    Json::Reader reader;
+    Json::CharReaderBuilder reader;
     Json::Value obj;
     ifstream exercise_file(path);
 
@@ -9,27 +9,37 @@ Exercise::Exercise(const string &path, int index) {
         throw runtime_error("Exercise File Does Not Exist");
     }
 
-    reader.parse(exercise_file, obj);
+    string errs;
+    Json::parseFromStream(reader, exercise_file, &obj, &errs);
     exercise_file.close();
+
+    if (obj["Variations"].empty()) {
+        throw runtime_error("Could not find \"Variations\"");
+    }
+    if (index >= obj["Variations"].size()) {
+        throw runtime_error(
+                "Index " + to_string(index) + " does not exist (maximum " + to_string(obj["Variations"].size() - 1) +
+                ")");
+    }
 
     Log(INFO).Get() << "Loading Exercise: " << obj["Name"].asString() << "[" << index << "]" << endl;
     Json::Value variation = obj["Variations"][index];
 
     vector<Part> parts;
     vector<vector<Part>> all_parts;
-    for (const auto &parts_variation : variation["Parts"]) {
+    for (const auto &parts_variation: variation["Parts"]) {
         if (parts_variation["Indexes"] == "All") {
             for (int i = 0;
                  i < Part::get_parts_number("resources/" + parts_variation["Part"].asString()); parts.emplace_back(
                     "resources/" + parts_variation["Part"].asString(), i++));
         } else {
-            for (const auto &i : parts_variation["Indexes"]) {
+            for (const auto &i: parts_variation["Indexes"]) {
                 parts.emplace_back("resources/" + parts_variation["Part"].asString(), i.asInt());
             }
         }
 
-        for (auto &part : parts) {
-            for (const auto &single_variation : parts_variation["Apply"]) {
+        for (auto &part: parts) {
+            for (const auto &single_variation: parts_variation["Apply"]) {
                 Log(INFO).Get() << "Applying Variation: " << single_variation["Name"].asString() << endl;
                 variations::name_to_variation.at(single_variation["Name"].asString())
                         (part, single_variation["Arguments"]);
@@ -42,7 +52,7 @@ Exercise::Exercise(const string &path, int index) {
     }
 
     vector<Part> all_parts_flat;
-    for (const auto &it : all_parts) {
+    for (const auto &it: all_parts) {
         all_parts_flat.insert(all_parts_flat.end(), it.begin(), it.end());
     }
 
@@ -67,7 +77,7 @@ Part Exercise::merge_parts(vector<Part> parts, const Json::Value &combination, c
 
         merged_length = merged_length * Fraction((merged_length % time_signature).get_value().second);
 
-        for (auto &part : parts) {
+        for (auto &part: parts) {
             part.multiple_length(merged_length);
             locations.push_back(part.get_location());
         }

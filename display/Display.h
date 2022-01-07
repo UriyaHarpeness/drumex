@@ -6,8 +6,8 @@
 #include <iostream>
 #include <map>
 #include <thread>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
 using namespace std;
 

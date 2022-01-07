@@ -16,6 +16,7 @@ enum LogLevel {
     TRACE = 1
 };
 
+// todo: consider the modified logger from iron man.
 class Log {
 public:
     static const map<LogLevel, string> level_strings;
@@ -26,9 +27,9 @@ public:
 
     static string zfill(string str, int length);
 
-    ostringstream &Get();
+    ostringstream &Get(bool prefix = true);
 
-    static const LogLevel enabled_level = INFO;
+    static const LogLevel enabled_level = TRACE;
 
 private:
     LogLevel m_level;
