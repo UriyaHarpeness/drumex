@@ -25,11 +25,11 @@ public:
 
     virtual ~Log();
 
-    static string zfill(string str, int length);
+    static string zfill(string str, unsigned short length);
 
     ostringstream &Get(bool prefix = true);
 
-    static const LogLevel enabled_level = TRACE;
+    static const LogLevel enabled_level = INFO;
 
 private:
     LogLevel m_level;

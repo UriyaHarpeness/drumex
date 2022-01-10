@@ -2,11 +2,11 @@
 
 void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const VoiceContainer &down,
                                              const Fraction &current_location, DisplayVariables &display_variables) {
-    display_variables.current_line = distance(display_variables.bars_split.begin(),
-                                              upper_bound(display_variables.bars_split.begin(),
-                                                          display_variables.bars_split.end(),
-                                                          (int) static_cast<double>(current_location /
-                                                                                    up.get_signature())));
+    display_variables.current_line = (int) distance(display_variables.bars_split.begin(),
+                                                    upper_bound(display_variables.bars_split.begin(),
+                                                                display_variables.bars_split.end(),
+                                                                (int) static_cast<double>(current_location /
+                                                                                          up.get_signature())));
     display_variables.start_line = min(display_variables.current_line, ((int) display_variables.bars_split.size() <
                                                                         DisplayConstants::max_lines_displayed) ? 0 :
                                                                        (int) display_variables.bars_split.size() -
@@ -36,7 +36,6 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
     // Asserts two voices are same offset, when using one voice don't use this.
     assert(up.get_bars().size() == down.get_bars().size());
 
-    RhythmContainer *rhythm;
     Paddings up_padding, down_padding, empty_padding;
 
     up.prepare_empty_padding(empty_padding);
@@ -88,15 +87,17 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, cons
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
                 auto bars_num = (int) static_cast<double>(prev(global_locations.end())->first / signature);
-                m.set_current_location(signature * ((current_bar == bars_num - 1) ? 0 : current_bar + 1));
+                auto new_bar = (current_bar == bars_num - 1) ? 0 : current_bar + 1;
+                m.set_current_location(signature * new_bar);
                 moved = true;
-                Log(INFO).Get() << "Moving to Next Measure" << endl;
+                Log(INFO).Get() << "Moving to Next Measure: " << new_bar << endl;
             } else if (event.key.keysym.sym == SDLK_LEFT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
                 auto bars_num = (int) static_cast<double>(prev(global_locations.end())->first / signature);
-                m.set_current_location(signature * ((current_bar == 0) ? bars_num - 1 : current_bar - 1));
+                auto new_bar = (current_bar == 0) ? bars_num - 1 : current_bar - 1;
+                m.set_current_location(signature * new_bar);
                 moved = true;
-                Log(INFO).Get() << "Moving to Previous Measure" << endl;
+                Log(INFO).Get() << "Moving to Previous Measure: " << new_bar << endl;
             }
             if (pause) {
                 Metronome::pause(250);
@@ -172,7 +173,7 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
         if (it->first && !static_cast<bool>(it->first % signature)) {
             if (offset > DisplayConstants::displaying_max_x) {
                 // Move this bar and the next to another line.
-                bars_split.push_back(static_cast<double>(it->first / signature) - 1);
+                bars_split.push_back((int) static_cast<double>(it->first / signature) - 1);
                 offset = DisplayConstants::displaying_init_x;
                 for (auto i = padding.find(it->first - signature); i != padding.find(it->first); i++) {
                     second_distance = get_distance(next(i)->first - i->first, i->second);

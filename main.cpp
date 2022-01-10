@@ -26,7 +26,7 @@ int main(int argv, char *argc[]) {
     }
 
     DisplayVariables display_variables;
-    Part *chosen_part = nullptr;
+    Part *chosen_part;
     Exercise *exercise = nullptr;
 
     if (!exercise_path.empty()) {
@@ -61,6 +61,7 @@ int main(int argv, char *argc[]) {
     // todo: maybe add a GUI editing option in the future.
     // todo: support both one voice writing and two voice and conversion between them.
     // todo: enforce time signature's lower part is always a power of 2.
+    // todo: configurable font size, window size, etc.
 
     /**
      * todo:

@@ -45,4 +45,4 @@ namespace NotationUtils {
     Paddings merge_padding(const Paddings &a, const Paddings &b);
 
     Padding sum_padding(Padding a, Padding b);
-};
+}

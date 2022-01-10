@@ -21,4 +21,4 @@ namespace NotationDisplay {
 
     void draw_individual_notes(const int staff_y, const GlobalLocations &global_locations, const Fraction &offset,
                                const Voice &notations);
-};
+}

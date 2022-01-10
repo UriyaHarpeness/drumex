@@ -9,9 +9,9 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
     }
 
     if (!all_instruments && !all_modifiers) {
-        for (const auto &instrument : instruments) {
+        for (const auto &instrument: instruments) {
             if (note.get_instrument() == instrument_names.at(instrument.asString())) {
-                for (const auto &modifier : modifiers) {
+                for (const auto &modifier: modifiers) {
                     const auto &note_modifiers = note.get_modifiers();
                     if (find(note_modifiers.begin(), note_modifiers.end(),
                              modifier_names.at(modifier.asString())) != note_modifiers.end()) {
@@ -21,7 +21,7 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
             }
         }
     } else if (all_instruments) {
-        for (const auto &modifier : modifiers) {
+        for (const auto &modifier: modifiers) {
             const auto &note_modifiers = note.get_modifiers();
             if (find(note_modifiers.begin(), note_modifiers.end(),
                      modifier_names.at(modifier.asString())) != note_modifiers.end()) {
@@ -29,7 +29,7 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
             }
         }
     } else {
-        for (const auto &instrument : instruments) {
+        for (const auto &instrument: instruments) {
             if (note.get_instrument() == instrument_names.at(instrument.asString())) {
                 return true;
             }
@@ -42,9 +42,9 @@ bool variations::match(const Notation &note, const Json::Value &instruments, con
 Locations variations::match(const Locations &locations, const Json::Value &instruments, const Json::Value &modifiers) {
     Locations matching_locations;
 
-    for (const auto &location : locations) {
+    for (const auto &location: locations) {
         Group matching_group;
-        for (const auto &note : location.second) {
+        for (const auto &note: location.second) {
             if (match(note, instruments, modifiers)) {
                 matching_group.push_back(note);
             }
@@ -67,7 +67,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
     vector<Modifier> modifiers;
 
     if (override_modifiers) {
-        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+        for (const auto &modifier: arguments["Apply"]["Modifiers"]) {
             modifiers.push_back(modifier_names.at(modifier.asString()));
         }
     }
@@ -76,8 +76,8 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
     new_locations.insert(*prev(part.get_location().end()));
 
-    for (const auto &location : part.get_location()) {
-        for (const auto &note : location.second) {
+    for (const auto &location: part.get_location()) {
+        for (const auto &note: location.second) {
             if ((note.get_playing() == BasePlay) &&
                 match(note, arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"])) {
                 new_group.push_back({BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
@@ -98,7 +98,7 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
 void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
 
-    for (const auto &location : part.get_location()) {
+    for (const auto &location: part.get_location()) {
         if (static_cast<bool>(location.first % Fraction(1, 16))) {
             throw runtime_error("Invalid Note Offset For Tuplet Variation");
         }
@@ -121,7 +121,7 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
 
     // Treats all matching notes as the same one for that matter.
     if (!carry) {
-        for (const auto &location : matching) {
+        for (const auto &location: matching) {
             if ((matching.find(location.first + distance) == matching.end()) &&
                 (location.first + distance < prev(matching.end())->first)) {
                 new_locations[location.first + distance] = location.second;
@@ -173,7 +173,7 @@ void variations::Fill::apply(Part &part, const Json::Value &arguments) {
     vector<Modifier> modifiers;
 
     if (override_modifiers) {
-        for (const auto &modifier : arguments["Apply"]["Modifiers"]) {
+        for (const auto &modifier: arguments["Apply"]["Modifiers"]) {
             modifiers.push_back(modifier_names.at(modifier.asString()));
         }
     }
@@ -213,9 +213,9 @@ void variations::Sticking::apply(Part &part, const Json::Value &arguments) {
 
     for (auto location_it = part.get_location().begin();
          location_it != prev(part.get_location().end()); location_it++, index = (index + 1) % (int) sticking.length()) {
-        for (auto &note : location_it->second) {
+        for (auto &note: location_it->second) {
             modifier_found = false;
-            for (const auto &mod : note.get_modifiers()) {
+            for (const auto &mod: note.get_modifiers()) {
                 if ((mod == ModRight) || (mod == ModLeft)) {
                     modifier_found = true;
                     modifier = mod;
@@ -266,8 +266,8 @@ void variations::StretchSticking::apply(Part &part, const Json::Value &arguments
     bool first = true;
     for (auto location_it = new_locations.begin(); location_it != prev(new_locations.end()); location_it++) {
         modifier_found = false;
-        for (auto &note : location_it->second) {
-            for (const auto &mod : note.get_modifiers()) {
+        for (auto &note: location_it->second) {
+            for (const auto &mod: note.get_modifiers()) {
                 if ((mod == ModRight) || (mod == ModLeft)) {
                     modifier_found = true;
                     modifier = mod;
@@ -284,7 +284,7 @@ void variations::StretchSticking::apply(Part &part, const Json::Value &arguments
                 first = false;
             }
             for (; prev_location_it != location_it; prev_location_it++) {
-                for (auto &note : prev_location_it->second) {
+                for (auto &note: prev_location_it->second) {
                     note.add_modifier(prev_modifier);
                 }
             }
@@ -301,7 +301,7 @@ void variations::Scale::apply(Part &part, const Json::Value &arguments) {
 
     Fraction ratio = {arguments["Ratio"][0].asInt(), arguments["Ratio"][1].asInt()};
 
-    for (const auto &location : part.get_location()) {
+    for (const auto &location: part.get_location()) {
         new_locations[location.first * ratio] = location.second;
     }
 
@@ -311,15 +311,15 @@ void variations::Scale::apply(Part &part, const Json::Value &arguments) {
 void variations::Filter::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
 
-    bool invert = arguments["Invert"].isNull() ? false : arguments["Invert"].asBool();
+    bool invert = !arguments["Invert"].isNull() && arguments["Invert"].asBool();
 
     Group group;
     bool matching;
     new_locations.insert(*prev(part.get_location().end()));
-    for (const auto &location : part.get_location()) {
-        for (const auto &note : location.second) {
+    for (const auto &location: part.get_location()) {
+        for (const auto &note: location.second) {
             matching = false;
-            for (const auto &match_arguments : arguments["Match"]) {
+            for (const auto &match_arguments: arguments["Match"]) {
                 matching = match(note, match_arguments["Instruments"], match_arguments["Modifiers"]);
                 if (matching) {
                     break;

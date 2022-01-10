@@ -37,4 +37,4 @@ namespace NotationDisplayUtils {
     create_global_locations(const Paddings &padding, vector<int> &bars_split, const TimeSignature &signature);
 
     Padding get_distance(const Fraction &length, Padding padding);
-};
+}

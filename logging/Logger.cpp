@@ -10,7 +10,11 @@ const map<LogLevel, string> Log::level_strings = {
 
 Log::Log(LogLevel level) : m_level(level) {}
 
-string Log::zfill(string str, int length) {
+string Log::zfill(string str, unsigned short length) {
+    if (length <= str.length()) {
+        return str;
+    }
+
     length -= str.length();
     while (length-- > 0) {
         str.insert(str.begin(), '0');

@@ -19,4 +19,4 @@ namespace location {
 
     Voice
     location_to_notation(Locations &locations, Instrument rests_location = Unbound, const Fraction &ratio = {1, 1});
-};
+}
