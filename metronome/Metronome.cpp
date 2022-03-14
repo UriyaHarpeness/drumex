@@ -1,22 +1,32 @@
 #include "Metronome.h"
 
-Metronome::Metronome(vector<Fraction> locations, int tempo, const TimeSignature &signature) :
-        m_tempo(tempo), m_locations(move(locations)), m_start(chrono::system_clock::now()),
+Metronome::Metronome(vector<Fraction> locations, unsigned int tempo, unsigned char grace_ticks) :
+        m_tempo(tempo), m_grace_ticks(grace_ticks), m_locations(move(locations)), m_start(chrono::system_clock::now()),
         m_current_location(m_locations.begin()) {}
 
 void Metronome::poll() {
-    // Detect lagging (200ms) and kill process, todo: find better solution and find the source.
+    // Detect lagging (100ms) and kill process, todo: find better solution and find the source.
+    // todo: make configurable
 
     auto now = chrono::system_clock::now();
     auto next_beat = get_next_beat_time();
 
-    assert(next_beat + chrono::milliseconds(200) > now);
+    if (m_grace_ticks > 0) {
+        m_grace_ticks--;
+    } else if (next_beat + chrono::milliseconds(100) < now) {
+        throw runtime_error("Lagging detected (over 100ms)");
+        // todo: across the project, exceptions may be better than just runtime errors.
+    }
 
     this_thread::sleep_until(next_beat);
 }
 
-void Metronome::increase_tempo(int change) {
-    m_tempo += change;
+void Metronome::increase_tempo(char change) {
+    if ((change < 0) && (-change > m_tempo)) {
+        m_tempo = 1;
+    } else {
+        m_tempo += change;
+    }
     reset();
 }
 
@@ -39,8 +49,8 @@ void Metronome::reset() {
     auto now = chrono::system_clock::now();
 
     m_start = now - chrono::milliseconds(
-            static_cast<int>(static_cast<double>(*(m_current_location + 1)) * 1000.0 * 60.0 /
-                             static_cast<double>(m_tempo) * 4));
+            static_cast<int>(static_cast<double>(*m_current_location) * 1000.0 * 60.0 / static_cast<double>(m_tempo) *
+                             4));
 }
 
 void Metronome::set_current_location(const Fraction &location) {

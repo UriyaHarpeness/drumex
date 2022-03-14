@@ -11,9 +11,9 @@ Fraction Fraction::FloatingFraction(int a, double b, bool do_simplify) {
         assert(log2(b) == int(log2(b)));
     }
     if (b < 1) {
-        return Fraction((int) (a / b), 1, do_simplify);
+        return {(int) (a / b), 1, do_simplify};
     }
-    return Fraction(a, (int) b, do_simplify);
+    return {a, (int) b, do_simplify};
 }
 
 Fraction::Fraction(int a) : m_value({a, 1}) {

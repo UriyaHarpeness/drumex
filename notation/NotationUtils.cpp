@@ -11,7 +11,7 @@ Voice NotationUtils::merge_notation(const Voice &notation) {
         if ((*group)[0].get_playing() == BasePlay) {
             merged_notation.push_back(*group);
         } else {
-            for (auto &single : merged_notation[merged_notation.size() - 1]) {
+            for (auto &single: merged_notation[merged_notation.size() - 1]) {
                 single.set_rounded_length(single.get_rounded_length() + (*group)[0].get_rounded_length());
             }
         }
@@ -64,7 +64,7 @@ NotationUtils::split_fraction(const Fraction &next_beat, Fraction offset, Fracti
         length -= fill;
     }
 
-    // After using the BarContainer, the note will never overlaps the bar.
+    // After using the BarContainer, the note will never overlap the bar.
     tmp = split_fraction(length, ratio);
     fractions.insert(fractions.end(), tmp.begin(), tmp.end());
 
@@ -100,14 +100,14 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
 
     Fraction offset;
 
-    for (const auto &group : notation) {
+    for (const auto &group: notation) {
         // Assumes every group has the same BasicPlaying and length.
         auto fractions = split_fraction(*beats_it, offset, group[0].get_rounded_length(), ratio);
         BasicPlaying playing = group[0].get_playing();
-        for (const auto &fraction : fractions) {
+        for (const auto &fraction: fractions) {
             if (playing == BasePlay) {
                 Group tmp;
-                for (const auto &note : group) {
+                for (const auto &note: group) {
                     tmp.emplace_back(BasePlay, note.get_instrument(), fraction, note.get_modifiers());
                 }
                 generated_notation.push_back(move(tmp));
@@ -129,13 +129,14 @@ Voice NotationUtils::convert_notation(const Voice &notation, const Fraction &len
                     }
                 }
                 if (dot) {
-                    for (auto &note : generated_notation[generated_notation.size() - 1]) {
+                    for (auto &note: generated_notation[generated_notation.size() - 1]) {
                         note.add_modifier(ModDot);
                     }
                 } else {
                     generated_notation.push_back(
                             {{BaseRest, (group[0].get_line() > DisplayConstants::direction_line) ? UnboundDown
-                                                                                                 : UnboundUp, fraction, {}}});
+                                                                                                 : UnboundUp, fraction,
+                              {}}});
                 }
             }
             playing = BaseRest;
@@ -165,7 +166,7 @@ Voice NotationUtils::generate_voice_notation(const Voice &raw_voice_notation, co
 Padding NotationUtils::merge_padding(const Group &notes) {
     Padding padding = {0, 0};
 
-    for (const Notation &note : notes) {
+    for (const Notation &note: notes) {
         padding = Notation::merge_padding(padding, note.get_padding());
     }
 
@@ -175,7 +176,7 @@ Padding NotationUtils::merge_padding(const Group &notes) {
 Paddings NotationUtils::merge_padding(const Paddings &a, const Paddings &b) {
     Paddings padding = a;
 
-    for (const auto &it : b) {
+    for (const auto &it: b) {
         padding[it.first] = Notation::merge_padding(padding[it.first], it.second);
     }
 

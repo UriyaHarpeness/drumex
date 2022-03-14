@@ -28,12 +28,14 @@ Locations location::notation_to_location(const Voice &voice) {
 
 void location::clear_location(Locations &locations) {
     // Without removing the last location.
-    for (auto it = locations.begin(); it != prev(locations.end()); it++) {
+    for (auto it = locations.begin(); it != prev(locations.end());) {
         it->second.erase(remove_if(it->second.begin(), it->second.end(),
                                    [](const Notation &note) { return note.get_playing() == BaseRest; }),
                          it->second.end());
         if (it->second.empty()) {
-            locations.erase(it--);
+            it = locations.erase(it);
+        } else {
+            it++;
         }
     }
 }

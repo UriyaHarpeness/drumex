@@ -10,7 +10,11 @@ const map<LogLevel, string> Log::level_strings = {
 
 Log::Log(LogLevel level) : m_level(level) {}
 
-string Log::zfill(string str, int length) {
+string Log::zfill(string str, unsigned short length) {
+    if (length <= str.length()) {
+        return str;
+    }
+
     length -= str.length();
     while (length-- > 0) {
         str.insert(str.begin(), '0');
@@ -18,14 +22,16 @@ string Log::zfill(string str, int length) {
     return str;
 }
 
-ostringstream &Log::Get() {
-    time_t now_time = time(nullptr);
-    tm *now = localtime(&now_time);
-    os << "[" << 1900 + now->tm_year << "/" << zfill(to_string(1 + now->tm_mon), 2) << "/"
-       << zfill(to_string(now->tm_mday), 2) << " ";
-    os << zfill(to_string(now->tm_hour), 2) << ":" << zfill(to_string(now->tm_min), 2) << ":"
-       << zfill(to_string(now->tm_sec), 2);
-    os << "] " << level_strings.at(m_level) << ": \t";
+ostringstream &Log::Get(bool prefix) {
+    if (prefix) {
+        time_t now_time = time(nullptr);
+        tm *now = localtime(&now_time);
+        os << "[" << 1900 + now->tm_year << "/" << zfill(to_string(1 + now->tm_mon), 2) << "/"
+           << zfill(to_string(now->tm_mday), 2) << " ";
+        os << zfill(to_string(now->tm_hour), 2) << ":" << zfill(to_string(now->tm_min), 2) << ":"
+           << zfill(to_string(now->tm_sec), 2);
+        os << "] " << level_strings.at(m_level) << ": \t";
+    }
     return os;
 }
 

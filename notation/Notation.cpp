@@ -136,7 +136,7 @@ void Notation::draw_modifiers(int x, int staff_y, int tail_length) const {
     // currently supports one dot, also may not support more dots in future since more than one makes the notation
     // confusing.
 
-    for (const Modifier &modifier : m_modifiers) {
+    for (const Modifier &modifier: m_modifiers) {
         const auto position = modifier_to_position.at(modifier);
         // todo: also problematic when one connected notes have this only, plus others.
         if (m_line <= DisplayConstants::direction_line) {
@@ -180,7 +180,7 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
 }
 
 void Notation::draw_ledgers(int x, int staff_y) const {
-    for (const auto &it : DisplayConstants::ledger_lines) {
+    for (const auto &it: DisplayConstants::ledger_lines) {
         if (!((m_line > 0) ^ (it > 0)) && (abs(m_line) >= abs(it))) {
             m_display->draw_text(SymLedger, x,
                                  staff_y + 1 + (it * DisplayConstants::line_height) - DisplayConstants::staff_to_0);
@@ -209,7 +209,7 @@ void Notation::display(int x, int staff_y, bool flags, int tail_length) const {
 Padding Notation::create_padding(const vector<Modifier> &modifiers) {
     Padding padding = {0, 0};
 
-    for (const auto &modifier : modifiers) {
+    for (const auto &modifier: modifiers) {
         auto got_padding = modifier_to_padding.find(modifier);
         if (got_padding != modifier_to_padding.end()) {
             padding = merge_padding(padding, got_padding->second);
@@ -230,7 +230,8 @@ Padding Notation::merge_padding(const Padding &a, const Padding &b) {
 }
 
 Fraction Notation::get_length() const {
-    return ((m_length * 2) - (m_length * Fraction(1, pow(2, count(m_modifiers.begin(), m_modifiers.end(), ModDot)))));
+    return ((m_length * 2) -
+            (m_length * Fraction(1, (int) pow(2, count(m_modifiers.begin(), m_modifiers.end(), ModDot)))));
 }
 
 void Notation::reset_length(const Fraction &length) {
@@ -246,7 +247,7 @@ void Notation::reset_length(const Fraction &length) {
 ostream &operator<<(ostream &os, const Notation &notation) {
     os << "<Notation> " << find_by_value(playing_names, notation.m_playing) << " " << notation.m_length << " "
        << find_by_value(instrument_names, notation.m_instrument) << " ";
-    for (const auto &modifier : notation.m_modifiers) {
+    for (const auto &modifier: notation.m_modifiers) {
         os << find_by_value(modifier_names, modifier) << " ";
     }
     return os;

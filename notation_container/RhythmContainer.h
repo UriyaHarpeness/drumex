@@ -75,7 +75,7 @@ private:
 
     NotesDirection m_direction;
 
-    int m_max_used_line;
+    int m_max_used_line = 0;
 
-    int m_min_used_line;
+    int m_min_used_line = 0;
 };

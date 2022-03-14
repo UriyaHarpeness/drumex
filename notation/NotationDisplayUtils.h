@@ -27,8 +27,8 @@ namespace NotationDisplayUtils {
 
     void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, DisplayVariables &display_variables);
 
-    void
-    process_events(Metronome &m, bool &quit, const GlobalLocations &global_locations, const TimeSignature &signature);
+    void process_events(Metronome &m, bool &quit, bool &moved, const GlobalLocations &global_locations,
+                        const TimeSignature &signature);
 
     void continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,
                                      DisplayVariables &display_variables, int tempo);
@@ -37,4 +37,4 @@ namespace NotationDisplayUtils {
     create_global_locations(const Paddings &padding, vector<int> &bars_split, const TimeSignature &signature);
 
     Padding get_distance(const Fraction &length, Padding padding);
-};
+}

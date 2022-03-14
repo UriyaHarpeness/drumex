@@ -11,6 +11,12 @@ Display::Display() {
 
     m_music_font = TTF_OpenFont("Drumex.ttf", 39);
     m_text_font = TTF_OpenFont("WallingtonRegular-PYK7.ttf", 39);
+
+    // todo: resize the icon / keep it with original size.
+    SDL_Surface *iconSurface;
+    iconSurface = IMG_Load("icon.png");
+    SDL_SetWindowIcon(m_window, iconSurface);
+    SDL_FreeSurface(iconSurface);
 }
 
 Display::~Display() {
@@ -103,7 +109,7 @@ void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
 
 void Display::draw_rect(int x, int y, int h, int w, int r, int g, int b, int a) {
     SDL_Rect sdl_rect{x, y, w, h};
-    SDL_SetRenderDrawColor(m_renderer, r, g, b, 255);
+    SDL_SetRenderDrawColor(m_renderer, r, g, b, a);
     SDL_RenderFillRect(m_renderer, &sdl_rect);
 }
 
