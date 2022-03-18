@@ -59,7 +59,9 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, cons
     bool pause = false;
     SDL_Event event;
 
+    // todo: respond to moves and show on screen on pause.
     while (!quit && (SDL_PollEvent(&event) || pause)) {
+        ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT) {
             quit = true;
             Log(INFO).Get() << "Exiting" << endl;
@@ -116,7 +118,7 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
     bool moved;
     int display_count = 0;
 
-    Metronome m(move(locations), tempo, 10);
+    Metronome m(move(locations), tempo, 5);
 
     while (!quit) {
         Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << m.get_current_location()
@@ -137,18 +139,16 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
                                        note_location.first.second - DisplayConstants::line_height * 4,
                                        DisplayConstants::line_height * 16,
                                        note_location.second[0] + note_location.second[1],
-                                       255, 64, 64, 128);
+                                       255, 0, 0, 128);
 
         for (int i = display_variables.start_line; i <= display_variables.end_line; i++) {
-            Notation::m_display->draw_base(20, DisplayConstants::displaying_init_y +
-                                               ((i % DisplayConstants::max_lines_displayed) *
-                                                DisplayConstants::staff_lines_spacing),
+            Notation::m_display->draw_base(DisplayConstants::displaying_init_y +
+                                           ((i % DisplayConstants::max_lines_displayed) *
+                                            DisplayConstants::staff_lines_spacing),
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
         display_notation(up, down, display_variables);
-
-        // Notation::m_display->draw_image("stuff.png", 400, 400, 80, 80);
 
         Notation::m_display->present();
 

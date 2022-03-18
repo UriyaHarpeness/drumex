@@ -5,7 +5,7 @@ VoiceContainer::VoiceContainer(const Locations &locations, const TimeSignature &
     Locations bar;
     Fraction next = signature;
 
-    for (const auto &it : locations) {
+    for (const auto &it: locations) {
         if (it.first >= next) {
             m_bars.emplace_back(move(bar), signature, direction, next - signature);
             bar.clear();
@@ -40,7 +40,7 @@ void VoiceContainer::display(const DisplayVariables &display_variables) const {
         auto last_bar_note = prev(display_variables.global_locations.find(Fraction(bar_index + 1) * m_signature));
         Notation::m_display->draw_text((bar_index == m_bars.size() - 1) ? SymDoubleBarLine : SymBarLine,
                                        last_bar_note->second.first + last_bar_note->second.second[1],
-                                       DisplayConstants::displaying_init_y +
+                                       DisplayConstants::displaying_init_y + 10 +
                                        (DisplayConstants::staff_lines_spacing * line));
     }
 }

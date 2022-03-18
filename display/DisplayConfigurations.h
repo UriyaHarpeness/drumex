@@ -19,9 +19,13 @@ namespace DisplayConstants {
 
     const int line_height = 5;
 
-    const int displaying_init_x = 80;
+    const int line_x_offset = 20;
 
-    const int displaying_max_x = window_width - 80;
+    const int line_content_padding = 60;
+
+    const int displaying_init_x = line_x_offset + line_content_padding;
+
+    const int displaying_max_x = window_width - displaying_init_x;
 
     const int displaying_init_y = 100;
 

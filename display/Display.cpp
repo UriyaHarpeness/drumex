@@ -1,143 +1,188 @@
 #include "Display.h"
+#include "imgui_internal.h"
 
 Display::Display() {
-    SDL_Init(SDL_INIT_EVERYTHING);
-    TTF_Init();
-    IMG_Init(IMG_INIT_PNG);
+    // Setup SDL
+    // (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
+    // depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to latest version of SDL is recommended!)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+        printf("Error: %s\n", SDL_GetError());
+    }
+
+    // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    const char* glsl_version = "#version 100";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+    // GL 3.2 Core + GLSL 150
+    const char *glsl_version = "#version 150";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
+
+    // Create window with graphics context
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
+                                                      SDL_WINDOW_ALLOW_HIGHDPI);
     m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                DisplayConstants::window_width, DisplayConstants::window_height, SDL_WINDOW_SHOWN);
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    m_screen = SDL_GetWindowSurface(m_window);
+                                DisplayConstants::window_width, DisplayConstants::window_height,
+                                window_flags);
+    m_gl_context = SDL_GL_CreateContext(m_window);
+    SDL_GL_MakeCurrent(m_window, m_gl_context);
+    SDL_GL_SetSwapInterval(1); // Enable vsync
 
-    m_music_font = TTF_OpenFont("Drumex.ttf", 39);
-    m_text_font = TTF_OpenFont("WallingtonRegular-PYK7.ttf", 39);
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    m_io = &ImGui::GetIO();
+    (void) m_io;
 
-    // todo: resize the icon / keep it with original size.
-    SDL_Surface *iconSurface;
-    iconSurface = IMG_Load("icon.png");
-    SDL_SetWindowIcon(m_window, iconSurface);
-    SDL_FreeSurface(iconSurface);
+    // Setup Dear ImGui style
+    // todo: setup real style.
+    ImGuiStyle &style = ImGui::GetStyle();
+    ImGui::StyleColorsLight(&style);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.867f, 0.867f, 0.867f, 1);
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForOpenGL(m_window, m_gl_context);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    m_io->Fonts->AddFontDefault();
+    m_music_font = m_io->Fonts->AddFontFromFileTTF("/Users/uriya/projects/drumex/Drumex.ttf", 36.0f);
+    IM_ASSERT(m_music_font != nullptr);
+    m_io->Fonts->Build();
 }
 
 Display::~Display() {
     // todo: there has been major improvement in code memory efficiency after calling SDL's destructors wherever needed, may help to look for more leaks.
-    SDL_DestroyRenderer(m_renderer);
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
+    SDL_GL_DeleteContext(m_gl_context);
     SDL_DestroyWindow(m_window);
-    TTF_CloseFont(m_music_font);
-    TTF_CloseFont(m_text_font);
-    IMG_Quit();
-    TTF_Quit();
     SDL_Quit();
 }
 
 void Display::clear_screen() {
-    SDL_SetRenderDrawColor(m_renderer, 222, 222, 222, 255);
-    SDL_RenderClear(m_renderer);
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    // Content.
+    ImGui::SetNextWindowPos({0, 0});
+    ImGui::SetNextWindowSize({DisplayConstants::window_width, DisplayConstants::window_height});
+    ImGui::Begin("Menu", nullptr,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                 ImGuiWindowFlags_NoCollapse);
+}
+
+string Display::resolve_non_ascii(const string &s) {
+    string generated;
+
+    for (const char &c: s) {
+        if ((unsigned char) c >= 0x80) {
+            generated += "\xc2";
+        }
+        generated += c;
+    }
+
+    return generated;
 }
 
 void Display::draw_text(const string &text, int x, int y) {
-    SDL_Surface *surface;
-    SDL_Color textColor = {0, 0, 0, 0};
-
-    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
-    SDL_Rect rect{x, y, surface->w, surface->h};
-    SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
-
-    SDL_DestroyTexture(texture);
+    ImGui::PushFont(m_music_font);
+    ImGui::SetCursorPos({(float) x, (float) y});
+    ImGui::Text("%s", text.c_str());
+    ImGui::PopFont();
 }
 
 void Display::draw_text(MusicSymbols value, int x, int y) {
-    SDL_Surface *surface;
-    SDL_Color textColor = {0, 0, 0, 0};
-
-    char text[2] = {0, 0};
-    text[0] = value;
-    surface = TTF_RenderText_Solid(m_music_font, text, textColor);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_FreeSurface(surface);
-    SDL_Rect rect{x, y, surface->w, surface->h};
-    SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
-
-    SDL_DestroyTexture(texture);
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    const ImU32 glyph_col = ImGui::GetColorU32(ImGuiCol_Text);
+    const float cell_size = m_music_font->FontSize * 1;
+    ImVec2 cell_p1((float) x, (float) y);
+    m_music_font->RenderChar(draw_list, cell_size, cell_p1, glyph_col, (ImWchar) (value));
 }
 
 void Display::draw_text(MusicSymbols value, int x, int staff_y, int line, int off_x, int off_y) {
-    SDL_Surface *surface;
-    SDL_Color textColor = {0, 0, 0, 0};
-
-    char text[2] = {0, 0};
-    text[0] = value;
-    surface = TTF_RenderText_Solid(m_music_font, text, textColor);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_Rect rect{x + off_x, staff_y + (line * DisplayConstants::line_height) + off_y, surface->w, surface->h};
-    SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    draw_text(value, x + off_x, staff_y + (line * DisplayConstants::line_height) + off_y);
 }
 
 void Display::draw_text_c(const string &text, int x, int y) {
-    SDL_Surface *surface;
-    SDL_Color textColor = {0, 0, 0, 0};
-
-    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(m_renderer, surface);
-    SDL_Rect rect{x - (surface->w / 2), y - (surface->h / 2), surface->w, surface->h};
-    SDL_RenderCopy(m_renderer, texture, nullptr, &rect);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    ImGui::PushFont(m_music_font);
+    auto good = resolve_non_ascii(text);
+    auto a = ImGui::CalcTextSize(good.c_str());
+    ImGui::PopFont();
+    draw_text(good, x - a.x / 2, y - a.y / 2);
 }
 
 pair<int, int> Display::get_size(const string &text) {
-    SDL_Surface *surface;
-    SDL_Color textColor = {0, 0, 0, 0};
+    ImGui::PushFont(m_music_font);
+    auto a = ImGui::CalcTextSize(resolve_non_ascii(text).c_str());
+    ImGui::PopFont();
 
-    surface = TTF_RenderText_Solid(m_music_font, text.c_str(), textColor);
-    SDL_FreeSurface(surface);
-
-    return {surface->w, surface->h};
+    return {a.x, a.y};
 }
 
 void Display::draw_rect(int x, int y, int h, int w, int gray_scale) {
-    SDL_Rect sdl_rect{x, y, w, h};
-    SDL_SetRenderDrawColor(m_renderer, gray_scale, gray_scale, gray_scale, 255);
-    SDL_RenderFillRect(m_renderer, &sdl_rect);
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled({(float) x, (float) y}, {(float) x + w, (float) y + h},
+                             IM_COL32(gray_scale, gray_scale, gray_scale, 255));
 }
 
 void Display::draw_rect(int x, int y, int h, int w, int r, int g, int b, int a) {
-    SDL_Rect sdl_rect{x, y, w, h};
-    SDL_SetRenderDrawColor(m_renderer, r, g, b, a);
-    SDL_RenderFillRect(m_renderer, &sdl_rect);
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled({(float) x, (float) y}, {(float) x + w, (float) y + h}, IM_COL32(r, g, b, a));
 }
 
 void Display::draw_rect_c(int x, int y, int h, int w, int gray_scale = 0) {
-    SDL_Rect sdl_rect{x - (w / 2), y - (h / 2), w, h};
-    SDL_SetRenderDrawColor(m_renderer, gray_scale, gray_scale, gray_scale, 255);
-    SDL_RenderFillRect(m_renderer, &sdl_rect);
+    draw_rect(x - (w / 2), y - (h / 2), h, w, gray_scale);
 }
 
-void Display::draw_base(int x, int y, uint8_t a, uint8_t b) {
-    draw_text("=====================", x, y);
-    draw_text(SymClef, x + 10, y - 9);
-    draw_text_c(to_string(a), x + 40, y + 1);
-    draw_text_c(to_string(b), x + 40, y + 21);
-}
+void Display::draw_base(int y, uint8_t a, uint8_t b) {
+    for (uint8_t i = 0; i < 5; i++) {
+        draw_rect(DisplayConstants::line_x_offset, y + (DisplayConstants::line_height * (i * 2)), 1,
+                  DisplayConstants::window_width - DisplayConstants::line_x_offset * 2, 0);
+    }
+    draw_rect_c(DisplayConstants::line_x_offset + 16, y + 4, 4, 10, 0);
+    draw_rect_c(DisplayConstants::line_x_offset + 16, y + (DisplayConstants::line_height * 8) - 3, 4, 10, 0);
+    draw_rect_c(DisplayConstants::line_x_offset + 12, y + (DisplayConstants::line_height * 4), 32, 2, 0);
+    draw_rect_c(DisplayConstants::line_x_offset + 20, y + (DisplayConstants::line_height * 4), 32, 2, 0);
 
-void Display::draw_image(const string &path, int x, int y, int h, int w) {
-    SDL_Texture *texture = IMG_LoadTexture(m_renderer, path.c_str());
-    //SDL_QueryTexture(img, nullptr, nullptr, &w, &h); // get the width and height of the texture
-    // put the location where we want the texture to be drawn into a rectangle
-    // I'm also scaling the texture 2x simply by setting the width and height
-    SDL_Rect texr = {x, y, w, h};
-
-    SDL_RenderCopy(m_renderer, texture, nullptr, &texr);
-
-    SDL_DestroyTexture(texture);
+    draw_text_c(to_string(a), DisplayConstants::line_x_offset + 40, y - 1);
+    draw_text_c(to_string(b), DisplayConstants::line_x_offset + 40, y - 1 + DisplayConstants::line_height * 4);
 }
 
 void Display::present() {
-    SDL_RenderPresent(m_renderer);
+    ImGui::End();
+
+    // Our state
+    ImVec4 clear_color = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
+
+    // Rendering
+    ImGui::Render();
+    glViewport(0, 0, (int) m_io->DisplaySize.x, (int) m_io->DisplaySize.y);
+    glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
+                 clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(m_window);
 }

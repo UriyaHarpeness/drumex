@@ -33,6 +33,8 @@ public:
 private:
     chrono::system_clock::time_point get_next_beat_time();
 
+    void advance_to_next_beat();
+
     vector<Fraction> m_locations;
     vector<Fraction>::iterator m_current_location;
 
