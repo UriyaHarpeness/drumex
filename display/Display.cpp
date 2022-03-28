@@ -40,7 +40,7 @@ Display::Display() {
     SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE |
                                                       SDL_WINDOW_ALLOW_HIGHDPI);
     m_window = SDL_CreateWindow("DrumEX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                DisplayConstants::window_width, DisplayConstants::window_height,
+                                DisplayConstants::initial_window_width, DisplayConstants::initial_window_height,
                                 window_flags);
     m_gl_context = SDL_GL_CreateContext(m_window);
     SDL_GL_MakeCurrent(m_window, m_gl_context);
@@ -80,6 +80,12 @@ Display::~Display() {
     SDL_Quit();
 }
 
+pair<int, int> Display::get_window_size() {
+    int w, h;
+    SDL_GetWindowSize(m_window, &w, &h);
+    return {w, h};
+}
+
 void Display::clear_screen() {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -88,7 +94,8 @@ void Display::clear_screen() {
 
     // Content.
     ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize({DisplayConstants::window_width, DisplayConstants::window_height});
+    auto window_size = get_window_size();
+    ImGui::SetNextWindowSize({(float) window_size.first, (float) window_size.second});
     ImGui::Begin("Menu", nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                  ImGuiWindowFlags_NoCollapse);
@@ -157,18 +164,32 @@ void Display::draw_rect_c(int x, int y, int h, int w, int gray_scale = 0) {
     draw_rect(x - (w / 2), y - (h / 2), h, w, gray_scale);
 }
 
-void Display::draw_base(int y, uint8_t a, uint8_t b) {
+void Display::draw_base(int y, uint8_t numerator, uint8_t denominator) {
+    auto window_size = get_window_size();
     for (uint8_t i = 0; i < 5; i++) {
         draw_rect(DisplayConstants::line_x_offset, y + (DisplayConstants::line_height * (i * 2)), 1,
-                  DisplayConstants::window_width - DisplayConstants::line_x_offset * 2, 0);
+                  window_size.first - DisplayConstants::line_x_offset * 2, 0);
     }
     draw_rect_c(DisplayConstants::line_x_offset + 16, y + 4, 4, 10, 0);
     draw_rect_c(DisplayConstants::line_x_offset + 16, y + (DisplayConstants::line_height * 8) - 3, 4, 10, 0);
     draw_rect_c(DisplayConstants::line_x_offset + 12, y + (DisplayConstants::line_height * 4), 32, 2, 0);
     draw_rect_c(DisplayConstants::line_x_offset + 20, y + (DisplayConstants::line_height * 4), 32, 2, 0);
 
-    draw_text_c(to_string(a), DisplayConstants::line_x_offset + 40, y - 1);
-    draw_text_c(to_string(b), DisplayConstants::line_x_offset + 40, y - 1 + DisplayConstants::line_height * 4);
+    draw_text_c(to_string(numerator), DisplayConstants::line_x_offset + 40, y - 1);
+    draw_text_c(to_string(denominator), DisplayConstants::line_x_offset + 40,
+                y - 1 + DisplayConstants::line_height * 4);
+}
+
+pair<int, int> Display::reset_window_size(int maximum_bar_size) {
+    auto window_size = get_window_size();
+    pair<int, int> new_size = {
+            max(window_size.first,
+                DisplayConstants::displaying_init_x + maximum_bar_size + DisplayConstants::line_x_offset),
+            max(window_size.second, DisplayConstants::minimum_window_height)};
+    if (new_size != window_size) {
+        SDL_SetWindowSize(m_window, new_size.first, new_size.second);
+    }
+    return move(new_size);
 }
 
 void Display::present() {

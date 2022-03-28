@@ -106,17 +106,33 @@ Locations Part::read_custom_voice(const Json::Value &part) {
     Voice voice;
     vector<Voice> voices;
     char last = '|';
+    bool grouped;
+    Group group;
     for (const Json::Value &json_voice: part["Use"]) {
         for (const char &c: json_voice.asString()) {
             // For readability purpose.
             last = c;
-            if (c == '|') {
-                continue;
+            switch (c) {
+                case '|':
+                    break;
+                case '(':
+                    grouped = true;
+                    break;
+                case ')':
+                    grouped = false;
+                    voice.emplace_back(move(group));
+                    group.clear();
+                    break;
+                default:
+                    if (definitions.find(c) == definitions.end()) {
+                        throw runtime_error("Character '" + string({c}) + "' was not defined before use");
+                    }
+                    if (grouped) {
+                        group.push_back(definitions.at(c));
+                    } else {
+                        voice.push_back({definitions.at(c)});
+                    }
             }
-            if (definitions.find(c) == definitions.end()) {
-                throw runtime_error("Character '" + string({c}) + "' was not defined before use");
-            }
-            voice.push_back({definitions.at(c)});
         }
         // Enables splitting long notation lines.
         if (last == '|') {

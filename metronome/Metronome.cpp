@@ -15,7 +15,7 @@ void Metronome::poll() {
             // Detect lagging (100ms) and kill process, todo: find better solution and find the source.
             // todo: make configurable
 
-            if (next_beat + chrono::milliseconds(100) < now) {
+            if (next_beat + chrono::milliseconds(500) < now) {
                 throw runtime_error("Lagging detected (over 100ms)");
                 // todo: across the project, exceptions may be better than just runtime errors.
             }

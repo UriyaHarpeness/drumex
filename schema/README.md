@@ -59,35 +59,71 @@ The different sections explanation:
     * **Part** - Contains the actual definition of notes of the part, contains the following attributes:
         * **Definitions** - A mapping between a character and a [Notation](#Notation) definition.
         * **Use** - The use of the defined notes, a list of strings that contain the characters that are mapped to a
-            note. Besides the defined characters, the symbol `|` can be used for readability, and when used as the last
-            character of a string, defines that the time of the piece continues, if not used, all the different strings
-            until the first occurrence of it at the end start at the same time, for example:
-            ```json
-            {
-              "Definitions": {
-               "s": [
-                 "Snare",
-                 [
-                   1,
-                   16
+            note.
+            **Special characters**:
+            * `|` - Can be used for readability, and when used as the last character of a string, defines that the time
+                    of the piece continues, if not used, all the different strings until the first occurrence of it at
+                    the end start at the same time, or example:
+                ```json
+                {
+                  "Definitions": {
+                   "s": [
+                     "Snare",
+                     [
+                       1,
+                       16
+                     ]
+                   ],
+                   ".": [
+                     "Rest",
+                     [
+                       1,
+                       16
+                     ]
+                   ]
+                 },
+                 "Use": [
+                   "s.....s.s..s....",
+                   "s..s...s..s...s.|",
+                   "s..........s...."
                  ]
-               ],
-               ".": [
-                 "Rest",
-                 [
-                   1,
-                   16
+                }
+                ```
+                The first two lines are played at the same time, while the third is played after and ends the piece.
+            * `(` and `)` - Can be used for grouping several notes with the same length in the same location, for
+                example:
+                ```json
+                {
+                  "Definitions": {
+                   "s": [
+                     "Snare",
+                     [
+                       1,
+                       4
+                     ]
+                   ],
+                   "b": [
+                     "Bass",
+                     [
+                       1,
+                       4
+                     ]
+                   ],
+                   ".": [
+                     "Rest",
+                     [
+                       1,
+                       4
+                     ]
+                   ]
+                 },
+                 "Use": [
+                   "(sb).s."
                  ]
-               ]
-             },
-             "Use": [
-               "s.....s.s..s....",
-               "s..s...s..s...s.|",
-               "s..........s...."
-             ]
-            }
-            ```
-            The first two lines are played at the same time, while the third is played after and ends the piece.
+                }
+                ```
+                The first 1/4 of the piece will play both the snare and the bass drum, while at 3/4 it will only play
+                the snare drum.
 
 #### Regular
 
@@ -427,6 +463,6 @@ A whole note rest.
 ["Bass", [3, 4]]
 ```
 A 3/4 length note played on the bass drum, although notes only have a natural length that is a power of 2, the notes can
-be defined with the desired length, and will later on be translated to valid notes, for example a dotted eighth note.
+be defined with the desired length, and will later on be translated to valid notes, for example a dotted half note.
 
 ---

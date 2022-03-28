@@ -30,6 +30,8 @@ public:
 
     ~Display();
 
+    pair<int, int> get_window_size();
+
     void clear_screen();
 
     string resolve_non_ascii(const string &s);
@@ -50,7 +52,9 @@ public:
 
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 
-    void draw_base(int y, uint8_t a, uint8_t b);
+    void draw_base(int y, uint8_t numerator, uint8_t denominator);
+
+    pair<int, int> reset_window_size(int maximum_bar_size);
 
     void present();
 
