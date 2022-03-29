@@ -34,6 +34,8 @@ add_executable(drumex main.cpp
         reader/Exercise.h
         reader/Part.cpp
         reader/Part.h
+        resources_menu/ResourcesMenu.cpp
+        resources_menu/ResourcesMenu.h
         time_signature/TimeSignature.cpp
         time_signature/TimeSignature.h
         Translations.h

@@ -1,12 +1,13 @@
 #include "notation/NotationDisplayUtils.h"
 #include "reader/Exercise.h"
 #include "reader/Part.h"
+#include "resources_menu/ResourcesMenu.h"
 
 int main(int argv, char *argc[]) {
     string part_path;
     string exercise_path;
     int index = -1;
-    int tempo = -1;
+    int tempo = 80;
 
     for (int argument_index = 1; argument_index < argv; argument_index += 2) {
         if ("--part" == string(argc[argument_index])) {
@@ -20,8 +21,39 @@ int main(int argv, char *argc[]) {
         }
     }
 
+    shared_ptr<Display> display(new Display());
+
+    // If resource/part not specified, display a menu.
+    if ((exercise_path.empty() and part_path.empty())) {
+        auto resources_menu = ResourcesMenu(filesystem::directory_entry("resources"));
+
+        bool done = false;
+        SDL_Event event;
+        while (!done && !resources_menu.selected().has_value()) {
+            while (SDL_PollEvent(&event)) {
+                ImGui_ImplSDL2_ProcessEvent(&event);
+                if ((event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) || (event.type == SDL_QUIT)) {
+                    done = true;
+                }
+            }
+
+            display->clear_screen();
+            resources_menu.display();
+            display->present();
+        }
+
+        if (resources_menu.selected().has_value()) {
+            if (get<2>(resources_menu.selected().value()) == PART) {
+                part_path = get<0>(resources_menu.selected().value());
+            } else {
+                exercise_path = get<0>(resources_menu.selected().value());
+            }
+            index = get<1>(resources_menu.selected().value());
+        }
+    }
+
     if ((exercise_path.empty() and part_path.empty()) || (index < 0) || (tempo < 1)) {
-        Log(ERROR).Get() << "Missing arguments: [--part|--exercise] [--index] [--tempo]" << endl;
+        Log(ERROR).Get() << "Missing arguments: [--part|--exercise] [--index] [--tempo (optional)]" << endl;
         return 1;
     }
 
@@ -35,14 +67,14 @@ int main(int argv, char *argc[]) {
     } else {
         chosen_part = new Part(part_path, index);
     }
+    Log(INFO).Get() << "Using tempo: " << tempo << endl;
 
     chosen_part->notationize();
 
     NotationDisplayUtils::prepare_displayable_notation(chosen_part->get_up(), chosen_part->get_down(),
                                                        display_variables);
 
-    shared_ptr<Display> d(new Display());
-    Notation::m_display = d;
+    Notation::m_display = display;
 
     NotationDisplayUtils::continuous_display_notation(chosen_part->get_up(), chosen_part->get_down(), display_variables,
                                                       tempo);

@@ -1,10 +1,10 @@
 {
-  "Name": "Change Note, Fill, and Sticking Example",
+  "Name": "Stretch Sticking Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
@@ -18,6 +18,12 @@
                     "Accent"
                   ]
                 }
+              }
+            },
+            {
+              "Name": "Sticking",
+              "Arguments": {
+                "Sticking": "RL"
               }
             },
             {
@@ -36,10 +42,7 @@
               }
             },
             {
-              "Name": "Sticking",
-              "Arguments": {
-                "Sticking": "RL"
-              }
+              "Name": "Stretch Sticking"
             }
           ]
         }

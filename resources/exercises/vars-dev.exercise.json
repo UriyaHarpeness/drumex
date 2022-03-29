@@ -4,7 +4,7 @@
     {
       "Parts": [
         {
-          "Part": "play/playing.json",
+          "Part": "play/playing.part.json",
           "Indexes": [
             0
           ],

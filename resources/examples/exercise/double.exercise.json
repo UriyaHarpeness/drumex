@@ -1,24 +1,23 @@
 {
-  "Name": "Fill Example",
+  "Name": "Double Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
           "Apply": [
             {
-              "Name": "Fill",
+              "Name": "Double",
               "Arguments": {
                 "Distance": [
                   1,
                   16
                 ],
-                "Apply": {
-                  "Instrument": "Bass"
-                }
+                "Match": {},
+                "Carry": true
               }
             }
           ]

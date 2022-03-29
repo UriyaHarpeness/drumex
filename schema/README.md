@@ -2,14 +2,14 @@
 
 Following is a description for how to create Parts and Exercises, the way for the user to interact with DrumEX.
 
-> It is recommended for clarity to refer to the [examples](../resources/examples). 
+> It is recommended for clarity to refer to the [examples](../resources/examples).
 
 ## Part Structure
 
 A Part defines a list of musical pieces, the schema is defined [here](part.json).
 
-There are 2 ways to define a Part: [Custom](#Custom) and [Regular](#Regular).
-A Part file can contain both ways at the same time.
+There are 2 ways to define a Part: [Custom](#Custom) and [Regular](#Regular). A Part file can contain both ways at the
+same time.
 
 #### Custom
 
@@ -46,24 +46,25 @@ The structure is as follows:
 ```
 
 The different sections explanation:
+
 * **Name** - The name of the Part.
 * **Global** - A global section, the different attributes that a Part requires can be defined there, except for the
-    `Use` attribute, if a specific Part has a definition for any of these attributes, it overrides the attribute's 
-    global definition.
+  `Use` attribute, if a specific Part has a definition for any of these attributes, it overrides the attribute's global
+  definition.
 * **Parts** - The Parts that the Part file defines, a list of separate Parts definitions, each Part has the following
-    attributes, which if are not defined will be taken from the `Global` section, except for the `Use` attribute which
-    must be defined per definition:
+  attributes, which if are not defined will be taken from the `Global` section, except for the `Use` attribute which
+  must be defined per definition:
     * **Time Signature** - The [time signature](https://en.wikipedia.org/wiki/Time_signature) of the Part, written in a
-        form of list with two integers.
+      form of list with two integers.
     * **Type** - The type of definition of the Part, this example is for the "Custom" type.
     * **Part** - Contains the actual definition of notes of the part, contains the following attributes:
         * **Definitions** - A mapping between a character and a [Notation](#Notation) definition.
         * **Use** - The use of the defined notes, a list of strings that contain the characters that are mapped to a
-            note.
-            **Special characters**:
+          note.
+          **Special characters**:
             * `|` - Can be used for readability, and when used as the last character of a string, defines that the time
-                    of the piece continues, if not used, all the different strings until the first occurrence of it at
-                    the end start at the same time, or example:
+              of the piece continues, if not used, all the different strings until the first occurrence of it at the end
+              start at the same time, or example:
                 ```json
                 {
                   "Definitions": {
@@ -89,9 +90,9 @@ The different sections explanation:
                  ]
                 }
                 ```
-                The first two lines are played at the same time, while the third is played after and ends the piece.
+              The first two lines are played at the same time, while the third is played after and ends the piece.
             * `(` and `)` - Can be used for grouping several notes with the same length in the same location, for
-                example:
+              example:
                 ```json
                 {
                   "Definitions": {
@@ -122,8 +123,8 @@ The different sections explanation:
                  ]
                 }
                 ```
-                The first 1/4 of the piece will play both the snare and the bass drum, while at 3/4 it will only play
-                the snare drum.
+              The first 1/4 of the piece will play both the snare and the bass drum, while at 3/4 it will only play the
+              snare drum.
 
 #### Regular
 
@@ -163,9 +164,8 @@ attribute which uses them, in a "Regular" Part definition it is not so.
 * **Parts**
     * **Type** - The type of definition of the Part, this example is for the "Regular" type.
     * **Part** - Contains the actual definition of notes of the part, contains a list of lists of
-        [Notations](#Notation). Each item in the main list contains a list with at least on note, all the notes in the
-        same sublist must have the same length, and the notes within in are played at the same time.
-        For example:
+      [Notations](#Notation). Each item in the main list contains a list with at least on note, all the notes in the
+      same sublist must have the same length, and the notes within in are played at the same time. For example:
         ```json
         [
           [
@@ -201,13 +201,14 @@ attribute which uses them, in a "Regular" Part definition it is not so.
           ]
         ]
         ```
-        First for 1 eighth the bass drum is played with a loose hihat, followed by a 7/8 rimshot on the snare drum.
+      First for 1 eighth the bass drum is played with a loose hihat, followed by a 7/8 rimshot on the snare drum.
 
 ---
 
 ## Exercise Structure
 
-An Exercise defines variations of and relation between musical pieces, written as [Parts](#Part-Structure), the schema is defined [here](exercise.json).
+An Exercise defines variations of and relation between musical pieces, written as [Parts](#Part-Structure), the schema
+is defined [here](exercise.json).
 
 #### General Structure
 
@@ -245,36 +246,37 @@ The structure is as follows:
 }
 ```
 
-The different sections explanation:
+The different sections' explanation:
+
 * **Name** - The name of the Exercise.
 * **Variations** - The Variations that the Exercise file defines, a list of separate Exercises definitions, each
-    Exercise has the following attributes:
+  Exercise has the following attributes:
     * **Parts** - The Parts used by the Variation, a list of definitions each containing the following attributes:
         * **Part** - The path of the used Part.
         * **Indexes** - A list of the indexes of the different pieces defined in the Part file to be used by the
-            exercise, can alternatively be set to "All" in order to include all the pieces defined in that Part file.
+          exercise, can alternatively be set to "All" in order to include all the pieces defined in that Part file.
         * **Apply** - A list of variations to apply to the chosen musical pieces, the Variations are explained further
-            in the [Variations](#Variations) section. 
+          in the [Variations](#Variations) section.
     * **Time Signature** - The [time signature](https://en.wikipedia.org/wiki/Time_signature) of the Exercise, written
-        in a form of list with two integers, if this field is not supplied, it will be derived from the first use Part's
-        time signature.
+      in a form of list with two integers, if this field is not supplied, it will be derived from the first use Part's
+      time signature.
     * **Combination** - The configurations by which the different Parts will be combined, there are two combinations
-        options: "Merge" and "Alternate", the way they are tell apart is with the `Type` field.
+      options: "Merge" and "Alternate", the way they are tell apart is with the `Type` field.
         * **Type** - The type of the combination, there are two types:
             * Merge - Play the parts at the same time, merge them to a single piece.
             * Alternate - Alternate between the Parts, creates a piece with one Part played at a time.
         * **Arguments** - If the combination type is "Alternate", this field is expected, it contains the field
-            `Indexes` which is explained below.
+          `Indexes` which is explained below.
             * **Indexes** - The indexes of the Parts used in the exercise, in the order of alternation desired, each
-                index adds a length of the time signature of the matching Part, the Parts will be stretched to fit the
-                length at which the cycle will be complete for all of them together, for example:
+              index adds a length of the time signature of the matching Part, the Parts will be stretched to fit the
+              length at which the cycle will be complete for all of them together, for example:
 
-                `[0]` - The first defined Part will be always played, same as having it as the only defined Part.
-                
-                `[1, 0]` - Alternating between the second and the first Parts until they're both finished.
-                
-                `[0, 1, 1, 1, 2]` - One bar of the first Part, followed by three bars of the second Part, and finished
-                    with a bar one the third Part.
+              `[0]` - The first defined Part will always be played, same as having it as the only defined Part.
+
+              `[1, 0]` - Alternating between the second and the first Parts until they're both finished.
+
+              `[0, 1, 1, 1, 2]` - One bar of the first Part, followed by three bars of the second Part, and finished
+              with a bar one the third Part.
 
 #### Variations
 
@@ -298,11 +300,11 @@ to be put in the `Argument` field, in the following format:
 Change notes that match the instrument of modifiers supplied.
 
 * **Match** - The arguments by which the notes will be checked for a match, if any of them are missing, a match will be
-    based on the other argument, if both are missing, all the notes will match.
+  based on the other argument, if both are missing, all the notes will match.
     * **Instruments** - A list of instruments that if a note is played on any of them it will be matched.
     * **Modifiers** - A list of modifiers, that if a note contains on any of them it will be matched.
 * **Apply** - The change to be done on the matched notes, if any of the arguments are missing, it will not be overridden
-    with that argument.
+  with that argument.
     * **Instrument** - The instrument to set for the note to be played on.
     * **Modifiers** - The modifiers to set for the note to be played with.
 
@@ -315,19 +317,20 @@ Change the piece to be played as tuplets.
 Double matching notes, with carry or without, with a given distance.
 
 * **Distance** - The distance at which to double the matching notes, written as a fraction, a list containing two
-    integers.
+  integers.
 * **Match** - Same as the `Match` argument in [Change Note](#Change-Note).
 * **Carry** - A flag that denotes whether to carry doubled notes of not, the behavior when a double meets a matching
-    note changes based on its value (for the examples below `m` is a matched note, `.` is a non-matching note, `d` is
-    the double of the matching notes):
+  note changes based on its value (for the examples below `m` is a matched note, `.` is a non-matching note, `d` is the
+  double of the matching notes):
     * `false` - If a note is matched, but `Disntance` from it another note is matched, the first note match will be
-        ignored, for example:
+      ignored, for example:
         ```text
         .m..mm..m.m..mmm....m ->
         .md.mmd.mdmd.mmmd...m
         ```
-    * `true` - If a note is matched, but `Disntance` from it another note is matched, the match will carry on, and at the
-        end of the matching note chain, until the next matching, the number of matches with be multiplied, for example:
+    * `true` - If a note is matched, but `Disntance` from it another note is matched, the match will carry on, and at
+      the end of the matching note chain, until the next matching, the number of matches with be multiplied, for
+      example:
         ```text
         .m..mm..m.m..mmm....m ->
         .md.mmddmdmd.mmmddd.m
@@ -345,18 +348,18 @@ Fills the piece with a given spacing where there are rests.
 Change the sticking on the notes (right, left).
 
 * **Sticking** - The sticking for the piece, each played note group gets the specified sticking, it is a string that
-    contains the characters `R`, `L`, `.`, `0`, and `x`. Here is what each of these mean:    
-    
-    `R` - Play with the right hand.   
-    
-    `L` - Play with the left hand.
-    
-    `.` - Keep the current sticking.
-    
-    `0` - Drop the sticking.
-    
-    `x` - Reverse the sticking.
-    
+  contains the characters `R`, `L`, `.`, `0`, and `x`. Here is what each of these mean:
+
+  `R` - Play with the right hand.
+
+  `L` - Play with the left hand.
+
+  `.` - Keep the current sticking.
+
+  `0` - Drop the sticking.
+
+  `x` - Reverse the sticking.
+
 ##### Stretch Sticking
 
 Stretch the notes sticking, continue the same sticking of the previous note until another sticking is met, gives the
@@ -367,7 +370,7 @@ notes without sticking at the start of the piece the opposite of the first found
 Scales a piece with a given ratio.
 
 * **Ratio** - The ratio to scale with, a fraction, for example for `[2, 1`, all the notes will be twice as long as their
-    original length.
+  original length.
 
 ##### Filter
 
@@ -381,6 +384,7 @@ Filter notes, drop notes that does not match the arguments, or the opposite.
 ### Notation
 
 A single notation is defined with these three components:
+
 * [Instrument](#Instrument)
 * [Length](#Length)
 * [Modifiers](#Modifiers)
@@ -393,11 +397,12 @@ Here's a further explanation on each of the components:
 
 In music, each pitch is written in a line or between lines of itself (except when using
 [accidentals](https://en.wikipedia.org/wiki/Accidental_(music)) like flat or sharp), for drum notation, the different
-lines usually refer to different instruments.
-In drums and percussion notation in general, different instruments can even have different
+lines usually refer to different instruments. In drums and percussion notation in general, different instruments can
+even have different
 [noteheads](https://en.wikipedia.org/wiki/Notehead).
 
 The instruments supported are:
+
 * China
 * Crash
 * HiHat
@@ -409,6 +414,7 @@ The instruments supported are:
 * Bass
 
 Other instruments that are not not mapped to a real instrument are:
+
 * Up
 * Down
 * Rest
@@ -432,6 +438,7 @@ A note can have any number of modifiers, the modifiers change the way a note is 
 played quietly.
 
 The modifiers supported are:
+
 * CrossStick
 * Ghost
 * Accent
@@ -450,18 +457,43 @@ The modifiers supported are:
 #### Examples
 
 ```json
-["Snare", [1, 4], ["Right", "Ghost"]]
+[
+  "Snare",
+  [
+    1,
+    4
+  ],
+  [
+    "Right",
+    "Ghost"
+  ]
+]
 ```
+
 A quarter note, played on the snare drum, using the right hand as a ghost note.
 
 ```json
-["Rest", [1, 1]]
+[
+  "Rest",
+  [
+    1,
+    1
+  ]
+]
 ```
+
 A whole note rest.
 
 ```json
-["Bass", [3, 4]]
+[
+  "Bass",
+  [
+    3,
+    4
+  ]
+]
 ```
+
 A 3/4 length note played on the bass drum, although notes only have a natural length that is a power of 2, the notes can
 be defined with the desired length, and will later on be translated to valid notes, for example a dotted half note.
 

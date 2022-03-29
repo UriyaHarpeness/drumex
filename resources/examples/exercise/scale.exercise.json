@@ -1,10 +1,10 @@
 {
-  "Name": "Change Note and Fill Example",
+  "Name": "Scale Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
@@ -21,18 +21,12 @@
               }
             },
             {
-              "Name": "Fill",
+              "Name": "Scale",
               "Arguments": {
-                "Distance": [
-                  1,
-                  16
-                ],
-                "Apply": {
-                  "Instrument": "Snare",
-                  "Modifiers": [
-                    "Ghost"
-                  ]
-                }
+                "Ratio": [
+                  2,
+                  1
+                ]
               }
             }
           ]

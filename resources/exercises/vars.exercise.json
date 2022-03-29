@@ -4,7 +4,7 @@
     {
       "Parts": [
         {
-          "Part": "variations/3s-variations.json",
+          "Part": "variations/3s-variations.part.json",
           "Indexes": [
             0
           ],
@@ -21,7 +21,7 @@
           ]
         },
         {
-          "Part": "variations/3s-variations.json",
+          "Part": "variations/3s-variations.part.json",
           "Indexes": [
             0
           ],
@@ -38,7 +38,7 @@
           ]
         },
         {
-          "Part": "variations/4s-variations.json",
+          "Part": "variations/4s-variations.part.json",
           "Indexes": [
             0
           ],
@@ -55,7 +55,7 @@
           ]
         },
         {
-          "Part": "variations/4s-variations.json",
+          "Part": "variations/4s-variations.part.json",
           "Indexes": [
             0
           ],

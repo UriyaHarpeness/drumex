@@ -29,14 +29,9 @@
         {
           "type": "array",
           "description": "Length.",
-          "items": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "integer"
-            }
-          ],
+          "items": {
+            "type": "integer"
+          },
           "minItems": 2,
           "maxItems": 2,
           "additionalItems": false

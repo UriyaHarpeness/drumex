@@ -1,18 +1,24 @@
 {
-  "Name": "Sticking Example",
+  "Name": "Fill Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
           "Apply": [
             {
-              "Name": "Sticking",
+              "Name": "Fill",
               "Arguments": {
-                "Sticking": "RL.-"
+                "Distance": [
+                  1,
+                  16
+                ],
+                "Apply": {
+                  "Instrument": "Bass"
+                }
               }
             }
           ]

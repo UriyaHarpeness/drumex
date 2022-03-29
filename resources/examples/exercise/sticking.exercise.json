@@ -1,23 +1,18 @@
 {
-  "Name": "Double Example",
+  "Name": "Sticking Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
           "Apply": [
             {
-              "Name": "Double",
+              "Name": "Sticking",
               "Arguments": {
-                "Distance": [
-                  1,
-                  16
-                ],
-                "Match": {},
-                "Carry": true
+                "Sticking": "RL.x"
               }
             }
           ]

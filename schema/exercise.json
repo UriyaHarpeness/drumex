@@ -87,14 +87,7 @@
             "minItems": 1
           },
           "Time Signature": {
-            "type": "array",
-            "description": "Time signature.",
-            "items": {
-              "$ref": "note.json#/properties/Note/items/1/items"
-            },
-            "minItems": 2,
-            "maxItems": 2,
-            "additionalItems": false
+            "$ref": "part.json#/definitions/Time Signature"
           },
           "Combination": {
             "type": "object",
@@ -423,7 +416,7 @@
                 "Sticking": {
                   "type": "string",
                   "description": "Sticking indication.",
-                  "pattern": "^[RL/.0x]+$",
+                  "pattern": "^[RL.0x]+$",
                   "minLength": 1
                 }
               },

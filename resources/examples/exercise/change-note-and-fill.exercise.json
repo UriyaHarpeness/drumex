@@ -1,10 +1,10 @@
 {
-  "Name": "Change Note Example",
+  "Name": "Change Note and Fill Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
@@ -14,26 +14,23 @@
               "Arguments": {
                 "Match": {},
                 "Apply": {
-                  "Instrument": "Down"
+                  "Modifiers": [
+                    "Accent"
+                  ]
                 }
               }
-            }
-          ]
-        },
-        {
-          "Part": "examples/part/custom.json",
-          "Indexes": [
-            0
-          ],
-          "Apply": [
+            },
             {
-              "Name": "Change Note",
+              "Name": "Fill",
               "Arguments": {
-                "Match": {},
+                "Distance": [
+                  1,
+                  16
+                ],
                 "Apply": {
-                  "Instrument": "Up",
+                  "Instrument": "Snare",
                   "Modifiers": [
-                    "Open"
+                    "Ghost"
                   ]
                 }
               }

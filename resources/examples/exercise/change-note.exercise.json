@@ -1,27 +1,10 @@
 {
-  "Name": "Alternate Example",
+  "Name": "Change Note Example",
   "Variations": [
     {
       "Parts": [
         {
-          "Part": "examples/part/custom.json",
-          "Indexes": [
-            0
-          ],
-          "Apply": [
-            {
-              "Name": "Change Note",
-              "Arguments": {
-                "Match": {},
-                "Apply": {
-                  "Instrument": "Up"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "Part": "examples/part/regular.json",
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
             0
           ],
@@ -36,23 +19,30 @@
               }
             }
           ]
-        }
-      ],
-      "Time Signature": [
-        4,
-        4
-      ],
-      "Combination": {
-        "Type": "Alternate",
-        "Arguments": {
+        },
+        {
+          "Part": "examples/part/custom.part.json",
           "Indexes": [
-            0,
-            1,
-            0,
-            1,
-            1
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Up",
+                  "Modifiers": [
+                    "Open"
+                  ]
+                }
+              }
+            }
           ]
         }
+      ],
+      "Combination": {
+        "Type": "Merge"
       }
     }
   ]

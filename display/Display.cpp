@@ -96,7 +96,7 @@ void Display::clear_screen() {
     ImGui::SetNextWindowPos({0, 0});
     auto window_size = get_window_size();
     ImGui::SetNextWindowSize({(float) window_size.first, (float) window_size.second});
-    ImGui::Begin("Menu", nullptr,
+    ImGui::Begin("Screen", nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                  ImGuiWindowFlags_NoCollapse);
 }
