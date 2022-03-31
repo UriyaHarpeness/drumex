@@ -312,6 +312,26 @@ Change notes that match the instrument of modifiers supplied.
 
 Change the piece to be played as tuplets.
 
+* **From** - The base units value.
+* **To** - The destination units value.
+* **Units** - The units on which the to and from are counted with, written as a fraction, a list containing two
+  integers.
+
+For example:
+
+```json
+{
+  "From": 4,
+  "To": 5,
+  "Units": [
+    1,
+    16
+  ]
+}
+```
+
+Will convert each group of 4 1/16 (1/4) to quintuples (1/20 in this case).
+
 ##### Double
 
 Double matching notes, with carry or without, with a given distance.
@@ -338,10 +358,11 @@ Double matching notes, with carry or without, with a given distance.
 
 ##### Fill
 
-Fills the piece with a given spacing where there are rests.
+Fills the piece with a given spacing where there are no notes matching.
 
 * **Distance** - The spacing between the notes, written as a fraction, a list containing two integers.
-* **Apply** - Same as the `Apply` argument in [Change Note](#Change-Note), except the fields are required
+* **Match** - Same as the `Match` argument in [Change Note](#Change-Note).
+* **Apply** - Same as the `Apply` argument in [Change Note](#Change-Note), except the fields are required.
 
 ##### Sticking
 
@@ -365,18 +386,24 @@ Change the sticking on the notes (right, left).
 Stretch the notes sticking, continue the same sticking of the previous note until another sticking is met, gives the
 notes without sticking at the start of the piece the opposite of the first found sticking.
 
+##### Fit
+
+Fit the piece to a given length (repeats and trims).
+
+* **Length** - The length to fit the piece into.
+
 ##### Scale
 
 Scales a piece with a given ratio.
 
-* **Ratio** - The ratio to scale with, a fraction, for example for `[2, 1`, all the notes will be twice as long as their
-  original length.
+* **Ratio** - The ratio to scale with, a fraction, for example for `[2, 1]`, all the notes will be twice as long as
+  their original length.
 
 ##### Filter
 
 Filter notes, drop notes that does not match the arguments, or the opposite.
 
-* **Match** - Same as the `Match` argument in [Change Note](#Change-Note).
+* **Match** - A list containing the same object as the `Match` argument in [Change Note](#Change-Note).
 * **Invert** - Optional flag, is exists and set to `true`, inverts the notes matching.
 
 ---

@@ -16,6 +16,13 @@
 
 using namespace std;
 
+typedef struct PlayStatus_s {
+    bool quit;
+    bool moved;
+    bool paused;
+    unsigned int frames_count;
+} PlayStatus;
+
 namespace NotationDisplayUtils {
     void get_display_scope(const VoiceContainer &up, const VoiceContainer &down,
                            const Fraction &current_location, DisplayVariables &display_variables);
@@ -27,7 +34,7 @@ namespace NotationDisplayUtils {
 
     void prepare_displayable_notation(VoiceContainer &up, VoiceContainer &down, DisplayVariables &display_variables);
 
-    void process_events(Metronome &m, bool &quit, bool &moved, DisplayVariables &display_variables,
+    void process_events(Metronome &m, PlayStatus &play_status, DisplayVariables &display_variables,
                         const TimeSignature &signature);
 
     void continuous_display_notation(const VoiceContainer &up, const VoiceContainer &down,

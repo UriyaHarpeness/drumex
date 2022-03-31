@@ -23,7 +23,12 @@ void ResourcesMenu::display_path(const filesystem::directory_entry &path) { // N
         ImGui::TableNextColumn();
         ImGui::TextUnformatted("Folder");
         if (open) {
-            for (const auto &entry: filesystem::directory_iterator(path)) {
+            vector<filesystem::directory_entry> files_in_directory;
+            copy(filesystem::directory_iterator(path), filesystem::directory_iterator(),
+                 back_inserter(files_in_directory));
+            sort(files_in_directory.begin(), files_in_directory.end());
+
+            for (const auto &entry: files_in_directory) {
                 display_path(entry);
             }
             ImGui::TreePop();
@@ -63,7 +68,7 @@ void ResourcesMenu::display_path(const filesystem::directory_entry &path) { // N
                                    : ResourcesMenu::read_json_file(path.path())["Variations"].size();
         ImGui::BeginGroup();
         // todo: find actual sizes.
-        ImGui::BeginChild(path.path().c_str(), ImVec2(0, min(200.f, (float) size * 18 + 12)), true);
+        ImGui::BeginChild(path.path().c_str(), ImVec2(0, min(200.f, (float) size * 17 + 12)), true);
         if (ImGui::BeginMenuBar()) {
             ImGui::TextUnformatted("Index");
             ImGui::EndMenuBar();

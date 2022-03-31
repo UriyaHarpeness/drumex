@@ -1,5 +1,5 @@
 {
-  "Name": "Fill Example",
+  "Name": "Fit Example",
   "Variations": [
     {
       "Parts": [
@@ -10,16 +10,12 @@
           ],
           "Apply": [
             {
-              "Name": "Fill",
+              "Name": "Fit",
               "Arguments": {
-                "Distance": [
-                  1,
-                  16
-                ],
-                "Match": {},
-                "Apply": {
-                  "Instrument": "Bass"
-                }
+                "Length": [
+                  5,
+                  4
+                ]
               }
             }
           ]

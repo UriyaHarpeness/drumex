@@ -1,8 +1,8 @@
 {
-  "Name": "4's Variations",
+  "Name": "5's Variations",
   "Global": {
     "Time Signature": [
-      4,
+      5,
       4
     ],
     "Type": "Custom",
@@ -29,98 +29,63 @@
     {
       "Part": {
         "Use": [
-          "s..."
+          "s...."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          ".s.."
+          "ss..."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "..s."
+          "sss.."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "...s"
+          "ssss."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "ss.."
+          "s.s.."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          ".ss."
+          ".s.s."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "..ss"
+          "ss.s."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "s..s"
+          "s.ss."
         ]
       }
     },
     {
       "Part": {
         "Use": [
-          "s.s."
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          ".s.s"
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          "sss."
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          ".sss"
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          "s.ss"
-        ]
-      }
-    },
-    {
-      "Part": {
-        "Use": [
-          "ss.s"
+          "s.s.s"
         ]
       }
     }

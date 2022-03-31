@@ -1,5 +1,5 @@
 {
-  "Name": "Variations Development",
+  "Name": "Tuplet Example",
   "Variations": [
     {
       "Parts": [
@@ -10,7 +10,15 @@
           ],
           "Apply": [
             {
-              "Name": "Tuplet"
+              "Name": "Tuplet",
+              "Arguments": {
+                "From": 4,
+                "To": 5,
+                "Units": [
+                  1,
+                  16
+                ]
+              }
             }
           ]
         }

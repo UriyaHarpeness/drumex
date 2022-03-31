@@ -98,14 +98,18 @@ void variations::ChangeNote::apply(Part &part, const Json::Value &arguments) {
 void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
 
+    Fraction units = {arguments["Units"][0].asInt(), arguments["Units"][1].asInt()};
+    int from = arguments["From"].asInt(), to = arguments["To"].asInt();
+    const auto &current_mapping = tuplets_mapping.at({from, to});
+
     for (const auto &location: part.get_location()) {
-        if (static_cast<bool>(location.first % Fraction(1, 16))) {
-            throw runtime_error("Invalid Note Offset For Tuplet Variation");
+        if (static_cast<bool>(location.first % units)) {
+            throw runtime_error("Invalid note offset for Tuplet Variation");
         }
-        Fraction offset_in_quarter = location.first % Fraction(1, 4);
+        Fraction offset_in_quarter = location.first % (units * from);
         Fraction quarter_location = location.first - offset_in_quarter;
-        Fraction tuplet_offset = {sixteenth_tuplet[(int) static_cast<double>(offset_in_quarter / Fraction(1, 16))],
-                                  4 * 6};
+        Fraction tuplet_offset = {current_mapping[(int) static_cast<double>(offset_in_quarter / units)],
+                                  units.get_value().second * to / from};
         new_locations[quarter_location + tuplet_offset] = location.second;
     }
 
@@ -114,17 +118,36 @@ void variations::Tuplet::apply(Part &part, const Json::Value &arguments) {
 
 void variations::Double::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
+    Group new_group;
 
     Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
     Locations matching = match(part.get_location(), arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"]);
     bool carry = arguments["Carry"].asBool();
+
+    bool override_instrument = !arguments["Apply"]["Instrument"].isNull();
+    Instrument destination_instrument = (override_instrument ? instrument_names.at(
+            arguments["Apply"]["Instrument"].asString()) : Unbound);
+    bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
+    vector<Modifier> modifiers;
+
+    if (override_modifiers) {
+        for (const auto &modifier: arguments["Apply"]["Modifiers"]) {
+            modifiers.push_back(modifier_names.at(modifier.asString()));
+        }
+    }
 
     // Treats all matching notes as the same one for that matter.
     if (!carry) {
         for (const auto &location: matching) {
             if ((matching.find(location.first + distance) == matching.end()) &&
                 (location.first + distance < prev(matching.end())->first)) {
-                new_locations[location.first + distance] = location.second;
+                for (const auto &note: location.second) {
+                    new_group.push_back(
+                            {BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
+                             note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
+                }
+                new_locations[location.first + distance] = move(new_group);
+                new_group.clear();
             }
         }
         part.set_location(location::merge_locations({new_locations, part.get_location()}));
@@ -155,7 +178,13 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
 
             play_count = min(play_count, (int) static_cast<double>(space / distance));
             do {
-                new_locations[location_it->first + (Fraction(play_count) * distance)] = location_it->second;
+                for (const auto &note: location_it->second) {
+                    new_group.push_back(
+                            {BasePlay, (override_instrument ? destination_instrument : note.get_instrument()),
+                             note.get_length(), (override_modifiers ? modifiers : note.get_modifiers())});
+                }
+                new_locations[location_it->first + (Fraction(play_count) * distance)] = move(new_group);
+                new_group.clear();
             } while (--play_count);
         }
     }
@@ -163,11 +192,11 @@ void variations::Double::apply(Part &part, const Json::Value &arguments) {
     part.set_location(location::merge_locations({new_locations, part.get_location()}));
 }
 
-
 void variations::Fill::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
 
     Fraction distance = {arguments["Distance"][0].asInt(), arguments["Distance"][1].asInt()};
+    Locations matching = match(part.get_location(), arguments["Match"]["Instruments"], arguments["Match"]["Modifiers"]);
     Instrument destination_instrument = instrument_names.at(arguments["Apply"]["Instrument"].asString());
     bool override_modifiers = !arguments["Apply"]["Modifiers"].isNull();
     vector<Modifier> modifiers;
@@ -180,11 +209,11 @@ void variations::Fill::apply(Part &part, const Json::Value &arguments) {
     Notation fill_note(BasePlay, destination_instrument, distance, modifiers);
 
     // todo: maybe fill group of notes, and add match and fill the notes where no match (and only where hardcoded rests).
-    if (part.get_location().begin()->first > Fraction()) {
-        part.get_mutable_location().insert({Fraction(), {fill_note}});
+    if (matching.begin()->first > Fraction()) {
+        matching.insert({Fraction(), {fill_note}});
+        new_locations.insert({Fraction(), {fill_note}});
     }
-    for (auto location_it = part.get_location().begin();
-         location_it != prev(part.get_location().end()); location_it++) {
+    for (auto location_it = matching.begin(); location_it != prev(matching.end()); location_it++) {
         Fraction space = next(location_it)->first - location_it->first;
 
         if (space != distance) {
@@ -296,6 +325,14 @@ void variations::StretchSticking::apply(Part &part, const Json::Value &arguments
     part.set_location(new_locations);
 }
 
+void variations::Fit::apply(Part &part, const Json::Value &arguments) {
+    Fraction length = {arguments["Length"][0].asInt(), arguments["Length"][1].asInt()};
+    auto new_locations = move(location::fit_locations(part.get_location(), length));
+
+    part.set_location(new_locations);
+    part.set_length(length);
+}
+
 void variations::Scale::apply(Part &part, const Json::Value &arguments) {
     Locations new_locations;
 
@@ -306,6 +343,7 @@ void variations::Scale::apply(Part &part, const Json::Value &arguments) {
     }
 
     part.set_location(new_locations);
+    part.set_length(part.get_length() * ratio);
 }
 
 void variations::Filter::apply(Part &part, const Json::Value &arguments) {

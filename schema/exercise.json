@@ -68,6 +68,9 @@
                         "$ref": "#/definitions/Variations/properties/Stretch Sticking"
                       },
                       {
+                        "$ref": "#/definitions/Variations/properties/Fit"
+                      },
+                      {
                         "$ref": "#/definitions/Variations/properties/Scale"
                       },
                       {
@@ -98,7 +101,8 @@
                 "description": "Part combination type.",
                 "enum": [
                   "Merge",
-                  "Alternate"
+                  "Alternate",
+                  "Clip To First"
                 ]
               },
               "Arguments": {
@@ -249,10 +253,41 @@
               "type": "string",
               "description": "Variation name.",
               "pattern": "^Tuplet$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "From": {
+                  "type": "integer",
+                  "description": "Convert from base."
+                },
+                "To": {
+                  "type": "integer",
+                  "description": "Convert to base."
+                },
+                "Units": {
+                  "type": "array",
+                  "description": "The basic units the from base is over.",
+                  "items": {
+                    "$ref": "note.json#/properties/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                }
+              },
+              "required": [
+                "From",
+                "To",
+                "Units"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
-            "Name"
+            "Name",
+            "Arguments"
           ],
           "additionalProperties": false
         },
@@ -312,6 +347,35 @@
                   },
                   "additionalProperties": false
                 },
+                "Apply": {
+                  "type": "object",
+                  "description": "Note apply properties.",
+                  "properties": {
+                    "Instrument": {
+                      "type": "string",
+                      "description": "Instrument apply.",
+                      "oneOf": [
+                        {
+                          "$ref": "note.json#/properties/Note/items/0"
+                        }
+                      ]
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers apply.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
                 "Carry": {
                   "type": "boolean",
                   "description": "Carry Notes between matches."
@@ -354,6 +418,39 @@
                   "maxItems": 2,
                   "additionalItems": false
                 },
+                "Match": {
+                  "type": "object",
+                  "description": "Note match properties.",
+                  "properties": {
+                    "Instruments": {
+                      "type": "array",
+                      "description": "Instruments match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/0"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    },
+                    "Modifiers": {
+                      "type": "array",
+                      "description": "Modifiers match.",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "$ref": "note.json#/properties/Note/items/2/items"
+                          }
+                        ]
+                      },
+                      "minItems": 1,
+                      "additionalItems": false
+                    }
+                  },
+                  "additionalProperties": false
+                },
                 "Apply": {
                   "type": "object",
                   "description": "Note apply properties.",
@@ -389,6 +486,7 @@
               },
               "required": [
                 "Distance",
+                "Match",
                 "Apply"
               ],
               "additionalProperties": false
@@ -444,6 +542,42 @@
           },
           "required": [
             "Name"
+          ],
+          "additionalProperties": false
+        },
+        "Fit": {
+          "type": "object",
+          "description": "Fit Variation.",
+          "properties": {
+            "Name": {
+              "type": "string",
+              "description": "Variation name.",
+              "pattern": "^Fit$"
+            },
+            "Arguments": {
+              "type": "object",
+              "description": "Arguments for the Variation.",
+              "properties": {
+                "Length": {
+                  "type": "array",
+                  "description": "The length to fit into.",
+                  "items": {
+                    "$ref": "note.json#/properties/Note/items/1/items"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "additionalItems": false
+                }
+              },
+              "required": [
+                "Length"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "Name",
+            "Arguments"
           ],
           "additionalProperties": false
         },

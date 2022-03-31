@@ -13,7 +13,7 @@ namespace location {
 
     Locations merge_locations(const vector<Locations> &locations);
 
-    void stretch_locations(Locations &locations, const Fraction &final_length);
+    Locations fit_locations(const Locations &locations, const Fraction &final_length);
 
     vector<Locations> split_voices_locations(const Locations &locations);
 

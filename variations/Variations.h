@@ -22,10 +22,10 @@ namespace variations {
         void apply(Part &part, const Json::Value &arguments);
     }
     namespace Tuplet {
-        static const array<int, 4> sixteenth_tuplet = {0,
-                                                       2,
-                                                       3,
-                                                       5};
+        static const map<pair<int, int>, vector<int>> tuplets_mapping = {
+                {{4, 5}, {0, 2, 3, 4}},
+                {{4, 6}, {0, 2, 3, 5}}
+        };
 
         void apply(Part &part, const Json::Value &arguments);
     }
@@ -39,6 +39,9 @@ namespace variations {
         void apply(Part &part, const Json::Value &arguments);
     }
     namespace StretchSticking {
+        void apply(Part &part, const Json::Value &arguments);
+    }
+    namespace Fit {
         void apply(Part &part, const Json::Value &arguments);
     }
     namespace Scale {
@@ -55,6 +58,7 @@ namespace variations {
                                                       {"Fill",             Fill::apply},
                                                       {"Sticking",         Sticking::apply},
                                                       {"Stretch Sticking", StretchSticking::apply},
+                                                      {"Fit",              Fit::apply},
                                                       {"Scale",            Scale::apply},
                                                       {"Filter",           Filter::apply}};
 }

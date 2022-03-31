@@ -1,0 +1,114 @@
+{
+  "Name": "Playing Exercise",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "rudiments/chester-2-a.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Snare",
+                  "Modifiers": [
+                    "Accent"
+                  ]
+                }
+              }
+            },
+            {
+              "Name": "Double",
+              "Arguments": {
+                "Distance": [
+                  1,
+                  16
+                ],
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Bass"
+                },
+                "Carry": true
+              }
+            },
+            {
+              "Name": "Tuplet",
+              "Arguments": {
+                "From": 4,
+                "To": 5,
+                "Units": [
+                  1,
+                  16
+                ]
+              }
+            },
+            {
+              "Name": "Fill",
+              "Arguments": {
+                "Distance": [
+                  1,
+                  20
+                ],
+                "Match": {
+                  "Instruments": [
+                    "Snare"
+                  ]
+                },
+                "Apply": {
+                  "Instrument": "Snare",
+                  "Modifiers": [
+                    "Ghost"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "Part": "variations/hihat-pedal-variations.part.json",
+          "Indexes": [
+            2
+          ],
+          "Apply": [
+            {
+              "Name": "Fit",
+              "Arguments": {
+                "Length": [
+                  4,
+                  4
+                ]
+              }
+            },
+            {
+              "Name": "Scale",
+              "Arguments": {
+                "Ratio": [
+                  3,
+                  4
+                ]
+              }
+            },
+            {
+              "Name": "Tuplet",
+              "Arguments": {
+                "From": 4,
+                "To": 5,
+                "Units": [
+                  1,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Clip To First"
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "Name": "HiHat Pedal Variations",
+  "Global": {
+    "Time Signature": [
+      2,
+      4
+    ],
+    "Type": "Custom",
+    "Part": {
+      "Definitions": {
+        "H": [
+          "HiHat",
+          [
+            1,
+            4
+          ],
+          [
+            "Open"
+          ]
+        ],
+        "h": [
+          "HiHat",
+          [
+            1,
+            4
+          ],
+          [
+            "Close"
+          ]
+        ],
+        ".": [
+          "Rest",
+          [
+            1,
+            4
+          ]
+        ]
+      }
+    }
+  },
+  "Parts": [
+    {
+      "Time Signature": [
+        1,
+        4
+      ],
+      "Part": {
+        "Use": [
+          "H"
+        ]
+      }
+    },
+    {
+      "Time Signature": [
+        1,
+        4
+      ],
+      "Part": {
+        "Use": [
+          "h"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "Hh"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "hH"
+        ]
+      }
+    }
+  ]
+}

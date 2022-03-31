@@ -65,29 +65,27 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
             DisplayConstants::initial_window_height);
 }
 
-void
-NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, DisplayVariables &display_variables,
-                                     const TimeSignature &signature) {
+void NotationDisplayUtils::process_events(Metronome &m, PlayStatus &play_status, DisplayVariables &display_variables,
+                                          const TimeSignature &signature) {
     // Interactive SDL communication part.
-    bool pause = false;
     SDL_Event event;
 
     // todo: respond to moves and show on screen on pause.
-    while (!quit && (SDL_PollEvent(&event) || pause)) {
+    while (!play_status.quit && SDL_PollEvent(&event)) {
         ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT) {
-            quit = true;
+            play_status.quit = true;
             Log(INFO).Get() << "Exiting" << endl;
             break;
         }
         if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
-                quit = true;
+                play_status.quit = true;
                 Log(INFO).Get() << "Exiting" << endl;
                 break;
             } else if (event.key.keysym.sym == SDLK_SPACE) {
-                pause = !pause;
-                if (pause) {
+                play_status.paused = !play_status.paused;
+                if (play_status.paused) {
                     Log(INFO).Get() << "Pause" << endl;
                 } else {
                     Log(INFO).Get() << "Continue" << endl;
@@ -99,13 +97,17 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, Disp
             } else if (event.key.keysym.sym == SDLK_DOWN) {
                 m.increase_tempo(-20);
                 Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_HOME) {
+                m.set_current_location({});
+                play_status.moved = true;
+                Log(INFO).Get() << "Moving to start" << endl;
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
                 auto bars_num = (int) static_cast<double>(prev(display_variables.global_locations.end())->first /
                                                           signature);
                 auto new_bar = (current_bar == bars_num - 1) ? 0 : current_bar + 1;
                 m.set_current_location(signature * new_bar);
-                moved = true;
+                play_status.moved = true;
                 Log(INFO).Get() << "Moving to Next Measure: " << new_bar << endl;
             } else if (event.key.keysym.sym == SDLK_LEFT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
@@ -113,11 +115,8 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, Disp
                                                           signature);
                 auto new_bar = (current_bar == 0) ? bars_num - 1 : current_bar - 1;
                 m.set_current_location(signature * new_bar);
-                moved = true;
+                play_status.moved = true;
                 Log(INFO).Get() << "Moving to Previous Measure: " << new_bar << endl;
-            }
-            if (pause) {
-                Metronome::pause(250);
             }
         } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
             auto new_size = Notation::m_display->reset_window_size(display_variables.maximum_bar_size);
@@ -129,6 +128,7 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, Disp
                                                                                      signature,
                                                                                      display_variables.bars_split);
             display_variables.displayable_lines_number = calculate_displayable_lines_number(new_size.second);
+            play_status.moved = true;
             m.reset();
         }
     }
@@ -140,15 +140,13 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
     for (const auto &i: display_variables.global_locations) {
         locations.push_back(i.first);
     }
-    bool quit = false;
-    bool moved;
-    int display_count = 0;
+    PlayStatus play_status = {.quit=false, .moved=false, .paused=false, .frames_count=0};
 
     Metronome m(move(locations), tempo, 5);
 
-    while (!quit) {
-        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << m.get_current_location()
-                         << endl;
+    while (true) {
+        Log(DEBUG).Get() << "frames count: " << play_status.frames_count++ << ", current location: "
+                         << m.get_current_location() << endl;
 
         get_display_scope(up, down, m.get_current_location(), display_variables);
 
@@ -178,10 +176,16 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
 
         Notation::m_display->present();
 
-        moved = false;
-        process_events(m, quit, moved, display_variables, up.get_signature());
+        play_status.moved = false;
+        process_events(m, play_status, display_variables, up.get_signature());
 
-        if (!quit && !moved) {
+        if (play_status.quit) {
+            break;
+        }
+
+        if (play_status.paused && !play_status.moved) {
+            Metronome::pause(250);
+        } else if (!play_status.moved) {
             m.poll();
         }
     }
@@ -265,7 +269,7 @@ GlobalLocations NotationDisplayUtils::split_global_locations_to_lines(const Glob
         if (it.first % signature == 0 &&
             find(bar_splits.begin(), bar_splits.end(), (int) static_cast<double>(it.first / signature)) !=
             bar_splits.end()) {
-            locations_offset = it.second.first;
+            locations_offset = it.second.first - it.second.second[0];
         }
 
         line_split_locations[it.first] = {DisplayConstants::displaying_init_x + it.second.first - locations_offset,
