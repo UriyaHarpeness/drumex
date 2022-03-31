@@ -1,0 +1,40 @@
+{
+  "Name": "Scale Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Modifiers": [
+                    "Accent"
+                  ]
+                }
+              }
+            },
+            {
+              "Name": "Scale",
+              "Arguments": {
+                "Ratio": [
+                  2,
+                  1
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

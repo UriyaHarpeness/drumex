@@ -71,18 +71,18 @@ const map<Modifier, MusicSymbols> Notation::modifier_to_symbol = {
 const map<Modifier, array<int, 3>> Notation::modifier_to_position = {
         {ModDot,        {0,   0, 0}},
         {ModAccent,     {0,   4, -2}},
-        {ModGhost,      {-2,  0, -9}},
-        {ModCrossStick, {0,   0, -9}},
-        {ModRimshot,    {-2,  0, -9}},
-        {ModFlam,       {-15, 0, -10}},
-        {ModDrag,       {-15, 0, -11}},
-        {ModClose,      {4,   4, -6}},
-        {ModLoose,      {4,   4, -6}},
+        {ModGhost,      {8,   0, -10}},
+        {ModCrossStick, {9,   0, -10}},
+        {ModRimshot,    {9,   0, -10}},
+        {ModFlam,       {8,   0, -11}},
+        {ModDrag,       {8,   0, -11}},
+        {ModClose,      {5,   4, -6}},
+        {ModLoose,      {5,   4, -6}},
         {ModOpenClose,  {1,   4, -6}},
-        {ModOpen,       {4,   4, -6}},
+        {ModOpen,       {5,   4, -6}},
         {ModChoke,      {16,  0, -18}},
-        {ModRight,      {-19, 1, 0}},
-        {ModLeft,       {-12, 1, 0}},
+        {ModRight,      {-19, 1, 2}},
+        {ModLeft,       {-12, 1, 2}},
 };
 
 shared_ptr<Display> Notation::m_display = nullptr;
@@ -117,10 +117,10 @@ void Notation::initialize_with_length() {
                 m_symbol_value = make_pair(0, 0);
             } else if (Fraction(1, 2) == get_simple_length()) {
                 m_symbol = SymHalfNote;
-                m_symbol_value = make_pair(3, 0);
+                m_symbol_value = make_pair(9, 0);
             } else {
                 m_symbol = SymQuarterNote;
-                m_symbol_value = make_pair(3, 0);
+                m_symbol_value = make_pair(9, 0);
             }
         }
     } else {
@@ -171,11 +171,11 @@ void Notation::draw_tail(int x, int staff_y, int tail_length) const {
     if (m_line <= DisplayConstants::direction_line) {
         m_display->draw_rect(x + 13, staff_y + ((m_line - tail_length + 4) * DisplayConstants::line_height) -
                                      DisplayConstants::staff_to_0,
-                             (tail_length + 2 - distance) * DisplayConstants::line_height - distance, 1);
+                             (tail_length + 2 - distance) * DisplayConstants::line_height, 1);
     } else {
         m_display->draw_rect(x + 4,
                              staff_y + ((m_line + 6) * DisplayConstants::line_height) - DisplayConstants::staff_to_0,
-                             (tail_length + 2 - distance) * DisplayConstants::line_height - distance, 1);
+                             (tail_length + 2 - distance) * DisplayConstants::line_height, 1);
     }
 }
 

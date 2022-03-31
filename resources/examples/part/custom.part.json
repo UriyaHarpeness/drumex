@@ -1,0 +1,43 @@
+{
+  "Name": "Custom Part Example",
+  "Global": {
+    "Time Signature": [
+      4,
+      4
+    ]
+  },
+  "Parts": [
+    {
+      "Type": "Custom",
+      "Part": {
+        "Definitions": {
+          "s": [
+            "Snare",
+            [
+              1,
+              16
+            ]
+          ],
+          "b": [
+            "Bass",
+            [
+              1,
+              16
+            ]
+          ],
+          ".": [
+            "Rest",
+            [
+              1,
+              16
+            ]
+          ]
+        },
+        "Use": [
+          "(bs).....s.s..s.b..|..s...s..s..s...|",
+          "....s...s..s....|..s..s..(bs)......."
+        ]
+      }
+    }
+  ]
+}

@@ -37,7 +37,7 @@ public:
 
     void multiple_length(int multiply);
 
-    void multiple_length(const Fraction &new_length);
+    void fit_length(const Fraction &new_length);
 
     [[nodiscard]] inline VoiceContainer &get_up() { return m_up; };
 
@@ -54,6 +54,8 @@ public:
     inline void set_signature(const TimeSignature &signature) { m_signature = signature; };
 
     [[nodiscard]] inline Fraction get_length() const { return m_length; };
+
+    inline void set_length(const Fraction &length) { m_length = length; };
 
 private:
     TimeSignature m_signature;

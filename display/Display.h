@@ -9,6 +9,19 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl.h"
+
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <SDL_opengles2.h>
+#else
+
+#include <SDL_opengl.h>
+
+#endif
+
 using namespace std;
 
 class Display {
@@ -17,7 +30,11 @@ public:
 
     ~Display();
 
+    pair<int, int> get_window_size();
+
     void clear_screen();
+
+    string resolve_non_ascii(const string &s);
 
     void draw_text(const string &text, int x, int y);
 
@@ -35,16 +52,16 @@ public:
 
     void draw_rect_c(int x, int y, int h, int w, int gray_scale);
 
-    void draw_base(int x, int y, uint8_t a, uint8_t b);
+    void draw_base(int y, uint8_t numerator, uint8_t denominator);
 
-    void draw_image(const string &path, int x, int y, int h, int w);
+    pair<int, int> reset_window_size(int maximum_bar_size);
 
     void present();
 
 private:
     SDL_Window *m_window;
-    SDL_Renderer *m_renderer;
-    SDL_Surface *m_screen;
-    TTF_Font *m_music_font;
-    TTF_Font *m_text_font;
+    ImFont *m_music_font;
+    ImFont *m_text_font;  // todo: maybe use custom font.
+    SDL_GLContext m_gl_context;
+    ImGuiIO *m_io;
 };

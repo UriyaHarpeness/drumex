@@ -1,0 +1,93 @@
+{
+  "Name": "5's Variations",
+  "Global": {
+    "Time Signature": [
+      5,
+      4
+    ],
+    "Type": "Custom",
+    "Part": {
+      "Definitions": {
+        "s": [
+          "Snare",
+          [
+            1,
+            4
+          ]
+        ],
+        ".": [
+          "Rest",
+          [
+            1,
+            4
+          ]
+        ]
+      }
+    }
+  },
+  "Parts": [
+    {
+      "Part": {
+        "Use": [
+          "s...."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "ss..."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "sss.."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "ssss."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s.s.."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          ".s.s."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "ss.s."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s.ss."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s.s.s"
+        ]
+      }
+    }
+  ]
+}

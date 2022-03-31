@@ -1,0 +1,35 @@
+{
+  "Name": "Variations Development",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "play/playing.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {
+                  "Instruments": [
+                    "HiHat"
+                  ]
+                },
+                "Apply": {
+                  "Modifiers": [
+                    "Loose"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

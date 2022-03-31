@@ -13,22 +13,25 @@ typedef map<Fraction, Padding> Paddings;
 typedef map<Fraction, pair<int, Padding>> GlobalLocations;
 
 namespace DisplayConstants {
-    const int window_height = 600;
+    const int initial_window_height = 600;
 
-    const int window_width = 900;
+    const int initial_window_width = 900;
+
+    // todo: handle minimum height as well.
+    const int minimum_window_height = 240;
 
     const int line_height = 5;
 
-    const int displaying_init_x = 80;
+    const int line_x_offset = 20;
 
-    const int displaying_max_x = window_width - 80;
+    const int line_content_padding = 60;
+
+    const int displaying_init_x = line_x_offset + line_content_padding;
 
     const int displaying_init_y = 100;
 
     // todo: change spacing dynamically.
     const int staff_lines_spacing = 180;
-
-    const int max_lines_displayed = 3;
 
     const Fraction minimal_supported_fraction = {1, 16};
 
@@ -66,5 +69,9 @@ typedef struct DisplayVariables_s {
 
     Paddings merged_padding;
     GlobalLocations global_locations;
+    GlobalLocations line_split_locations;
+    int maximum_bar_size;
+    vector<int> bars_sizes;
     vector<int> bars_split;
+    int displayable_lines_number;
 } DisplayVariables;

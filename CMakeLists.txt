@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(drumex)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_executable(drumex main.cpp
         display/Display.cpp
@@ -34,82 +34,37 @@ add_executable(drumex main.cpp
         reader/Exercise.h
         reader/Part.cpp
         reader/Part.h
+        resources_menu/ResourcesMenu.cpp
+        resources_menu/ResourcesMenu.h
         time_signature/TimeSignature.cpp
         time_signature/TimeSignature.h
         Translations.h
         variations/Variations.cpp
         variations/Variations.h)
 
-# ------- Finding SDL Sources and Libraries ---------- #
+add_subdirectory(imgui)
 
-Message("")
-Message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
-Message(STATUS "CMAKE_SOURCE_DIR: " ${CMAKE_SOURCE_DIR})
-Message(STATUS "CMAKE_COMMAND: " ${CMAKE_COMMAND})
-Message(STATUS "CMAKE_VERSION: " ${CMAKE_VERSION})
-Message(STATUS "CMAKE_C_COMPILER: " ${CMAKE_C_COMPILER})
-Message(STATUS "CMAKE_PROJECT_NAME: " ${CMAKE_PROJECT_NAME})
-Message(STATUS "CMAKE_FINDCMAKE: " ${CMAKE_SOURCE_DIR}/CMAKE)
+find_package(SDL2 REQUIRED)
+find_package(OpenGL REQUIRED)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE")
-
-FIND_PACKAGE(SDL2 REQUIRED)
-Message("")
-Message(STATUS "FINDING SDL2")
-IF (${SDL2_FOUND})
-    Message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
-    Message(STATUS "SDL2_INCLUDE_DIR:" ${SDL2_INCLUDE_DIR})
-    Message(STATUS "SDL2_LIBRARY: " ${SDL2_LIBRARY})
-ELSE ()
-    Message(STATUS "SDL2_FOUND: " ${SDL2_FOUND})
-    Message(FATAL_ERROR "SDL2 NOT FOUND")
-ENDIF ()
-
-FIND_PACKAGE(SDL2_IMAGE)
-Message("")
-Message(STATUS "FINDING SDL2_IMAGE")
-Message(STATUS "SDL2_IMAGE_FOUND: " ${SDL2_IMAGE_FOUND})
-IF (${SDL2_IMAGE_FOUND})
-    Message(STATUS "SDL2_IMAGE_INCLUDE_DIR: " ${SDL2_IMAGE_INCLUDE_DIR})
-    Message(STATUS "SDL2_IMAGE_LIBRARY: " ${SDL2_IMAGE_LIBRARY})
-ELSE ()
-    Message(FATAL_ERROR "SDL2_IMAGE NOT FOUND")
-ENDIF ()
-
-FIND_PACKAGE(SDL2TTF)
-Message("")
-Message(STATUS "FINDING SDL2TTF")
-Message(STATUS "SDL2TTF_FOUND: " ${SDL2TTF_FOUND})
-IF (${SDL2TTF_FOUND})
-    Message(STATUS "SDL2TTF_INCLUDE_DIR: " ${SDL2TTF_INCLUDE_DIR})
-    Message(STATUS "SDL2TTF_LIBRARY: " ${SDL2TTF_LIBRARY})
-ELSE ()
-    Message(FATAL_ERROR "SDL2TTF NOT FOUND")
-ENDIF ()
-Message("")
-
-FIND_PACKAGE(SDL2Mixer)
-
-Message(STATUS "FINDING SDL2Mixer")
-Message(STATUS "SDL2Mixer_FOUND: " ${SDL2Mixer_FOUND})
-
-Message("")
-
-
-# ------- End Finding SDL ------ #
+if (APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(OpenGL_LIBRARY OpenGL)
+    find_library(IOKIT_LIBRARY IOKit)
+    find_library(COREVIDEO_LIBRARY CoreVideo)
+    SET(EXTRA_LIBS ${COCOA_LIBRARY} ${OpenGL_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
+endif (APPLE)
 
 # todo: locate jsoncpp paths nicely.
-INCLUDE_DIRECTORIES(
-        /usr/local/include
-        ${SDL2_INCLUDE_DIR}
-        ${SDL2TTF_INCLUDE_DIR}
-        ${SDL2_IMAGE_INCLUDE_DIR}
-        ${SDL2Mixer_INCLUDE_DIR}
-        /usr/local/Cellar/jsoncpp/1.9.4_1/include/)
-target_link_libraries(${PROJECT_NAME}
+target_include_directories(drumex PUBLIC
+        imgui
+        ${SDL_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
+        /usr/local/Cellar/jsoncpp/1.9.5/include)
+target_link_libraries(drumex
+        imgui
         pthread
-        ${SDL2_LIBRARY}
-        ${SDL2TTF_LIBRARY}
-        ${SDL2_IMAGE_LIBRARY}
-        ${SDL2Mixer_LIBRARY}
-        /usr/local/Cellar/jsoncpp/1.9.4_1/lib/libjsoncpp.dylib)
+        ${SDL_LIBRARIES}
+        ${OPENGL_LIBRARIES}
+        ${EXTRA_LIBS}
+        /usr/local/Cellar/jsoncpp/1.9.5/lib/libjsoncpp.dylib)

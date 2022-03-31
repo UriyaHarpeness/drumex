@@ -1,0 +1,56 @@
+{
+  "Name": "Stretch Sticking Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Modifiers": [
+                    "Accent"
+                  ]
+                }
+              }
+            },
+            {
+              "Name": "Sticking",
+              "Arguments": {
+                "Sticking": "RL"
+              }
+            },
+            {
+              "Name": "Fill",
+              "Arguments": {
+                "Distance": [
+                  1,
+                  16
+                ],
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Snare",
+                  "Modifiers": [
+                    "Ghost"
+                  ]
+                }
+              }
+            },
+            {
+              "Name": "Stretch Sticking"
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "Name": "Fill Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Fill",
+              "Arguments": {
+                "Distance": [
+                  1,
+                  16
+                ],
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Bass"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

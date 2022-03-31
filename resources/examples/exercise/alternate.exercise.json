@@ -1,0 +1,59 @@
+{
+  "Name": "Alternate Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Up"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "Part": "examples/part/regular.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Change Note",
+              "Arguments": {
+                "Match": {},
+                "Apply": {
+                  "Instrument": "Down"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "Time Signature": [
+        4,
+        4
+      ],
+      "Combination": {
+        "Type": "Alternate",
+        "Arguments": {
+          "Indexes": [
+            0,
+            1,
+            0,
+            1,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

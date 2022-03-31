@@ -8,10 +8,11 @@ void NotationDisplayUtils::get_display_scope(const VoiceContainer &up, const Voi
                                                                 (int) static_cast<double>(current_location /
                                                                                           up.get_signature())));
     display_variables.start_line = min(display_variables.current_line, ((int) display_variables.bars_split.size() <
-                                                                        DisplayConstants::max_lines_displayed) ? 0 :
+                                                                        display_variables.displayable_lines_number) ? 0
+                                                                                                                    :
                                                                        (int) display_variables.bars_split.size() -
-                                                                       DisplayConstants::max_lines_displayed + 1);
-    display_variables.end_line = min(display_variables.start_line + DisplayConstants::max_lines_displayed - 1,
+                                                                       display_variables.displayable_lines_number + 1);
+    display_variables.end_line = min(display_variables.start_line + display_variables.displayable_lines_number - 1,
                                      (int) display_variables.bars_split.size());
     Log(DEBUG).Get() << "current: " << display_variables.current_line << ", start: " << display_variables.start_line
                      << ", end: " << display_variables.end_line << endl;
@@ -48,31 +49,43 @@ void NotationDisplayUtils::prepare_displayable_notation(VoiceContainer &up, Voic
 
     display_variables.merged_padding = NotationUtils::merge_padding(up_padding, down_padding);
 
-    display_variables.global_locations = create_global_locations(display_variables.merged_padding,
-                                                                 display_variables.bars_split, up.get_signature());
+    display_variables.global_locations = create_global_locations(display_variables.merged_padding, up.get_signature());
+
+    display_variables.bars_sizes = calculate_bars_sizes(display_variables.merged_padding, up.get_signature());
+    display_variables.bars_split = split_bars_to_lines(display_variables.bars_sizes,
+                                                       DisplayConstants::initial_window_width -
+                                                       DisplayConstants::displaying_init_x -
+                                                       DisplayConstants::line_x_offset);
+    display_variables.maximum_bar_size = *max_element(display_variables.bars_sizes.begin(),
+                                                      display_variables.bars_sizes.end());
+    display_variables.line_split_locations = split_global_locations_to_lines(display_variables.global_locations,
+                                                                             up.get_signature(),
+                                                                             display_variables.bars_split);
+    display_variables.displayable_lines_number = calculate_displayable_lines_number(
+            DisplayConstants::initial_window_height);
 }
 
-void
-NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, const GlobalLocations &global_locations,
-                                     const TimeSignature &signature) {
+void NotationDisplayUtils::process_events(Metronome &m, PlayStatus &play_status, DisplayVariables &display_variables,
+                                          const TimeSignature &signature) {
     // Interactive SDL communication part.
-    bool pause = false;
     SDL_Event event;
 
-    while (!quit && (SDL_PollEvent(&event) || pause)) {
+    // todo: respond to moves and show on screen on pause.
+    while (!play_status.quit && SDL_PollEvent(&event)) {
+        ImGui_ImplSDL2_ProcessEvent(&event);
         if (event.type == SDL_QUIT) {
-            quit = true;
+            play_status.quit = true;
             Log(INFO).Get() << "Exiting" << endl;
             break;
         }
         if (event.type == SDL_KEYDOWN) {
             if (event.key.keysym.sym == SDLK_ESCAPE) {
-                quit = true;
+                play_status.quit = true;
                 Log(INFO).Get() << "Exiting" << endl;
                 break;
             } else if (event.key.keysym.sym == SDLK_SPACE) {
-                pause = !pause;
-                if (pause) {
+                play_status.paused = !play_status.paused;
+                if (play_status.paused) {
                     Log(INFO).Get() << "Pause" << endl;
                 } else {
                     Log(INFO).Get() << "Continue" << endl;
@@ -84,24 +97,39 @@ NotationDisplayUtils::process_events(Metronome &m, bool &quit, bool &moved, cons
             } else if (event.key.keysym.sym == SDLK_DOWN) {
                 m.increase_tempo(-20);
                 Log(INFO).Get() << "Decreasing Tempo to " << m.get_tempo() << endl;
+            } else if (event.key.keysym.sym == SDLK_HOME) {
+                m.set_current_location({});
+                play_status.moved = true;
+                Log(INFO).Get() << "Moving to start" << endl;
             } else if (event.key.keysym.sym == SDLK_RIGHT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
-                auto bars_num = (int) static_cast<double>(prev(global_locations.end())->first / signature);
+                auto bars_num = (int) static_cast<double>(prev(display_variables.global_locations.end())->first /
+                                                          signature);
                 auto new_bar = (current_bar == bars_num - 1) ? 0 : current_bar + 1;
                 m.set_current_location(signature * new_bar);
-                moved = true;
+                play_status.moved = true;
                 Log(INFO).Get() << "Moving to Next Measure: " << new_bar << endl;
             } else if (event.key.keysym.sym == SDLK_LEFT) {
                 auto current_bar = (int) static_cast<double>(m.get_current_location() / signature);
-                auto bars_num = (int) static_cast<double>(prev(global_locations.end())->first / signature);
+                auto bars_num = (int) static_cast<double>(prev(display_variables.global_locations.end())->first /
+                                                          signature);
                 auto new_bar = (current_bar == 0) ? bars_num - 1 : current_bar - 1;
                 m.set_current_location(signature * new_bar);
-                moved = true;
+                play_status.moved = true;
                 Log(INFO).Get() << "Moving to Previous Measure: " << new_bar << endl;
             }
-            if (pause) {
-                Metronome::pause(250);
-            }
+        } else if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+            auto new_size = Notation::m_display->reset_window_size(display_variables.maximum_bar_size);
+            display_variables.bars_split = split_bars_to_lines(display_variables.bars_sizes,
+                                                               new_size.first -
+                                                               DisplayConstants::displaying_init_x -
+                                                               DisplayConstants::line_x_offset);
+            display_variables.line_split_locations = split_global_locations_to_lines(display_variables.global_locations,
+                                                                                     signature,
+                                                                                     display_variables.bars_split);
+            display_variables.displayable_lines_number = calculate_displayable_lines_number(new_size.second);
+            play_status.moved = true;
+            m.reset();
         }
     }
 }
@@ -112,24 +140,22 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
     for (const auto &i: display_variables.global_locations) {
         locations.push_back(i.first);
     }
-    bool quit = false;
-    bool moved;
-    int display_count = 0;
+    PlayStatus play_status = {.quit=false, .moved=false, .paused=false, .frames_count=0};
 
-    Metronome m(move(locations), tempo, 10);
+    Metronome m(move(locations), tempo, 5);
 
-    while (!quit) {
-        Log(DEBUG).Get() << "display count: " << display_count++ << ", current location: " << m.get_current_location()
-                         << endl;
+    while (true) {
+        Log(DEBUG).Get() << "frames count: " << play_status.frames_count++ << ", current location: "
+                         << m.get_current_location() << endl;
 
         get_display_scope(up, down, m.get_current_location(), display_variables);
 
         pair<pair<int, int>, Padding> note_location = {
-                {display_variables.global_locations.at(m.get_current_location()).first,
+                {display_variables.line_split_locations.at(m.get_current_location()).first,
                  DisplayConstants::displaying_init_y +
-                 ((display_variables.current_line % DisplayConstants::max_lines_displayed) *
+                 ((display_variables.current_line % display_variables.displayable_lines_number) *
                   DisplayConstants::staff_lines_spacing)},
-                display_variables.global_locations.at(m.get_current_location()).second};
+                display_variables.line_split_locations.at(m.get_current_location()).second};
 
         Notation::m_display->clear_screen();
 
@@ -137,54 +163,41 @@ void NotationDisplayUtils::continuous_display_notation(const VoiceContainer &up,
                                        note_location.first.second - DisplayConstants::line_height * 4,
                                        DisplayConstants::line_height * 16,
                                        note_location.second[0] + note_location.second[1],
-                                       255, 64, 64, 128);
+                                       255, 0, 0, 128);
 
         for (int i = display_variables.start_line; i <= display_variables.end_line; i++) {
-            Notation::m_display->draw_base(20, DisplayConstants::displaying_init_y +
-                                               ((i % DisplayConstants::max_lines_displayed) *
-                                                DisplayConstants::staff_lines_spacing),
+            Notation::m_display->draw_base(DisplayConstants::displaying_init_y +
+                                           ((i % display_variables.displayable_lines_number) *
+                                            DisplayConstants::staff_lines_spacing),
                                            up.get_signature().get_value().first, up.get_signature().get_value().second);
         }
 
         display_notation(up, down, display_variables);
 
-        // Notation::m_display->draw_image("stuff.png", 400, 400, 80, 80);
-
         Notation::m_display->present();
 
-        moved = false;
-        process_events(m, quit, moved, display_variables.global_locations, up.get_signature());
+        play_status.moved = false;
+        process_events(m, play_status, display_variables, up.get_signature());
 
-        if (!quit && !moved) {
+        if (play_status.quit) {
+            break;
+        }
+
+        if (play_status.paused && !play_status.moved) {
+            Metronome::pause(250);
+        } else if (!play_status.moved) {
             m.poll();
         }
     }
 }
 
-GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &padding, vector<int> &bars_split,
-                                                              const TimeSignature &signature) {
-    // Also creates bars splitting.
+GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &padding, const TimeSignature &signature) {
     GlobalLocations global_locations;
-    int offset = DisplayConstants::displaying_init_x;
+    int offset = 0;
     Fraction padding_end = Fraction((int) static_cast<double>(prev(padding.end())->first / signature)) * signature;
     Padding distance, second_distance;
 
     for (auto it = padding.begin(); it != padding.end(); it++) {
-        if (it->first && !static_cast<bool>(it->first % signature)) {
-            if (offset > DisplayConstants::displaying_max_x) {
-                // Move this bar and the next to another line.
-                bars_split.push_back((int) static_cast<double>(it->first / signature) - 1);
-                offset = DisplayConstants::displaying_init_x;
-                for (auto i = padding.find(it->first - signature); i != padding.find(it->first); i++) {
-                    second_distance = get_distance(next(i)->first - i->first, i->second);
-                    global_locations[i->first].second = second_distance;
-                    offset += second_distance[0];
-                    global_locations[i->first].first = offset;
-                    offset += second_distance[1];
-                }
-            }
-        }
-
         if (it == prev(padding.end())) {
             distance = get_distance(padding_end + signature - it->first, it->second);
         } else {
@@ -196,23 +209,6 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
         offset += distance[1];
     }
 
-    if (offset > DisplayConstants::displaying_max_x) {
-        // Move this bar and the next to another line.
-        bars_split.push_back((int) static_cast<double>(padding_end / signature));
-        offset = DisplayConstants::displaying_init_x;
-        for (auto i = padding.find(padding_end); i != padding.end(); i++) {
-            if (i == prev(padding.end())) {
-                second_distance = get_distance(padding_end + signature - i->first, i->second);
-            } else {
-                second_distance = get_distance(next(i)->first - i->first, i->second);
-            }
-            global_locations[i->first].second = second_distance;
-            offset += second_distance[0];
-            global_locations[i->first].first = offset;
-            offset += second_distance[1];
-        }
-    }
-
     global_locations[padding_end + signature] = {offset, {0, 0}};
     for (const auto &it: global_locations) {
         Log(TRACE).Get() << it.first << ": " << it.second.first << " " << it.second.second[0] << " "
@@ -220,6 +216,76 @@ GlobalLocations NotationDisplayUtils::create_global_locations(const Paddings &pa
     }
 
     return move(global_locations);
+}
+
+vector<int> NotationDisplayUtils::calculate_bars_sizes(const Paddings &padding, const TimeSignature &signature) {
+    vector<int> bars_sizes((int) static_cast<double>(prev(padding.end())->first / signature) + 1);
+
+    int offset = 0;
+    Fraction padding_end = Fraction((int) static_cast<double>(prev(padding.end())->first / signature)) * signature;
+    Padding distance;
+
+    for (auto it = padding.begin(); it != padding.end(); it++) {
+        if (it == prev(padding.end())) {
+            distance = get_distance(padding_end + signature - it->first, it->second);
+        } else {
+            distance = get_distance(next(it)->first - it->first, it->second);
+        }
+        if (it->first % signature == 0 && it->first > 0) {
+            bars_sizes[(int) static_cast<double>(it->first / signature) - 1] = offset;
+            offset = 0;
+        }
+        offset += distance[0] + distance[1];
+    }
+
+    bars_sizes[(int) static_cast<double>(prev(padding.end())->first / signature)] = offset;
+
+    return move(bars_sizes);
+}
+
+vector<int> NotationDisplayUtils::split_bars_to_lines(const vector<int> &bars_sizes, int line_size) {
+    vector<int> bars_split;
+
+    int offset = 0;
+    for (int index = 0; index < bars_sizes.size(); index++) {
+        offset += bars_sizes[index];
+        if (offset > line_size) {
+            bars_split.push_back(index);
+            offset = bars_sizes[index];
+        }
+    }
+
+    return move(bars_split);
+}
+
+GlobalLocations NotationDisplayUtils::split_global_locations_to_lines(const GlobalLocations &global_locations,
+                                                                      const TimeSignature &signature,
+                                                                      const vector<int> &bar_splits) {
+    GlobalLocations line_split_locations;
+    int locations_offset = 0;
+    Padding distance, second_distance;
+
+    for (const auto &it: global_locations) {
+        if (it.first % signature == 0 &&
+            find(bar_splits.begin(), bar_splits.end(), (int) static_cast<double>(it.first / signature)) !=
+            bar_splits.end()) {
+            locations_offset = it.second.first - it.second.second[0];
+        }
+
+        line_split_locations[it.first] = {DisplayConstants::displaying_init_x + it.second.first - locations_offset,
+                                          it.second.second};
+    }
+
+    return move(line_split_locations);
+}
+
+int NotationDisplayUtils::calculate_displayable_lines_number(int height) {
+    int number = 1;
+    height -= DisplayConstants::displaying_init_y + DisplayConstants::staff_lines_spacing / 2;
+    // todo: fix Y axis numbers and calibration.
+
+    for (; height >= DisplayConstants::staff_lines_spacing; height -= DisplayConstants::staff_lines_spacing, number++);
+    return number;
 }
 
 Padding NotationDisplayUtils::get_distance(const Fraction &length, Padding padding) {

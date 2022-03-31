@@ -6,7 +6,7 @@ Exercise::Exercise(const string &path, int index) {
     ifstream exercise_file(path);
 
     if (!exercise_file.good()) {
-        throw runtime_error("Exercise File Does Not Exist");
+        throw runtime_error("Exercise file does not exist: " + path);
     }
 
     string errs;
@@ -70,15 +70,15 @@ Part Exercise::merge_parts(vector<Part> parts, const Json::Value &combination, c
     TimeSignature time_signature = signature.isNull() ? parts[0].get_signature() :
                                    TimeSignature(signature[0].asUInt(), signature[1].asUInt());
 
-    if (combination["Type"].asString() == "Merge") {
+    if ((combination["Type"].asString() == "Merge") || (combination["Type"].asString() == "Clip To First")) {
         for_each(parts.begin(), parts.end(), [&lengths](const Part &part) { lengths.push_back(part.get_length()); });
 
-        Fraction merged_length = NotationUtils::merge_lengths(lengths);
+        Fraction merged_length = combination["Type"].asString() == "Merge" ? NotationUtils::merge_lengths(lengths) : lengths[0];
 
         merged_length = merged_length * Fraction((merged_length % time_signature).get_value().second);
 
         for (auto &part: parts) {
-            part.multiple_length(merged_length);
+            part.fit_length(merged_length);
             locations.push_back(part.get_location());
         }
 

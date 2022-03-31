@@ -1,0 +1,31 @@
+{
+  "Name": "Tuplet Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Tuplet",
+              "Arguments": {
+                "From": 4,
+                "To": 5,
+                "Units": [
+                  1,
+                  16
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

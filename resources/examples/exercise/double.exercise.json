@@ -1,0 +1,31 @@
+{
+  "Name": "Double Example",
+  "Variations": [
+    {
+      "Parts": [
+        {
+          "Part": "examples/part/custom.part.json",
+          "Indexes": [
+            0
+          ],
+          "Apply": [
+            {
+              "Name": "Double",
+              "Arguments": {
+                "Distance": [
+                  1,
+                  16
+                ],
+                "Match": {},
+                "Carry": true
+              }
+            }
+          ]
+        }
+      ],
+      "Combination": {
+        "Type": "Merge"
+      }
+    }
+  ]
+}

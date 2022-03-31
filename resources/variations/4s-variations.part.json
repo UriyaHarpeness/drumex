@@ -1,0 +1,128 @@
+{
+  "Name": "4's Variations",
+  "Global": {
+    "Time Signature": [
+      4,
+      4
+    ],
+    "Type": "Custom",
+    "Part": {
+      "Definitions": {
+        "s": [
+          "Snare",
+          [
+            1,
+            4
+          ]
+        ],
+        ".": [
+          "Rest",
+          [
+            1,
+            4
+          ]
+        ]
+      }
+    }
+  },
+  "Parts": [
+    {
+      "Part": {
+        "Use": [
+          "s..."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          ".s.."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "..s."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "...s"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "ss.."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          ".ss."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "..ss"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s..s"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s.s."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          ".s.s"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "sss."
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          ".sss"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "s.ss"
+        ]
+      }
+    },
+    {
+      "Part": {
+        "Use": [
+          "ss.s"
+        ]
+      }
+    }
+  ]
+}

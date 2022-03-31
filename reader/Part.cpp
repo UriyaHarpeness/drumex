@@ -11,7 +11,7 @@ Part::Part(const string &path, int index) {
     ifstream part_file(path);
 
     if (!part_file.good()) {
-        throw runtime_error("Part File Does Not Exist");
+        throw runtime_error("Part file does not exist: " + path);
     }
 
     string errs;
@@ -106,17 +106,33 @@ Locations Part::read_custom_voice(const Json::Value &part) {
     Voice voice;
     vector<Voice> voices;
     char last = '|';
+    bool grouped;
+    Group group;
     for (const Json::Value &json_voice: part["Use"]) {
         for (const char &c: json_voice.asString()) {
             // For readability purpose.
             last = c;
-            if (c == '|') {
-                continue;
+            switch (c) {
+                case '|':
+                    break;
+                case '(':
+                    grouped = true;
+                    break;
+                case ')':
+                    grouped = false;
+                    voice.emplace_back(move(group));
+                    group.clear();
+                    break;
+                default:
+                    if (definitions.find(c) == definitions.end()) {
+                        throw runtime_error("Character '" + string({c}) + "' was not defined before use");
+                    }
+                    if (grouped) {
+                        group.push_back(definitions.at(c));
+                    } else {
+                        voice.push_back({definitions.at(c)});
+                    }
             }
-            if (definitions.find(c) == definitions.end()) {
-                throw runtime_error("Character '" + string({c}) + "' was not defined before use");
-            }
-            voice.push_back({definitions.at(c)});
         }
         // Enables splitting long notation lines.
         if (last == '|') {
@@ -157,10 +173,10 @@ Locations Part::voices_to_location(const vector<Voice> &notations) {
 }
 
 void Part::multiple_length(int multiply) {
-    multiple_length(m_length * Fraction(multiply));
+    fit_length(m_length * Fraction(multiply));
 }
 
-void Part::multiple_length(const Fraction &new_length) {
-    location::stretch_locations(m_location, new_length);
+void Part::fit_length(const Fraction &new_length) {
+    m_location = move(location::fit_locations(m_location, new_length));
     m_length = new_length;
 }

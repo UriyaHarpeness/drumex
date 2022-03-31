@@ -30,7 +30,7 @@ RhythmContainer::RhythmContainer(const Locations &locations, const TimeSignature
     Fraction beat_offset;
     for (const auto &beat: m_beats) {
         beat_offset += beat;
-        m_location_beats.push_back(beat_offset);
+        m_location_beats.push_back(beat_offset / m_ratio);
     }
 
     // If no notes start at the beginning of the scope.
